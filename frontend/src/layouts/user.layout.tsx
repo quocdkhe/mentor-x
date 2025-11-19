@@ -1,3 +1,4 @@
+import { ModeToggle } from '@/components/mode-toggle'
 import { Link, Outlet } from '@tanstack/react-router'
 
 const UserLayout = () => {
@@ -10,6 +11,7 @@ const UserLayout = () => {
         <Link to="/about" className="[&.active]:font-bold">
           About
         </Link>
+        <ModeToggle />
       </div>
       <hr />
       <Outlet />

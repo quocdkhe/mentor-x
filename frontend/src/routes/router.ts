@@ -1,8 +1,9 @@
-import { Outlet, createRootRoute, createRouter } from "@tanstack/react-router";
+import { createRootRoute, createRouter } from "@tanstack/react-router";
 import { userRouteTree } from "./user.router";
+import App from "@/App";
 
 export const rootRoute = createRootRoute({
-  component: Outlet,
+  component: App,
 });
 
 const routeTree = rootRoute.addChildren([userRouteTree]);
