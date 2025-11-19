@@ -70,7 +70,7 @@
 }
 
 .dark {
-  --background: hsl(20 14.3% 4.1%);
+  --background: hsl(222 28% 12%);
   --foreground: hsl(0 0% 95%);
   --popover: hsl(0 0% 9%);
   --popover-foreground: hsl(0 0% 95%);
