@@ -57,16 +57,14 @@ export default function SimpleNavbar() {
                 <div className="flex flex-col gap-1">
                   <Link
                     to="/"
-                    className={`inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full ${location.pathname === '/' ? 'bg-accent text-accent-foreground' : ''
-                      }`}
+                    className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Home
                   </Link>
                   <Link
                     to="/about"
-                    className={`inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full ${location.pathname === '/about' ? 'bg-accent text-accent-foreground' : ''
-                      }`}
+                    className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     About
@@ -89,15 +87,13 @@ export default function SimpleNavbar() {
           <nav className="hidden md:flex items-center gap-1">
             <Link
               to="/"
-              className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${location.pathname === '/' ? 'bg-accent text-accent-foreground' : ''
-                }`}
+              className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
               Home
             </Link>
             <Link
               to="/about"
-              className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${location.pathname === '/about' ? 'bg-accent text-accent-foreground' : ''
-                }`}
+              className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
               About
             </Link>
