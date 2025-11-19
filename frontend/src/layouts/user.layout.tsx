@@ -1,19 +1,10 @@
-import { ModeToggle } from '@/components/mode-toggle'
-import { Link, Outlet } from '@tanstack/react-router'
+import SimpleNavbar from '@/components/navbar'
+import { Outlet } from '@tanstack/react-router'
 
 const UserLayout = () => {
   return (
     <>
-      <div className="p-2 flex gap-2">
-        <Link to='/' className="[&.active]:font-bold">
-          Home
-        </Link>{' '}
-        <Link to="/about" className="[&.active]:font-bold">
-          About
-        </Link>
-        <ModeToggle />
-      </div>
-      <hr />
+      <SimpleNavbar />
       <Outlet />
     </>
   )
