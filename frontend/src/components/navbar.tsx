@@ -106,9 +106,10 @@ export default function SimpleNavbar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => console.log('Sign In clicked')}
+            asChild
           >
-            Sign In
+            <Link to="/login">Sign In</Link>
+
           </Button>
           <Button
             size="sm"
