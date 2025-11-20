@@ -7,10 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const Route = createLazyRoute('/user/login')({
-  component: LoginPage,
-})
-
 const formSchema = z.object({
   email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
   password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
@@ -177,3 +173,6 @@ function LoginPage() {
 }
 
 export default LoginPage;
+export const Route = createLazyRoute('/user/login')({
+  component: LoginPage,
+})

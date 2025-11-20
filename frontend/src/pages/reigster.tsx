@@ -20,6 +20,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { createLazyRoute, Link } from '@tanstack/react-router';
+import { useRegister } from '@/api/auth';
+import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 const formSchema = z.object({
   fullName: z.string().min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
@@ -34,11 +37,8 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const Route = createLazyRoute('/user/register')({
-  component: Register,
-})
-
-export default function Register() {
+function Register() {
+  const registerMutation = useRegister();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,7 +51,25 @@ export default function Register() {
   });
 
   const onSubmit = (data: FormValues) => {
-    console.log('Form submitted:', data);
+    registerMutation.mutate({
+      name: data.fullName,
+      phone: data.phoneNumber,
+      email: data.email,
+      password: data.password,
+    },
+      {
+        onSuccess: (data) => {
+          toast.success('Đăng ký thành công!');
+          console.log("Registered:", data);
+        },
+        onError: (err) => {
+          const backendMessage =
+            err.response?.data.message || "Đã xảy ra lỗi, vui lòng thử lại.";
+
+          toast.error(`Đăng ký thất bại: ${backendMessage}`);
+        },
+      }
+    );
   };
 
   const handleGoogleLogin = () => {
@@ -161,7 +179,8 @@ export default function Register() {
                   )}
                 />
 
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+                  {registerMutation.isPending ? <Spinner /> : null}
                   Đăng ký
                 </Button>
 
@@ -252,3 +271,8 @@ export default function Register() {
     </div>
   );
 }
+
+export default Register;
+export const Route = createLazyRoute('/user/register')({
+  component: Register,
+})
