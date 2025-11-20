@@ -1,29 +1,52 @@
-import { useForm } from "react-hook-form"
-import { createLazyRoute, Link } from "@tanstack/react-router"
-import * as z from 'zod';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-
-export const Route = createLazyRoute('/user/login')({
-  component: LoginPage,
-})
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { createLazyRoute, Link } from '@tanstack/react-router';
 
 const formSchema = z.object({
+  fullName: z.string().min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
   email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
   password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  confirmPassword: z.string().min(6, 'Vui lòng xác nhận mật khẩu'),
+  phoneNumber: z.string().min(10, 'Số điện thoại phải có ít nhất 10 ký tự'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Mật khẩu không khớp',
+  path: ['confirmPassword'],
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-function LoginPage() {
+export const Route = createLazyRoute('/user/register')({
+  component: Register,
+})
+
+export default function Register() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      fullName: '',
       email: '',
       password: '',
+      confirmPassword: '',
+      phoneNumber: '',
     },
   });
 
@@ -32,7 +55,7 @@ function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    console.log('Login with Google clicked');
+    console.log('Register with Google clicked');
   };
 
   return (
@@ -40,14 +63,32 @@ function LoginPage() {
       <div className="w-1/2 flex items-center justify-center p-16">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl">Chào mừng trở lại</CardTitle>
+            <CardTitle className="text-2xl">Tạo tài khoản</CardTitle>
             <CardDescription>
-              Đăng nhập vào tài khoản của bạn để tiếp tục
+              Điền thông tin để tạo tài khoản mới
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Họ và tên</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Nguyễn Văn A"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -68,6 +109,24 @@ function LoginPage() {
 
                 <FormField
                   control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Số điện thoại</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          placeholder="0123456789"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
@@ -75,7 +134,25 @@ function LoginPage() {
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="Nhập mật khẩu của bạn"
+                          placeholder="Nhập mật khẩu"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Xác nhận mật khẩu</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Nhập lại mật khẩu"
                           {...field}
                         />
                       </FormControl>
@@ -85,7 +162,7 @@ function LoginPage() {
                 />
 
                 <Button type="submit" className="w-full">
-                  Đăng nhập
+                  Đăng ký
                 </Button>
 
                 <div className="relative">
@@ -120,16 +197,16 @@ function LoginPage() {
                       d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
                     ></path>
                   </svg>
-                  Đăng nhập với Google
+                  Tiếp tục với Google
                 </Button>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
-              Chưa có tài khoản?{' '}
-              <Link to="/register" className="font-medium text-primary">
-                Đăng ký
+              Đã có tài khoản?{' '}
+              <Link to='/login' className="font-medium text-primary">
+                Đăng nhập
               </Link>
             </p>
           </CardFooter>
@@ -175,5 +252,3 @@ function LoginPage() {
     </div>
   );
 }
-
-export default LoginPage;
