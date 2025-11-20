@@ -40,7 +40,7 @@ function LoginPage() {
       <div className="w-1/2 flex items-center justify-center p-16">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-3xl">Chào mừng trở lại</CardTitle>
+            <CardTitle className="text-2xl">Chào mừng trở lại</CardTitle>
             <CardDescription>
               Đăng nhập vào tài khoản của bạn để tiếp tục
             </CardDescription>
@@ -92,7 +92,7 @@ function LoginPage() {
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
+                  <div className="relative flex justify-center text-xs">
                     <span className="bg-card px-2 text-muted-foreground">
                       Hoặc tiếp tục với
                     </span>
@@ -120,7 +120,7 @@ function LoginPage() {
                       d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
                     ></path>
                   </svg>
-                  Tiếp tục với Google
+                  Đăng nhập với Google
                 </Button>
               </form>
             </Form>
@@ -144,7 +144,7 @@ function LoginPage() {
               'url(https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=1920)',
           }}
         />
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black/50 dark:bg-black/70" />
         <div className="relative z-10 max-w-lg space-y-8 text-white">
           <div className="space-y-4">
             <h2 className="text-4xl font-bold">

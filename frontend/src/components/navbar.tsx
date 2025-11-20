@@ -89,13 +89,13 @@ export default function SimpleNavbar() {
               to="/"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
-              Home
+              Trang chủ
             </Link>
             <Link
               to="/about"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
-              About
+              Đội ngũ
             </Link>
           </nav>
         </div>
@@ -104,18 +104,18 @@ export default function SimpleNavbar() {
         <div className="flex items-center gap-3">
           <ModeToggle />
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             asChild
           >
-            <Link to="/login">Sign In</Link>
+            <Link to="/login">Đăng nhập</Link>
 
           </Button>
           <Button
             size="sm"
             onClick={() => console.log('Get Started clicked')}
           >
-            Get Started
+            Bắt đầu
           </Button>
         </div>
       </div>
