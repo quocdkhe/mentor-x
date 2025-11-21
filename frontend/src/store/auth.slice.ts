@@ -26,7 +26,7 @@ export const fetchCurrentUser = createAsyncThunk<
 >("auth/fetchUser", async (_, { rejectWithValue }) => {
   try {
     // Use the imported 'api' instance instead of browser fetch
-    const response = await api.get<UserResponseDTO>("/Auth/self");
+    const response = await api.get<UserResponseDTO>("/auth/self");
 
     // Axios automatically handles response.ok and throws an error on 4xx/5xx
     return response.data; // Axios response places the data in the 'data' property
@@ -50,7 +50,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     // Utility reducer to manually set a user (e.g., after successful login)
-    setUser: (state, action: PayloadAction<UserResponseDTO>) => {
+    setUser: (state, action: PayloadAction<UserResponseDTO | null>) => {
       state.user = action.payload;
       state.isLoading = false;
       state.error = null;

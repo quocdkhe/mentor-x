@@ -13,12 +13,11 @@ const App = () => {
     dispatch(fetchCurrentUser());
   }, [dispatch]);
 
-
   return (
     <>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <Outlet />
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-center" richColors />
       </ThemeProvider>
     </>
   )

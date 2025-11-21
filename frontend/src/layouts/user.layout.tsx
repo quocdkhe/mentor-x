@@ -1,4 +1,4 @@
-import SimpleNavbar from '@/components/navbar'
+import SimpleNavbar from '@/components/user-navbar'
 import { Outlet } from '@tanstack/react-router'
 
 const UserLayout = () => {

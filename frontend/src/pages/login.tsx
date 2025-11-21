@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form"
-import { createLazyRoute, Link } from "@tanstack/react-router"
+import { createLazyRoute, Link, useNavigate } from "@tanstack/react-router"
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useLogin } from "@/api/auth";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { useAppDispatch } from "@/store/hooks";
+import { setUser } from "@/store/auth.slice";
 
 const formSchema = z.object({
   email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
@@ -19,6 +21,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 function LoginPage() {
   const loginMutation = useLogin();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -27,14 +31,15 @@ function LoginPage() {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     loginMutation.mutate({
       email: data.email,
       password: data.password,
     },
       {
         onSuccess: (data) => {
-          console.log("Logged in:", data);
+          dispatch(setUser(data));
+          navigate({ to: '/' });
           toast.success('Đăng nhập thành công');
         },
         onError: (err) => {

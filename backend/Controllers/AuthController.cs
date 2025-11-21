@@ -17,6 +17,23 @@ namespace backend.Controllers
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenService _refreshTokenService;
 
+        private readonly CookieOptions ACCESS_TOKEN_OPTION = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddMinutes(15)
+        };
+
+        private readonly CookieOptions REFRESH_TOKEN_OPTION = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddDays(7)
+        };
+
+
         public AuthController(IAuthService authService, IUserService userService, ITokenService tokenService, IRefreshTokenService refreshTokenService)
         {
             _authService = authService;
@@ -27,36 +44,22 @@ namespace backend.Controllers
 
         private void SetTokenCookies(string accessToken, string refreshToken)
         {
-            Response.Cookies.Append("access_token", accessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddMinutes(15)
-            });
-
-            Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true, // Set to true in production (HTTPS)
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddDays(7)
-            });
+            Response.Cookies.Append("access_token", accessToken, ACCESS_TOKEN_OPTION);
+            Response.Cookies.Append("refresh_token", refreshToken, REFRESH_TOKEN_OPTION);
         }
-
 
         [HttpPost("register")]
         public async Task<ActionResult<UserResponseDTO>> Register([FromBody] RegisterDTO registerDto)
         {
             if (await _userService.GetUserByEmail(registerDto.Email) != null)
             {
-                return BadRequest(new ErrorMessage("Email đã tồn tại, vui lòng nhập email khác"));
+                return BadRequest(new Message("Email đã tồn tại, vui lòng nhập email khác"));
             }
 
             var result = await _authService.Register(registerDto);
 
             if (result == null)
-                return BadRequest(new ErrorMessage("Đăng kí thất bại, có lỗi xảy ra"));
+                return BadRequest(new Message("Đăng kí thất bại, có lỗi xảy ra"));
 
             return Ok(result);
         }
@@ -69,7 +72,7 @@ namespace backend.Controllers
             // 2. Verify
             if (currentUser == null || !Utils.PasswordHashing.VerifyPassword(loginDto.Password, currentUser.Password))
             {
-                return BadRequest(new ErrorMessage("Thông tin tài khoản không hợp lệ"));
+                return BadRequest(new Message("Thông tin tài khoản không hợp lệ"));
             }
 
             // 3. Generate tokens
@@ -99,14 +102,14 @@ namespace backend.Controllers
             var refreshToken = Request.Cookies["refresh_token"];
 
             if (string.IsNullOrEmpty(refreshToken))
-                return Unauthorized(new ErrorMessage("Refresh token not found"));
+                return Unauthorized(new Message("Refresh token not found"));
 
             // 2. Validate refresh token from database
             var storedToken = await _refreshTokenService.GetValidRefreshToken(refreshToken);
 
             if (storedToken == null)
             {
-                return Unauthorized(new ErrorMessage("Invalid or expired refresh token"));
+                return Unauthorized(new Message("Invalid or expired refresh token"));
             }
 
             // 3. Get user from database
@@ -114,7 +117,7 @@ namespace backend.Controllers
 
             if (currentUser == null)
             {
-                return Unauthorized(new ErrorMessage("User not found"));
+                return Unauthorized(new Message("User not found"));
             }
 
             // 4. Generate new tokens
@@ -147,9 +150,9 @@ namespace backend.Controllers
                 }
             }
             // 4. Remove cookies
-            Response.Cookies.Delete("access_token");
-            Response.Cookies.Delete("refresh_token");
-            return Ok(new { message = "Logged out successfully" });
+            Response.Cookies.Delete("access_token", ACCESS_TOKEN_OPTION);
+            Response.Cookies.Delete("refresh_token", REFRESH_TOKEN_OPTION);
+            return Ok(new Message("Đăng xuất thành công"));
         }
 
         [HttpGet("self")]
@@ -161,12 +164,12 @@ namespace backend.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if(userId == null)
             {
-                return Unauthorized(new ErrorMessage("Không tìm thấy user id"));
+                return Unauthorized(new Message("Không tìm thấy user id"));
             }
             var currentUser = await _userService.GetUserById(Guid.Parse(userId));
             if(currentUser == null)
             {
-                return Unauthorized(new ErrorMessage("Không tìm thấy người dùng"));
+                return Unauthorized(new Message("Không tìm thấy người dùng"));
             }
             return new UserResponseDTO
             {

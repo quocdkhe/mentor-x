@@ -1,3 +1,3 @@
-export type ErrorMessage = {
+export type Message = {
   message: string;
 };

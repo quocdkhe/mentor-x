@@ -1,12 +1,24 @@
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ModeToggle } from './mode-toggle';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useLogout } from '@/api/auth';
+import { toast } from 'sonner';
+import { setUser } from '@/store/auth.slice';
 
 // Simple logo component
 const Logo = () => (
@@ -37,8 +49,36 @@ const HamburgerIcon = () => (
   </svg>
 );
 
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+
 export default function SimpleNavbar() {
+  const { user, isLoading } = useAppSelector((state) => state.auth);
+  const logoutMutation = useLogout();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined,
+      {
+        onSuccess: (data) => {
+          navigate({ to: '/login' });
+          toast.success(data.message);
+          dispatch(setUser(null));
+        },
+        onError: (err) => {
+          toast.error(`Đăng xuất thất bại: ${err.response?.data.message || err.message}`);
+        }
+      });
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
@@ -103,20 +143,63 @@ export default function SimpleNavbar() {
         {/* Right: Action Buttons */}
         <div className="flex items-center gap-3">
           <ModeToggle />
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
-            <Link to="/login">Đăng nhập</Link>
+          {isLoading ?
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            :
+            (user == null ?
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                >
+                  <Link to="/login">Đăng nhập</Link>
 
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => console.log('Get Started clicked')}
-          >
-            Bắt đầu
-          </Button>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => console.log('Get Started clicked')}
+                >
+                  Bắt đầu
+                </Button>
+              </>
+              :
+              <div className="flex items-center gap-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2 h-10 px-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium">{user.name}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="flex items-center gap-2 p-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                    <DropdownMenuItem>
+                      Tài khoản của tôi
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      Đăng xuất
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )
+          }
         </div>
       </div>
     </header>

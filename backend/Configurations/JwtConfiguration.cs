@@ -18,7 +18,6 @@ namespace backend.Configurations
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Secret"])),
                     ValidateIssuer = true,
