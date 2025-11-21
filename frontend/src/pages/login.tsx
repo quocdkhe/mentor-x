@@ -6,6 +6,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLogin } from "@/api/auth";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 const formSchema = z.object({
   email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
@@ -15,6 +18,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 function LoginPage() {
+  const loginMutation = useLogin();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -24,7 +28,19 @@ function LoginPage() {
   });
 
   const onSubmit = (data: FormValues) => {
-    console.log('Form submitted:', data);
+    loginMutation.mutate({
+      email: data.email,
+      password: data.password,
+    },
+      {
+        onSuccess: (data) => {
+          console.log("Logged in:", data);
+          toast.success('Đăng nhập thành công');
+        },
+        onError: (err) => {
+          toast.error(`Đăng nhập thất bại: ${err.response?.data.message || err.message}`);
+        }
+      });
   };
 
   const handleGoogleLogin = () => {
@@ -80,7 +96,8 @@ function LoginPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                  {loginMutation.isPending && <Spinner />}
                   Đăng nhập
                 </Button>
 

@@ -7,6 +7,5 @@ namespace backend.Services.Interfaces
     {
         Task<UserResponseDTO> Register(RegisterDTO userDto);
 
-        Task<bool> checkExistsByEmail(string Email);
     }
 }

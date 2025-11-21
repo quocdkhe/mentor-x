@@ -15,10 +15,39 @@ public partial class MentorXContext : DbContext
     {
     }
 
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("refresh_tokens_pkey");
+
+            entity.ToTable("refresh_tokens");
+
+            entity.HasIndex(e => e.Token, "idx_refresh_tokens_token");
+
+            entity.HasIndex(e => e.UserId, "idx_refresh_tokens_user_id");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
+            entity.Property(e => e.IsRevoked)
+                .HasDefaultValue(false)
+                .HasColumnName("is_revoked");
+            entity.Property(e => e.Token).HasColumnName("token");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_user");
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("users_pkey");
@@ -32,8 +61,7 @@ public partial class MentorXContext : DbContext
                 .HasColumnName("id");
             entity.Property(e => e.Avatar).HasColumnName("avatar");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
             entity.Property(e => e.Email).HasColumnName("email");
             entity.Property(e => e.Name).HasColumnName("name");
@@ -43,8 +71,7 @@ public partial class MentorXContext : DbContext
                 .HasDefaultValueSql("'user'::text")
                 .HasColumnName("role");
             entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasDefaultValueSql("now()")
                 .HasColumnName("updated_at");
         });
 

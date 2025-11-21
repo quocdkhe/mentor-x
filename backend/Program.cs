@@ -1,17 +1,22 @@
-using backend.Extensions;
+//using backend.Configurations;
+using backend.Configurations;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddProjectServices(builder.Configuration);
+// Add DB context
+builder.Services.AddDbContext<MentorXContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(); // Swagger configuration
+
+// Add services to the container.
+builder.Services.AddProjectServices(); 
+builder.Services.AddJwtConfig(builder.Configuration); // JWT and CORS configuration
 
 
 var app = builder.Build();

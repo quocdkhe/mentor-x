@@ -13,11 +13,6 @@ namespace backend.Services
             this.mentorXContext = mentorXContext;
         }
 
-        public async Task<bool> checkExistsByEmail(string Email)
-        {
-            return await mentorXContext.Users.AnyAsync(u => u.Email == Email);
-        }
-
         public async Task<UserResponseDTO> Register(RegisterDTO registerDto)
         {
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
