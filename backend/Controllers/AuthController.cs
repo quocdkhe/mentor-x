@@ -31,7 +31,7 @@ namespace backend.Controllers
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Lax,
+                SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddMinutes(15)
             });
 
@@ -39,7 +39,7 @@ namespace backend.Controllers
             {
                 HttpOnly = true,
                 Secure = true, // Set to true in production (HTTPS)
-                SameSite = SameSiteMode.Lax,
+                SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddDays(7)
             });
         }
@@ -152,7 +152,7 @@ namespace backend.Controllers
             return Ok(new { message = "Logged out successfully" });
         }
 
-        [HttpPost("self")]
+        [HttpGet("self")]
         [Authorize]
         public async Task<ActionResult<UserResponseDTO>> WhoAmI()
         {

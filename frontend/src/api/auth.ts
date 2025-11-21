@@ -1,31 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import api from "./api";
 import type { AxiosError } from "axios";
-
-type UserResponseDTO = {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  avatar: string;
-  role: string;
-};
-
-type RegisterDTO = {
-  name: string;
-  phone: string;
-  email: string;
-  password: string;
-};
-
-type LoginDTO = {
-  email: string;
-  password: string;
-};
-
-type ErrorMessage = {
-  message: string;
-};
+import type { UserResponseDTO, RegisterDTO, LoginDTO } from "../types/user";
+import type { ErrorMessage } from "../types/common";
 
 export function useRegister() {
   return useMutation<UserResponseDTO, AxiosError<ErrorMessage>, RegisterDTO>({

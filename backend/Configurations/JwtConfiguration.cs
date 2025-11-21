@@ -50,9 +50,9 @@ namespace backend.Configurations
             // Cors configuration
             services.AddCors(options =>
             {
-                options.AddPolicy("CorsPolicy", builder =>
+                options.AddPolicy("CorsPolicy", policy =>
                 {
-                    builder
+                    policy
                         .WithOrigins("http://localhost:5173") // your frontend URL
                         .AllowAnyHeader()
                         .AllowAnyMethod()
