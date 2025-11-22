@@ -12,10 +12,10 @@ namespace backend.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly FileService _fileService;
-        private readonly UserService _userService;
+        private readonly IFileService _fileService;
+        private readonly IUserService _userService;
 
-        public UserController(FileService fileService, UserService userService)
+        public UserController(IFileService fileService, IUserService userService)
         {
             _fileService = fileService;
             _userService = userService;

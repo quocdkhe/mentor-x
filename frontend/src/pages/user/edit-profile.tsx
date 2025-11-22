@@ -16,9 +16,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Upload, User } from 'lucide-react';
 import { createLazyRoute } from '@tanstack/react-router';
-import { useAppSelector } from '@/store/hooks';
 import { useUpdateAvatar } from '@/api/user';
 import { toast } from 'sonner';
+import { useGetCurrentUser } from '@/api/auth';
+import DefaultSkeleton from '@/components/skeletons/default.skeleton';
 
 type UserUpdateProfile = {
   name: string;
@@ -48,39 +49,40 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export function ProfileEditPage() {
-  const { user } = useAppSelector((state) => state.auth);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar || null);
+  const { data, isLoading } = useGetCurrentUser();
+  const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
+  const avatarUrl = uploadedAvatar || data?.avatar; // derived state
   const updateAvatarMutation = useUpdateAvatar();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.name,
-      phone: user?.phone || '',
-      email: user?.email,
+      name: '',
+      phone: '',
+      email: '',
       newPassword: '',
       confirmPassword: '',
     },
+    // Auto-fill form when user data is loaded
+    values: {
+      name: data?.name || '',
+      phone: data?.phone || '',
+      email: data?.email || '',
+    }
   });
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     updateAvatarMutation.mutate(file, {
-      onSuccess: (url) => {
-        setAvatarUrl(url);
+      onSuccess: (data) => {
+        setUploadedAvatar(data.message); // assuming the API returns the new avatar URL in message
+        toast.success("Cập nhật ảnh đại diện thành công!");
       },
       onError: (err) => {
         toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
       }
     });
-    // console.log('Avatar file selected:', file);
-
-    // const reader = new FileReader();
-    // reader.onloadend = () => {
-    //   setAvatarUrl(reader.result as string);
-    // };
-    // reader.readAsDataURL(file);
   };
 
   const onSubmit = (data: ProfileFormValues) => {
@@ -104,6 +106,10 @@ export function ProfileEditPage() {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  if (isLoading) {
+    return <DefaultSkeleton />;
+  }
 
   return (
     <div className="container mx-auto pt-12">
