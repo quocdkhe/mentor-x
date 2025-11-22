@@ -12,6 +12,7 @@ namespace backend.Configurations
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<IFileService, FileService>();
             return services;
         }
     }

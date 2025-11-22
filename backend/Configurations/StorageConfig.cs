@@ -10,10 +10,10 @@ namespace backend.Configurations
             {
                 var config = new AmazonS3Config
                 {
-                    ServiceURL = "https://storage.quocdk.id.vn", // MinIO or R2 endpoint
+                    ServiceURL = configuration["S3Credential:ServiceURL"], // MinIO or R2 endpoint
                     ForcePathStyle = true
                 };
-                return new AmazonS3Client("ACCESS_KEY", "SECRET_KEY", config);
+                return new AmazonS3Client(configuration["S3Credential:ACCESS_KEY"], configuration["S3Credential:SECRET_KEY"], config);
             });
 
             return services;

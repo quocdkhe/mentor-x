@@ -13,6 +13,7 @@ builder.Services.AddDbContext<MentorXContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
 builder.Services.AddSwaggerGen(); // Swagger configuration
+builder.Services.AddStorageConfig(builder.Configuration); // Storage configuration
 
 // Add services to the container.
 builder.Services.AddProjectServices(); 
