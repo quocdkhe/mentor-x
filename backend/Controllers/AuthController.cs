@@ -33,7 +33,6 @@ namespace backend.Controllers
             Expires = DateTime.UtcNow.AddDays(7)
         };
 
-
         public AuthController(IAuthService authService, IUserService userService, ITokenService tokenService, IRefreshTokenService refreshTokenService)
         {
             _authService = authService;

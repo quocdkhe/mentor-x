@@ -39,7 +39,6 @@ export const fetchCurrentUser = createAsyncThunk<
     } else if (error.message) {
       errorMessage = `API Error: ${error.message}`;
     }
-
     return rejectWithValue(errorMessage);
   }
 });
