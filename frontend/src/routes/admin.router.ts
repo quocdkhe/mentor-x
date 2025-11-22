@@ -7,7 +7,7 @@ const adminLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/admin",
   component: AdminLayout,
-}).lazy(() => import("@/layouts/admin.layout").then((d) => d.Route));
+});
 
 const adminRouteTree = adminLayoutRoute.addChildren([
   // Add admin child routes here

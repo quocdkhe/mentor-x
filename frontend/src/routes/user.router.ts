@@ -29,11 +29,17 @@ const registerRoute = createRoute({
   path: "/register",
 }).lazy(() => import("@/pages/reigster").then((d) => d.Route));
 
+const profileRoute = createRoute({
+  getParentRoute: () => userLayoutRoute,
+  path: "/profile",
+}).lazy(() => import("@/pages/user/edit-profile").then((d) => d.Route));
+
 const userRouteTree = userLayoutRoute.addChildren([
   indexRoute,
   aboutRoute,
   loginRoute,
   registerRoute,
+  profileRoute,
 ]);
 
 export { userRouteTree };

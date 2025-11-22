@@ -189,7 +189,7 @@ export default function SimpleNavbar() {
                         <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
                     </div>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate({ to: '/profile' })}>
                       Tài khoản của tôi
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout}>

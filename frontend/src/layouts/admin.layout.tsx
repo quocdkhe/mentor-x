@@ -13,11 +13,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { createLazyRoute, Outlet } from "@tanstack/react-router"
+import { Outlet } from "@tanstack/react-router"
 
-export const Route = createLazyRoute('/admin')({
-  component: AdminLayout,
-})
+
 
 export default function AdminLayout() {
   return (

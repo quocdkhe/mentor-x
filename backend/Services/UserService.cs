@@ -1,6 +1,7 @@
 ﻿using backend.Models;
 using backend.Models.DTOs.User;
 using backend.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services
 {
@@ -29,6 +30,13 @@ namespace backend.Services
                 return null;
             }
             return entity;
+        }
+
+        public async Task UpdateUserAvatar(Guid userId, string avatarUrl)
+        {
+            await _context.Set<User>()
+                .Where(u => u.Id == userId)
+                .ExecuteUpdateAsync(s => s.SetProperty(u => u.Avatar, avatarUrl));
         }
     }
 }

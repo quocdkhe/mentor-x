@@ -159,8 +159,6 @@ namespace backend.Controllers
         [Authorize]
         public async Task<ActionResult<UserResponseDTO>> WhoAmI()
         {
-            var accessToken = Request.Cookies["access_token"];
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if(userId == null)
             {
