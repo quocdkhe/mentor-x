@@ -39,7 +39,13 @@ function LoginPage() {
       {
         onSuccess: (data) => {
           dispatch(setUser(data));
-          navigate({ to: '/' });
+          console.log("Logged in user data:", data);
+          // check for role
+          if (data.role === 'admin') {
+            navigate({ to: '/admin' });
+          } else {
+            navigate({ to: '/' });
+          }
           toast.success('Đăng nhập thành công');
         },
         onError: (err) => {

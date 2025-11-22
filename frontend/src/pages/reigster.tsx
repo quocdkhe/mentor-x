@@ -58,9 +58,8 @@ function Register() {
       password: data.password,
     },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           toast.success('Đăng ký thành công!');
-          console.log("Registered:", data);
         },
         onError: (err) => {
           const backendMessage =

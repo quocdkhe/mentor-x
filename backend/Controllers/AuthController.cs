@@ -91,7 +91,8 @@ namespace backend.Controllers
                 Name = currentUser.Name,
                 Phone = currentUser.Phone,
                 Email = currentUser.Email,
-                Avatar = currentUser.Avatar
+                Avatar = currentUser.Avatar,
+                Role = currentUser.Role
             });
         }
 
@@ -177,7 +178,8 @@ namespace backend.Controllers
                 Email = currentUser.Email,
                 Id = currentUser.Id,
                 Name = currentUser.Name,
-                Phone = currentUser.Phone
+                Phone = currentUser.Phone,
+                Role = currentUser.Role
             };
         }
     }
