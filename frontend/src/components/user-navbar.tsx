@@ -7,7 +7,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { ModeToggle } from './mode-toggle';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   DropdownMenu,
@@ -19,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLogout } from '@/api/auth';
 import { toast } from 'sonner';
 import { setUser } from '@/store/auth.slice';
+import { ModeToggle } from './mode-toggle';
 
 // Simple logo component
 const Logo = () => (

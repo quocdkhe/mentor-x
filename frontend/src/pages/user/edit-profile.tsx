@@ -13,13 +13,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Label } from '@/components/ui/label';
 import { Upload, User } from 'lucide-react';
 import { createLazyRoute } from '@tanstack/react-router';
 import { useUpdateAvatar } from '@/api/user';
 import { toast } from 'sonner';
 import { useGetCurrentUser } from '@/api/auth';
 import DefaultSkeleton from '@/components/skeletons/default.skeleton';
+import { fetchCurrentUser } from '@/store/auth.slice';
+import { useAppDispatch } from '@/store/hooks';
+import { Spinner } from '@/components/ui/spinner';
 
 type UserUpdateProfile = {
   name: string;
@@ -50,6 +52,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export function ProfileEditPage() {
   const { data, isLoading } = useGetCurrentUser();
+  const dispatch = useAppDispatch();
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const avatarUrl = uploadedAvatar || data?.avatar; // derived state
   const updateAvatarMutation = useUpdateAvatar();
@@ -76,8 +79,9 @@ export function ProfileEditPage() {
     if (!file) return;
     updateAvatarMutation.mutate(file, {
       onSuccess: (data) => {
-        setUploadedAvatar(data.message); // assuming the API returns the new avatar URL in message
+        setUploadedAvatar(data.message);
         toast.success("Cập nhật ảnh đại diện thành công!");
+        dispatch(fetchCurrentUser());
       },
       onError: (err) => {
         toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
@@ -122,12 +126,16 @@ export function ProfileEditPage() {
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center gap-3 w-full">
-            <Label htmlFor="avatar-upload" className="cursor-pointer w-full">
-              <div className="flex items-center justify-center gap-2 px-6 py-3 bg-card border-2 border-border rounded-lg hover:bg-accent transition-all shadow-sm w-full">
-                <Upload className="h-5 w-5" />
-                <span className="font-medium">Tải ảnh lên</span>
-              </div>
-            </Label>
+            <button
+              disabled={updateAvatarMutation.isPending}
+              type="button"
+              onClick={() => document.getElementById('avatar-upload')?.click()}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-card border-2 border-border rounded-lg hover:bg-accent transition-all shadow-sm w-full"
+            >
+              {updateAvatarMutation.isPending && <Spinner />}
+              <Upload className="h-5 w-5" />
+              <span className="font-medium">Tải ảnh lên</span>
+            </button>
             <input
               id="avatar-upload"
               type="file"

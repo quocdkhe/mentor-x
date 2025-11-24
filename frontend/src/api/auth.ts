@@ -38,6 +38,5 @@ export function useGetCurrentUser() {
       const res = await api.get<UserResponseDTO>("/auth/self");
       return res.data;
     },
-    staleTime: 1000 * 60 * 10, // optional: cache for 10 minutes
   });
 }

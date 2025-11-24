@@ -34,6 +34,7 @@ namespace backend.Services
                 Email = entity.Entity.Email,
                 Avatar = entity.Entity.Avatar
             };
-        }   
+        }
+
     }
 }

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppDispatch } from "@/store/hooks";
 import { setUser } from "@/store/auth.slice";
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
 
 const formSchema = z.object({
   email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
@@ -23,6 +24,10 @@ function LoginPage() {
   const loginMutation = useLogin();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const googleLogin = useGoogleLogin({
+    onSuccess: tokenResponse => console.log(tokenResponse),
+    onError: () => console.log('Login Failed'),
+  })
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,9 +59,7 @@ function LoginPage() {
       });
   };
 
-  const handleGoogleLogin = () => {
-    console.log('Login with Google clicked');
-  };
+
 
   return (
     <div className="min-h-screen flex">
@@ -126,8 +129,8 @@ function LoginPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full"
-                  onClick={handleGoogleLogin}
+                  className="w-full cursor-pointer"
+                  onClick={() => googleLogin()}
                 >
                   <svg
                     className="mr-2 h-4 w-4"

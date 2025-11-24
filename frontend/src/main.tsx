@@ -8,6 +8,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Provider } from 'react-redux'
 import { store } from './store/store'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 
 const queryClient = new QueryClient()
 
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <RouterProvider router={router} />
+        </GoogleOAuthProvider>
         <TanStackRouterDevtools router={router} />
         <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
       </QueryClientProvider>
