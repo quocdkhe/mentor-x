@@ -21,24 +21,24 @@ namespace backend.Controllers
             _userService = userService;
         }
 
-        [HttpPut("avatar")]
-        [Consumes("multipart/form-data")] 
-        [Authorize]
-        public async Task<ActionResult> UploadFile([FromForm] FileUploadRequest request)
-        {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Guid userId = Guid.TryParse(userIdString, out var parsedGuid) ? parsedGuid : Guid.Empty;
-            if (userId == Guid.Empty)
-            {
-                return Unauthorized(new Message("Không tìm thấy user id"));
-            }
-            var (success, urlOrError) = await _fileService.UploadFileAsync(request.File);
-            if (success)
-            {
-                await _userService.UpdateUserAvatar(userId, urlOrError);
-                return Ok(new Message(urlOrError));
-            }
-            return BadRequest(new Message(urlOrError));
-        }
+        // [HttpPut("avatar")]
+        // [Consumes("multipart/form-data")] 
+        // [Authorize]
+        // public async Task<ActionResult> UploadFile([FromForm] FileUploadRequest request)
+        // {
+        //     var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //     Guid userId = Guid.TryParse(userIdString, out var parsedGuid) ? parsedGuid : Guid.Empty;
+        //     if (userId == Guid.Empty)
+        //     {
+        //         return Unauthorized(new Message("Không tìm thấy user id"));
+        //     }
+        //     var (success, urlOrError) = await _fileService.UploadFileAsync(request.File);
+        //     if (success)
+        //     {
+        //         await _userService.UpdateUserAvatar(userId, urlOrError);
+        //         return Ok(new Message(urlOrError));
+        //     }
+        //     return BadRequest(new Message(urlOrError));
+        // }
     }
 }
