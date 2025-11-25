@@ -3,5 +3,6 @@
     public interface IFileService
     {
         Task<(bool Success, string? UrlOrError)> UploadFileAsync(IFormFile file);
+       
     }
 }

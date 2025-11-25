@@ -11,12 +11,13 @@ import { store } from './store/store'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
 const queryClient = new QueryClient()
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <GoogleOAuthProvider clientId={googleClientId}>
           <RouterProvider router={router} />
         </GoogleOAuthProvider>
         <TanStackRouterDevtools router={router} />
