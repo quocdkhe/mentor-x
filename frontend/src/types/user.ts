@@ -18,3 +18,10 @@ export interface LoginDTO {
   email: string;
   password: string;
 }
+
+export interface UpdateProfile {
+  name: string;
+  phone: string;
+  avatar: string;
+  password?: string;
+}

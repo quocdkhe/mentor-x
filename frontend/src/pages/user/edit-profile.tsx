@@ -20,11 +20,16 @@ import { useGetCurrentUser } from '@/api/auth';
 import DefaultSkeleton from '@/components/skeletons/default.skeleton';
 import { useUpdateFile, useUploadFile } from '@/api/file';
 import { Spinner } from '@/components/ui/spinner';
+import { useUpdateProfile } from '@/api/user';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAppDispatch } from '@/store/hooks';
+import { fetchCurrentUser } from '@/store/auth.slice';
 
 type UserUpdateProfile = {
   name: string;
   phone: string;
   password?: string;
+  avatar: string;
 };
 
 const profileSchema = z.object({
@@ -49,11 +54,14 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export function ProfileEditPage() {
+  const dispatch = useAppDispatch();
   const { data, isLoading } = useGetCurrentUser(); // run on initial load
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const avatarUrl = uploadedAvatar || data?.avatar; // derived state
   const uploadFileMutation = useUploadFile();
   const updateFileMutation = useUpdateFile();
+  const updateProfileMutation = useUpdateProfile();
+  const queryClient = useQueryClient();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -69,6 +77,8 @@ export function ProfileEditPage() {
       name: data?.name || '',
       phone: data?.phone || '',
       email: data?.email || '',
+      newPassword: '',
+      confirmPassword: '',
     }
   });
 
@@ -98,18 +108,25 @@ export function ProfileEditPage() {
     }
   };
 
-  const onSubmit = (data: ProfileFormValues) => {
-    const updateData: UserUpdateProfile = {
-      name: data.name,
-      phone: data.phone,
+  const onSubmit = (form: ProfileFormValues) => {
+    const payload: UserUpdateProfile = {
+      name: form.name,
+      phone: form.phone,
+      avatar: avatarUrl || '',
+      password: form.newPassword ? form.newPassword : undefined,
     };
+    updateProfileMutation.mutate(payload, {
+      onSuccess: (data) => {
+        toast.success(data.message);
+        queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        dispatch(fetchCurrentUser());
+      },
+      onError: (err) => {
+        toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
+      }
+    });
+  }
 
-    if (data.newPassword) {
-      updateData.password = data.newPassword;
-    }
-
-    console.log('Form submitted:', updateData);
-  };
 
   if (isLoading) {
     return <DefaultSkeleton />;
@@ -237,7 +254,8 @@ export function ProfileEditPage() {
               </div>
 
               <div className="pt-6">
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={updateProfileMutation.isPending}>
+                  {updateProfileMutation.isPending && <Spinner />}
                   Lưu thay đổi
                 </Button>
               </div>
