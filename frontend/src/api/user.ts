@@ -1,18 +1,13 @@
 import type { Message } from "@/types/common";
+import type { UpdateProfile } from "@/types/user";
 import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "./api";
 
-export function useUpdateAvatar() {
-  return useMutation<Message, AxiosError<Message>, File>({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("File", file);
-      const res = await api.put<Message>("/user/avatar", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+export function useUpdateProfile() {
+  return useMutation<Message, AxiosError<Message>, UpdateProfile>({
+    mutationFn: async (payload: UpdateProfile): Promise<Message> => {
+      const res = await api.put<Message>("/user/profile", payload);
       return res.data;
     },
   });

@@ -15,18 +15,21 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, User } from 'lucide-react';
 import { createLazyRoute } from '@tanstack/react-router';
-import { useUpdateAvatar } from '@/api/user';
 import { toast } from 'sonner';
 import { useGetCurrentUser } from '@/api/auth';
 import DefaultSkeleton from '@/components/skeletons/default.skeleton';
-import { fetchCurrentUser } from '@/store/auth.slice';
-import { useAppDispatch } from '@/store/hooks';
+import { useUpdateFile, useUploadFile } from '@/api/file';
 import { Spinner } from '@/components/ui/spinner';
+import { useUpdateProfile } from '@/api/user';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAppDispatch } from '@/store/hooks';
+import { fetchCurrentUser } from '@/store/auth.slice';
 
 type UserUpdateProfile = {
   name: string;
   phone: string;
   password?: string;
+  avatar: string;
 };
 
 const profileSchema = z.object({
@@ -51,11 +54,14 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export function ProfileEditPage() {
-  const { data, isLoading } = useGetCurrentUser();
   const dispatch = useAppDispatch();
+  const { data, isLoading } = useGetCurrentUser(); // run on initial load
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const avatarUrl = uploadedAvatar || data?.avatar; // derived state
-  const updateAvatarMutation = useUpdateAvatar();
+  const uploadFileMutation = useUploadFile();
+  const updateFileMutation = useUpdateFile();
+  const updateProfileMutation = useUpdateProfile();
+  const queryClient = useQueryClient();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -71,45 +77,56 @@ export function ProfileEditPage() {
       name: data?.name || '',
       phone: data?.phone || '',
       email: data?.email || '',
+      newPassword: '',
+      confirmPassword: '',
     }
   });
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    updateAvatarMutation.mutate(file, {
+    if (avatarUrl == null) {
+      uploadFileMutation.mutate(file, {
+        onSuccess: (data) => {
+          toast.success("Tải lên thành công!");
+          setUploadedAvatar(data.message);
+        },
+        onError: (err) => {
+          toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
+        }
+      });
+    } else {
+      updateFileMutation.mutate({ fileUrl: avatarUrl, file }, {
+        onSuccess: (data) => {
+          toast.success("Tải lên thành công!");
+          setUploadedAvatar(data.message);
+        },
+        onError: (err) => {
+          toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
+        }
+      });
+    }
+  };
+
+  const onSubmit = (form: ProfileFormValues) => {
+    const payload: UserUpdateProfile = {
+      name: form.name,
+      phone: form.phone,
+      avatar: avatarUrl || '',
+      password: form.newPassword ? form.newPassword : undefined,
+    };
+    updateProfileMutation.mutate(payload, {
       onSuccess: (data) => {
-        setUploadedAvatar(data.message);
-        toast.success("Cập nhật ảnh đại diện thành công!");
+        toast.success(data.message);
+        queryClient.invalidateQueries({ queryKey: ["current-user"] });
         dispatch(fetchCurrentUser());
       },
       onError: (err) => {
         toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
       }
     });
-  };
+  }
 
-  const onSubmit = (data: ProfileFormValues) => {
-    const updateData: UserUpdateProfile = {
-      name: data.name,
-      phone: data.phone,
-    };
-
-    if (data.newPassword) {
-      updateData.password = data.newPassword;
-    }
-
-    console.log('Form submitted:', updateData);
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   if (isLoading) {
     return <DefaultSkeleton />;
@@ -122,20 +139,21 @@ export function ProfileEditPage() {
           <Avatar className="h-40 w-40 border-4 border-border shadow-xl">
             <AvatarImage src={avatarUrl || undefined} />
             <AvatarFallback className="text-4xl bg-muted">
-              {form.getValues('name') ? getInitials(form.getValues('name')) : <User className="h-20 w-20" />}
+              <User className="h-20 w-20" />
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center gap-3 w-full">
             <button
-              disabled={updateAvatarMutation.isPending}
+              disabled={updateFileMutation.isPending || uploadFileMutation.isPending}
               type="button"
               onClick={() => document.getElementById('avatar-upload')?.click()}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-card border-2 border-border rounded-lg hover:bg-accent transition-all shadow-sm w-full"
             >
-              {updateAvatarMutation.isPending && <Spinner />}
-              <Upload className="h-5 w-5" />
+              {updateFileMutation.isPending || uploadFileMutation.isPending ? (
+                <Spinner className="h-5 w-5" />
+              ) : <Upload className="h-5 w-5" />}
               <span className="font-medium">Tải ảnh lên</span>
-            </button>
+            </button >
             <input
               id="avatar-upload"
               type="file"
@@ -146,8 +164,8 @@ export function ProfileEditPage() {
             <p className="text-sm text-muted-foreground text-center">
               JPG, PNG hoặc GIF<br />Kích thước tối đa: 2MB
             </p>
-          </div>
-        </div>
+          </div >
+        </div >
 
         <div className="bg-card rounded-2xl shadow-lg p-8 border border-border">
           <Form {...form}>
@@ -236,15 +254,16 @@ export function ProfileEditPage() {
               </div>
 
               <div className="pt-6">
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={updateProfileMutation.isPending}>
+                  {updateProfileMutation.isPending && <Spinner />}
                   Lưu thay đổi
                 </Button>
               </div>
             </form>
           </Form>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
 

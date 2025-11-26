@@ -1,5 +1,6 @@
 ﻿using backend.Models.DTOs;
 using backend.Models.DTOs.File;
+using backend.Models.DTOs.User;
 using backend.Services;
 using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,24 +22,18 @@ namespace backend.Controllers
             _userService = userService;
         }
 
-        [HttpPut("avatar")]
-        [Consumes("multipart/form-data")] 
         [Authorize]
-        public async Task<ActionResult> UploadFile([FromForm] FileUploadRequest request)
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateProfileDTO dto)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Guid userId = Guid.TryParse(userIdString, out var parsedGuid) ? parsedGuid : Guid.Empty;
-            if (userId == Guid.Empty)
+            if (!Guid.TryParse(userIdString, out var userId))
             {
-                return Unauthorized(new Message("Không tìm thấy user id"));
+                return Unauthorized();
             }
-            var (success, urlOrError) = await _fileService.UploadFileAsync(request.File);
-            if (success)
-            {
-                await _userService.UpdateUserAvatar(userId, urlOrError);
-                return Ok(new Message(urlOrError));
-            }
-            return BadRequest(new Message(urlOrError));
+
+            bool updated = await _userService.UpdateUserProfile(userId, dto);
+            return updated ? Ok(new Message("Cập nhật thông tin thành công")) : BadRequest(new Message("Cập nhật thông tin thất bại"));
         }
     }
 }

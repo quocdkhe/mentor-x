@@ -1,5 +1,6 @@
 ﻿using backend.Models;
 using backend.Services.Interfaces;
+using backend.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services
@@ -31,11 +32,22 @@ namespace backend.Services
             return entity;
         }
 
-        public async Task UpdateUserAvatar(Guid userId, string avatarUrl)
+        public async Task<bool> UpdateUserProfile(Guid userId, UserUpdateProfileDTO dto)
         {
-            await _context.Set<User>()
-                .Where(u => u.Id == userId)
-                .ExecuteUpdateAsync(s => s.SetProperty(u => u.Avatar, avatarUrl));
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (currentUser == null)
+            {
+                return false;
+            }
+            currentUser.Name = dto.Name;
+            currentUser.Avatar = dto.Avatar;
+            currentUser.Phone = dto.Phone;
+            if (dto.Password != null)
+            {
+                currentUser.Password = PasswordHashing.HashPassword(dto.Password);
+            }
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
