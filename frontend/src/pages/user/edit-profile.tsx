@@ -85,7 +85,7 @@ export function ProfileEditPage() {
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (uploadedAvatar == null) {
+    if (avatarUrl == null) {
       uploadFileMutation.mutate(file, {
         onSuccess: (data) => {
           toast.success("Tải lên thành công!");
@@ -96,7 +96,7 @@ export function ProfileEditPage() {
         }
       });
     } else {
-      updateFileMutation.mutate({ fileUrl: avatarUrl!, file }, {
+      updateFileMutation.mutate({ fileUrl: avatarUrl, file }, {
         onSuccess: (data) => {
           toast.success("Tải lên thành công!");
           setUploadedAvatar(data.message);
