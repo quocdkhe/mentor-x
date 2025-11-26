@@ -153,7 +153,7 @@ export function ProfileEditPage() {
                 <Spinner className="h-5 w-5" />
               ) : <Upload className="h-5 w-5" />}
               <span className="font-medium">Tải ảnh lên</span>
-            </button >
+            </button>
             <input
               id="avatar-upload"
               type="file"
@@ -164,8 +164,8 @@ export function ProfileEditPage() {
             <p className="text-sm text-muted-foreground text-center">
               JPG, PNG hoặc GIF<br />Kích thước tối đa: 2MB
             </p>
-          </div >
-        </div >
+          </div>
+        </div>
 
         <div className="bg-card rounded-2xl shadow-lg p-8 border border-border">
           <Form {...form}>
@@ -262,8 +262,8 @@ export function ProfileEditPage() {
             </form>
           </Form>
         </div>
-      </div >
-    </div >
+      </div>
+    </div>
   );
 }
 
