@@ -12,10 +12,10 @@ namespace backend.Services
             this.mentorXContext = mentorXContext;
         }
 
-        public async Task<UserResponseDTO> Register(RegisterDTO registerDto)
+        public async Task<User> Register(RegisterDTO registerDto)
         {
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
-            var entity = await mentorXContext.Users.AddAsync(new User
+            var userEntity = await mentorXContext.Users.AddAsync(new User
             {
                 Name = registerDto.Name,
                 Phone = registerDto.Phone,
@@ -23,16 +23,8 @@ namespace backend.Services
                 Password = hashedPassword,
                 Avatar = registerDto.Avatar
             });
-
             mentorXContext.SaveChanges();
-            return new UserResponseDTO
-            {
-                Id = entity.Entity.Id,
-                Name = entity.Entity.Name,
-                Phone = entity.Entity.Phone,
-                Email = entity.Entity.Email,
-                Avatar = entity.Entity.Avatar
-            };
+            return userEntity.Entity;
         }
 
     }

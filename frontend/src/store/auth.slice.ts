@@ -26,7 +26,7 @@ export const fetchCurrentUser = createAsyncThunk<
 >("auth/fetchUser", async (_, { rejectWithValue }) => {
   try {
     // Use the imported 'api' instance instead of browser fetch
-    const response = await api.get<UserResponseDTO>("/auth/self");
+    const response = await api.get<UserResponseDTO>("/user/self");
 
     // Axios automatically handles response.ok and throws an error on 4xx/5xx
     return response.data; // Axios response places the data in the 'data' property

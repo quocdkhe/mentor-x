@@ -1,4 +1,5 @@
 ﻿using backend.Models;
+using backend.Models.DTOs.User;
 using backend.Services.Interfaces;
 using backend.Utils;
 using Microsoft.EntityFrameworkCore;

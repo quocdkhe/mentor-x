@@ -1,7 +1,5 @@
 ﻿using backend.Models.DTOs;
-using backend.Models.DTOs.File;
 using backend.Models.DTOs.User;
-using backend.Services;
 using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +18,31 @@ namespace backend.Controllers
         {
             _fileService = fileService;
             _userService = userService;
+        }
+
+        [HttpGet("self")]
+        [Authorize]
+        public async Task<ActionResult<UserResponseDTO>> WhoAmI()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized(new Message("Không tìm thấy user id"));
+            }
+            var currentUser = await _userService.GetUserById(Guid.Parse(userId));
+            if (currentUser == null)
+            {
+                return Unauthorized(new Message("Không tìm thấy người dùng"));
+            }
+            return new UserResponseDTO
+            {
+                Avatar = currentUser.Avatar,
+                Email = currentUser.Email,
+                Id = currentUser.Id,
+                Name = currentUser.Name,
+                Phone = currentUser.Phone,
+                Role = currentUser.Role
+            };
         }
 
         [Authorize]

@@ -1,9 +1,10 @@
-﻿using backend.Models.DTOs.User;
+﻿using backend.Models;
+using backend.Models.DTOs.User;
 
 namespace backend.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<UserResponseDTO> Register(RegisterDTO userDto);
+        Task<User> Register(RegisterDTO userDto);
     }
 }

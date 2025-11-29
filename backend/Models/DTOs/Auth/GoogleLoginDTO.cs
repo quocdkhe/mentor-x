@@ -1,6 +1,6 @@
 ﻿namespace backend.Models.DTOs.Auth
 {
-    public class GoogleLoginRequest
+    public class GoogleLoginDTO
     {
         public string? Token { get; set; }
     }
