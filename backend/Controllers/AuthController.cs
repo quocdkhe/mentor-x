@@ -1,10 +1,8 @@
-﻿using backend.Models;
-using backend.Models.DTOs;
+﻿using backend.Models.DTOs;
+using backend.Models.DTOs.Auth;
 using backend.Models.DTOs.User;
 using backend.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace backend.Controllers
 {
@@ -16,6 +14,7 @@ namespace backend.Controllers
         private readonly IUserService _userService;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IGoogleOAuthService _googleOAuthService;
 
         private readonly CookieOptions ACCESS_TOKEN_OPTION = new CookieOptions
         {
@@ -33,12 +32,16 @@ namespace backend.Controllers
             Expires = DateTime.UtcNow.AddDays(7)
         };
 
-        public AuthController(IAuthService authService, IUserService userService, ITokenService tokenService, IRefreshTokenService refreshTokenService)
+        public AuthController(IAuthService authService, IUserService userService, 
+            ITokenService tokenService, IRefreshTokenService refreshTokenService,
+            IGoogleOAuthService googleOAuthService
+            )
         {
             _authService = authService;
             _userService = userService;
             _tokenService = tokenService;
             _refreshTokenService = refreshTokenService;
+            _googleOAuthService = googleOAuthService;
         }
 
         private void SetTokenCookies(string accessToken, string refreshToken)
@@ -59,8 +62,15 @@ namespace backend.Controllers
 
             if (result == null)
                 return BadRequest(new Message("Đăng kí thất bại, có lỗi xảy ra"));
-
-            return Ok(result);
+            return Ok(new UserResponseDTO
+            {
+                Id = result.Id,
+                Name = result.Name,
+                Phone = result.Phone,
+                Email = result.Email,
+                Avatar = result.Avatar,
+                Role = result.Role
+            });
         }
 
         [HttpPost("login")]
@@ -155,29 +165,47 @@ namespace backend.Controllers
             return Ok(new Message("Đăng xuất thành công"));
         }
 
-        [HttpGet("self")]
-        [Authorize]
-        public async Task<ActionResult<UserResponseDTO>> WhoAmI()
+        [HttpPost("google")]
+        public async Task<ActionResult<UserResponseDTO>> GoogleLogin([FromBody] GoogleLoginDTO googleLoginDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if(userId == null)
-            {
-                return Unauthorized(new Message("Không tìm thấy user id"));
-            }
-            var currentUser = await _userService.GetUserById(Guid.Parse(userId));
+            var googleUser = await _googleOAuthService.GetUserInfo(googleLoginDto.Token);
+            if (googleUser == null)
+                return BadRequest(new Message("Đăng nhập bằng Google thất bại, có lỗi xảy ra"));
+            // Check if user exists
+            var currentUser = await _userService.GetUserByEmail(googleUser.Email);
             if(currentUser == null)
             {
-                return Unauthorized(new Message("Không tìm thấy người dùng"));
+                // Register new user
+                var registerDto = new RegisterDTO
+                {
+                    Name = googleUser.Name,
+                    Email = googleUser.Email,
+                    Password = Guid.NewGuid().ToString(), // Random password
+                    Avatar = googleUser.Picture
+                };
+                currentUser = await _authService.Register(registerDto);
             }
-            return new UserResponseDTO
+
+            // Generate tokens
+            var accessToken = _tokenService.GenerateAccessToken(currentUser);
+            var refreshToken = _tokenService.GenerateRefreshToken();
+            // Save refresh token to database
+            await _refreshTokenService.SaveRefreshToken(currentUser.Id, refreshToken);
+            // Set HTTP-only cookies
+            SetTokenCookies(accessToken, refreshToken);
+
+            return Ok(new UserResponseDTO
             {
-                Avatar = currentUser.Avatar,
-                Email = currentUser.Email,
                 Id = currentUser.Id,
                 Name = currentUser.Name,
                 Phone = currentUser.Phone,
+                Email = currentUser.Email,
+                Avatar = currentUser.Avatar,
                 Role = currentUser.Role
-            };
+            });
         }
+
+
+
     }
 }

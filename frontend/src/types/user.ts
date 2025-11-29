@@ -25,3 +25,7 @@ export interface UpdateProfile {
   avatar: string;
   password?: string;
 }
+
+export interface GoogleLoginRequest {
+  token: string | undefined;
+}

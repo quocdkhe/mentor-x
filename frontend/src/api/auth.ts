@@ -1,7 +1,12 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import api from "./api";
-import type { AxiosError } from "axios";
-import type { UserResponseDTO, RegisterDTO, LoginDTO } from "../types/user";
+import { AxiosError } from "axios";
+import type {
+  UserResponseDTO,
+  RegisterDTO,
+  LoginDTO,
+  GoogleLoginRequest,
+} from "../types/user";
 import type { Message } from "../types/common";
 
 export function useRegister() {
@@ -31,13 +36,13 @@ export function useLogout() {
   });
 }
 
-export function useGetCurrentUser() {
-  return useQuery<UserResponseDTO, AxiosError<Message>>({
-    queryKey: ["current-user"],
-    queryFn: async (): Promise<UserResponseDTO> => {
-      const res = await api.get<UserResponseDTO>("/auth/self");
+export function useLoginWithGoogle() {
+  return useMutation<UserResponseDTO, AxiosError<Message>, GoogleLoginRequest>({
+    mutationFn: async (
+      payload: GoogleLoginRequest
+    ): Promise<UserResponseDTO> => {
+      const res = await api.post<UserResponseDTO>("/auth/google", payload);
       return res.data;
     },
-    staleTime: 1000 * 60 * 10, // optional: cache for 10 minutes
   });
 }
