@@ -13,6 +13,7 @@ namespace backend.Configurations
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
             return services;
         }
     }

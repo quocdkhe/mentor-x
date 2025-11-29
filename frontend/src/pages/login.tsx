@@ -6,12 +6,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLogin } from "@/api/auth";
+import { useLogin, useLoginWithGoogle } from "@/api/auth";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppDispatch } from "@/store/hooks";
 import { setUser } from "@/store/auth.slice";
-import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
 
 const formSchema = z.object({
   email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
@@ -22,12 +22,9 @@ type FormValues = z.infer<typeof formSchema>;
 
 function LoginPage() {
   const loginMutation = useLogin();
+  const googleLoginMutation = useLoginWithGoogle();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const googleLogin = useGoogleLogin({
-    onSuccess: tokenResponse => console.log(tokenResponse),
-    onError: () => console.log('Login Failed'),
-  })
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,6 +33,57 @@ function LoginPage() {
     },
   });
 
+  // const googleLogin = useGoogleLogin({
+  //   onSuccess: async (credentialResponse) => {
+  //     console.log(credentialResponse)
+  //     googleLoginMutation.mutate({
+  //       token: credentialResponse.access_token
+  //     }, {
+  //       onSuccess: (data) => {
+  //         // Refetch redux
+  //         dispatch(setUser(data));
+  //         console.log("Logged in user data:", data);
+  //         // check for role
+  //         if (data.role === 'admin') {
+  //           navigate({ to: '/admin' });
+  //         } else {
+  //           navigate({ to: '/' });
+  //         }
+  //         toast.success('Đăng nhập thành công');
+  //       },
+  //       onError: (err) => {
+  //         toast.error(`Đăng nhập thất bại: ${err.response?.data.message || err.message}`);
+  //       }
+  //     })
+  //   },
+  //   onError: (err) => {
+  //     toast.error(`${err.error_description}: ${err.error}`);
+  //   },
+  // })
+
+  const handleGoogleLogin = (credentialResponse: GoogleCredentialResponse) => {
+    googleLoginMutation.mutate({
+      token: credentialResponse.credential
+    }, {
+      onSuccess: (data) => {
+        // Refetch redux
+        dispatch(setUser(data));
+        console.log("Logged in user data:", data);
+        // check for role
+        if (data.role === 'admin') {
+          navigate({ to: '/admin' });
+        } else {
+          navigate({ to: '/' });
+        }
+        toast.success('Đăng nhập thành công');
+      },
+      onError: (err) => {
+        toast.error(`Đăng nhập thất bại: ${err.response?.data.message || err.message}`);
+      }
+    });
+  }
+
+
   const onSubmit = async (data: FormValues) => {
     loginMutation.mutate({
       email: data.email,
@@ -43,6 +91,7 @@ function LoginPage() {
     },
       {
         onSuccess: (data) => {
+          // Refetch redux
           dispatch(setUser(data));
           console.log("Logged in user data:", data);
           // check for role
@@ -58,9 +107,6 @@ function LoginPage() {
         }
       });
   };
-
-
-
   return (
     <div className="min-h-screen flex">
       <div className="w-1/2 flex items-center justify-center p-16">
@@ -126,12 +172,14 @@ function LoginPage() {
                   </div>
                 </div>
 
-                <Button
+                {/* <Button
                   type="button"
                   variant="outline"
                   className="w-full cursor-pointer"
                   onClick={() => googleLogin()}
+                  disabled={googleLoginMutation.isPending}
                 >
+                  {googleLoginMutation.isPending && <Spinner />}
                   <svg
                     className="mr-2 h-4 w-4"
                     aria-hidden="true"
@@ -148,7 +196,15 @@ function LoginPage() {
                     ></path>
                   </svg>
                   Đăng nhập với Google
-                </Button>
+                </Button> */}
+                <GoogleLogin
+                  ux_mode="popup"
+                  theme="filled_blue"
+                  onSuccess={(credentialResponse) => {
+                    handleGoogleLogin(credentialResponse)
+                  }}
+                  onError={() => console.log('Login Failed')}
+                />
               </form>
             </Form>
           </CardContent>

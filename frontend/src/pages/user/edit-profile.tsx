@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, User } from 'lucide-react';
 import { createLazyRoute } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { useGetCurrentUser } from '@/api/auth';
+import { useGetCurrentUser } from '@/api/user';
 import DefaultSkeleton from '@/components/skeletons/default.skeleton';
 import { useUpdateFile, useUploadFile } from '@/api/file';
 import { Spinner } from '@/components/ui/spinner';
