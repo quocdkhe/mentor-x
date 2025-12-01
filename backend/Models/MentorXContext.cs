@@ -37,9 +37,6 @@ public partial class MentorXContext : DbContext
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
             entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
-            entity.Property(e => e.IsRevoked)
-                .HasDefaultValue(false)
-                .HasColumnName("is_revoked");
             entity.Property(e => e.Token).HasColumnName("token");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
