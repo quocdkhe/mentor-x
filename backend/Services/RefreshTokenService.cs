@@ -1,5 +1,6 @@
 ﻿using backend.Models;
 using backend.Services.Interfaces;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services
@@ -17,7 +18,7 @@ namespace backend.Services
         public async Task<RefreshToken?> GetValidRefreshToken(string refreshToken)
         {
             return await _context.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.Token == refreshToken && !rt.IsRevoked && rt.ExpiresAt >= DateTime.UtcNow);
+                .FirstOrDefaultAsync(rt => rt.Token == refreshToken && rt.ExpiresAt >= DateTime.UtcNow);
         }
 
         public async Task SaveRefreshToken(Guid userId, string refreshToken)
@@ -28,7 +29,6 @@ namespace backend.Services
                 UserId = userId,
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
                 CreatedAt = DateTime.UtcNow,
-                IsRevoked = false
             };
             await _context.RefreshTokens.AddAsync(refreshTokenEntity);
             await _context.SaveChangesAsync();
@@ -36,11 +36,12 @@ namespace backend.Services
 
         public async Task RevokeToken(int tokenId)
         {
-            await _context.Set<RefreshToken>()
-                .Where (rt => rt.Id == tokenId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(rt => rt.IsRevoked, true)
-                );
+            var token = await _context.RefreshTokens.FindAsync(tokenId);
+            if (token != null)
+            {
+                _context.RefreshTokens.Remove(token);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
