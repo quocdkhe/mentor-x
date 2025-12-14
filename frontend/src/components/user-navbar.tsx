@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLogout } from '@/api/auth';
 import { toast } from 'sonner';
 import { setUser } from '@/store/auth.slice';
+import {useQueryClient} from "@tanstack/react-query";
 
 // Simple logo component
 const Logo = () => (
@@ -65,6 +66,7 @@ export default function SimpleNavbar() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined,
@@ -73,6 +75,7 @@ export default function SimpleNavbar() {
           navigate({ to: '/login' });
           toast.success(data.message);
           dispatch(setUser(null));
+          queryClient.removeQueries({queryKey : ["current-user"]})
         },
         onError: (err) => {
           toast.error(`Đăng xuất thất bại: ${err.response?.data.message || err.message}`);

@@ -16,5 +16,6 @@ namespace backend.Configurations
             services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
             return services;
         }
+        
     }
 }
