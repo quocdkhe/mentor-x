@@ -15,7 +15,7 @@ const App = () => {
 
   return (
     <>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ThemeProvider storageKey="vite-ui-theme">
         <Outlet />
         <Toaster position="top-center" richColors />
       </ThemeProvider>
