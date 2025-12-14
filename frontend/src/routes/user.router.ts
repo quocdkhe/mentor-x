@@ -18,15 +18,15 @@ const aboutRoute = createRoute({
   path: "/about",
 }).lazy(() => import("@/pages/about").then((d) => d.Route));
 
-const loginRoute = createRoute({
-  getParentRoute: () => userLayoutRoute,
-  path: "/login",
-}).lazy(() => import("@/pages/login").then((d) => d.Route));
+// const loginRoute = createRoute({
+//   getParentRoute: () => userLayoutRoute,
+//   path: "/login",
+// }).lazy(() => import("@/pages/login").then((d) => d.Route));
 
-const registerRoute = createRoute({
-  getParentRoute: () => userLayoutRoute,
-  path: "/register",
-}).lazy(() => import("@/pages/reigster").then((d) => d.Route));
+// const registerRoute = createRoute({
+//   getParentRoute: () => userLayoutRoute,
+//   path: "/register",
+// }).lazy(() => import("@/pages/reigster").then((d) => d.Route));
 
 const profileRoute = createRoute({
   getParentRoute: () => userLayoutRoute,
@@ -36,8 +36,8 @@ const profileRoute = createRoute({
 const userRouteTree = userLayoutRoute.addChildren([
   indexRoute,
   aboutRoute,
-  loginRoute,
-  registerRoute,
+  // loginRoute,
+  // registerRoute,
   profileRoute,
 ]);
 

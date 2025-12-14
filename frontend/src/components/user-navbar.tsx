@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { ModeToggle } from './mode-toggle';
+import { ThemeToggle } from './theme-toggle';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   DropdownMenu,
@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLogout } from '@/api/auth';
 import { toast } from 'sonner';
 import { setUser } from '@/store/auth.slice';
-import {useQueryClient} from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Simple logo component
 const Logo = () => (
@@ -75,7 +75,7 @@ export default function SimpleNavbar() {
           navigate({ to: '/login' });
           toast.success(data.message);
           dispatch(setUser(null));
-          queryClient.removeQueries({queryKey : ["current-user"]})
+          queryClient.removeQueries({ queryKey: ["current-user"] })
         },
         onError: (err) => {
           toast.error(`Đăng xuất thất bại: ${err.response?.data.message || err.message}`);
@@ -145,7 +145,7 @@ export default function SimpleNavbar() {
 
         {/* Right: Action Buttons */}
         <div className="flex items-center gap-3">
-          <ModeToggle />
+          <ThemeToggle />
           {isLoading ?
             <div className="flex items-center gap-3">
               <Skeleton className="h-10 w-10 rounded-full" />

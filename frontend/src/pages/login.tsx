@@ -206,6 +206,6 @@ function LoginPage() {
 }
 
 export default LoginPage;
-export const Route = createLazyRoute('/user/login')({
+export const Route = createLazyRoute('/login')({
   component: LoginPage,
 })
