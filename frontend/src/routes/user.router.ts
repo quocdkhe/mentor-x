@@ -2,10 +2,9 @@ import UserLayout from "@/layouts/user.layout";
 import { createRoute } from "@tanstack/react-router";
 import { rootRoute } from "./router";
 
-// Pathless routes, used for layouts or grouping, in Route, use /user/*
 const userLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: "user",
+  path: "user",
   component: UserLayout,
 });
 
