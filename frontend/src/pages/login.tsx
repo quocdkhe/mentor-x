@@ -45,7 +45,7 @@ function LoginPage() {
         if (data.role === 'admin') {
           navigate({ to: '/admin' });
         } else {
-          navigate({ to: '/' });
+          navigate({ to: '/user' });
         }
         toast.success('Đăng nhập thành công');
       },
@@ -70,7 +70,7 @@ function LoginPage() {
           if (data.role === 'admin') {
             navigate({ to: '/admin' });
           } else {
-            navigate({ to: '/' });
+            navigate({ to: '/user' });
           }
           toast.success('Đăng nhập thành công');
         },

@@ -80,7 +80,8 @@ export default function SimpleNavbar() {
         onError: (err) => {
           toast.error(`Đăng xuất thất bại: ${err.response?.data.message || err.message}`);
         }
-      });
+      }
+    );
   }
 
   return (
@@ -99,14 +100,14 @@ export default function SimpleNavbar() {
               <PopoverContent align="start" className="w-48 p-2">
                 <div className="flex flex-col gap-1">
                   <Link
-                    to="/"
+                    to="/user"
                     className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Home
                   </Link>
                   <Link
-                    to="/about"
+                    to="/user/about"
                     className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -129,13 +130,14 @@ export default function SimpleNavbar() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             <Link
-              to="/"
+              activeOptions={{ exact: true }}
+              to="/user"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
               Trang chủ
             </Link>
             <Link
-              to="/about"
+              to="/user/about"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
               Đội ngũ
@@ -192,7 +194,7 @@ export default function SimpleNavbar() {
                         <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
                     </div>
-                    <DropdownMenuItem onClick={() => navigate({ to: '/profile' })}>
+                    <DropdownMenuItem onClick={() => navigate({ to: '/user/profile' })}>
                       Tài khoản của tôi
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout}>

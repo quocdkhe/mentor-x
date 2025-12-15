@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Menu, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
   SheetClose,
+  SheetTitle,
 } from "@/components/ui/sheet";
+import { Link } from "@tanstack/react-router";
 
 const navLinks = [
   { label: "Tính năng", href: "#features" },
@@ -40,8 +42,12 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle />
-          <Button variant="ghost">Đăng nhập</Button>
-          <Button>Bắt đầu</Button>
+          <Button variant="ghost">
+            <Link to="/login">Đăng nhập</Link>
+          </Button>
+          <Button>
+            <Link to="/register">Bắt đấu</Link>
+          </Button>
         </div>
 
         <div className="flex md:hidden items-center gap-2">
@@ -53,8 +59,9 @@ export function Navbar() {
                 <span className="sr-only">Mở menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px]">
-              <div className="flex flex-col gap-6 mt-6">
+            <SheetContent side="right" className="w-[300px] p-6">
+              <SheetTitle className="sr-only">Menu điều hướng</SheetTitle>
+              <div className="flex flex-col gap-6">
                 {navLinks.map((link) => (
                   <SheetClose asChild key={link.href}>
                     <a
