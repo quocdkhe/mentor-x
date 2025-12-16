@@ -6,6 +6,7 @@ import {
 import { userRouteTree } from "./user.router";
 import App from "@/App";
 import { adminRouteTree } from "./admin.router";
+import { publicRouteTree } from "./public.router";
 
 export const rootRoute = createRootRoute({
   component: App,
@@ -15,24 +16,19 @@ export const rootRoute = createRootRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "login",
-}).lazy(() => import("@/pages/login").then((d) => d.Route));
+}).lazy(() => import("@/pages/public/login").then((d) => d.Route));
 
 const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "register",
-}).lazy(() => import("@/pages/reigster").then((d) => d.Route));
-
-const landingRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-}).lazy(() => import("@/pages/landing").then((d) => d.Route));
+}).lazy(() => import("@/pages/public/reigster").then((d) => d.Route));
 
 const routeTree = rootRoute.addChildren([
   userRouteTree,
   adminRouteTree,
+  publicRouteTree,
   loginRoute,
   registerRoute,
-  landingRoute,
 ]);
 
 export const router = createRouter({

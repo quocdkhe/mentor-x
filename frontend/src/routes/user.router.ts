@@ -26,8 +26,6 @@ const profileRoute = createRoute({
 const userRouteTree = userLayoutRoute.addChildren([
   indexRoute,
   aboutRoute,
-  // loginRoute,
-  // registerRoute,
   profileRoute,
 ]);
 
