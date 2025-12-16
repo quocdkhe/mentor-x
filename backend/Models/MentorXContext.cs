@@ -65,8 +65,10 @@ public partial class MentorXContext : DbContext
             entity.Property(e => e.Password).HasColumnName("password");
             entity.Property(e => e.Phone).HasColumnName("phone");
             entity.Property(e => e.Role)
-                .HasDefaultValueSql("'user'::text")
+                .HasConversion<string>()
+                .HasDefaultValue(UserRole.User)
                 .HasColumnName("role");
+            
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("updated_at");

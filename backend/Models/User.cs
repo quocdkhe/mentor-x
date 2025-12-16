@@ -17,7 +17,7 @@ public partial class User
 
     public string? Avatar { get; set; }
 
-    public string Role { get; set; } = null!;
+    public UserRole Role { get; set; } = UserRole.User;
 
     public DateTime CreatedAt { get; set; }
 

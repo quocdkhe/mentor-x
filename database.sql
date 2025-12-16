@@ -8,19 +8,27 @@ CREATE TABLE users (
     password TEXT NOT NULL,
     avatar TEXT,
     role TEXT NOT NULL DEFAULT 'user' CHECK (
-        role IN ('user', 'metnor', 'admin')
+        role IN ('user', 'mentor', 'admin')
     ),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP
+    WITH
+        TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP
+    WITH
+        TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE refresh_tokens (
     id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL,
     token TEXT NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    expires_at TIMESTAMP
+    WITH
+        TIME ZONE NOT NULL,
+        created_at TIMESTAMP
+    WITH
+        TIME ZONE NOT NULL DEFAULT NOW(),
+        CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- Foreign Key Constraint

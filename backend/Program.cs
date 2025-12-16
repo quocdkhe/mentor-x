@@ -21,6 +21,13 @@ builder.Services.AddJwtConfig(builder.Configuration); // JWT and CORS configurat
 
 
 var app = builder.Build();
+// Run migration
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<MentorXContext>();
+    context.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
