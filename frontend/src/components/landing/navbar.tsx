@@ -10,6 +10,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Link } from "@tanstack/react-router";
+import { useAppSelector } from "@/store/hooks";
+import { Skeleton } from "../ui/skeleton";
 
 const navLinks = [
   { label: "Tính năng", href: "#features" },
@@ -19,6 +21,7 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isLoading } = useAppSelector((state) => state.auth);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -42,12 +45,20 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle />
-          <Button variant="ghost">
-            <Link to="/login">Đăng nhập</Link>
-          </Button>
-          <Button>
-            <Link to="/register">Bắt đấu</Link>
-          </Button>
+          {isLoading ? (
+            <Skeleton className="h-10 w-24 rounded-md" />
+          ) : user ? (
+            <Button>
+              <Link to="/user">Trang của tôi</Link>
+            </Button>
+          ) : (<>
+            <Button variant="ghost">
+              <Link to="/login">Đăng nhập</Link>
+            </Button>
+            <Button>
+              <Link to="/register">Bắt đấu</Link>
+            </Button>
+          </>)}
         </div>
 
         <div className="flex md:hidden items-center gap-2">
@@ -72,12 +83,17 @@ export function Navbar() {
                     </a>
                   </SheetClose>
                 ))}
-                <div className="flex flex-col gap-2 mt-4">
-                  <Button variant="outline" className="w-full">
-                    Đăng nhập
-                  </Button>
-                  <Button className="w-full">Bắt đầu</Button>
-                </div>
+                {isLoading ? <Skeleton className="h-10 w-full rounded-md" /> :
+                  user == null ? (<div className="flex flex-col gap-2 mt-4">
+                    <Button variant="outline" className="w-full">
+                      Đăng nhập
+                    </Button>
+                    <Button className="w-full">Bắt đầu</Button>
+                  </div>) : (
+                    <Link to="/user" className="mt-4">
+                      <Button className="w-full">Trang cá nhân</Button>
+                    </Link>
+                  )}
               </div>
             </SheetContent>
           </Sheet>
