@@ -11,22 +11,12 @@ const userLayoutRoute = createRoute({
 const indexRoute = createRoute({
   getParentRoute: () => userLayoutRoute,
   path: "/",
-}).lazy(() => import("@/pages/home").then((d) => d.Route));
+}).lazy(() => import("@/pages/user/home").then((d) => d.Route));
 
 const aboutRoute = createRoute({
   getParentRoute: () => userLayoutRoute,
   path: "/about",
-}).lazy(() => import("@/pages/about").then((d) => d.Route));
-
-// const loginRoute = createRoute({
-//   getParentRoute: () => userLayoutRoute,
-//   path: "/login",
-// }).lazy(() => import("@/pages/login").then((d) => d.Route));
-
-// const registerRoute = createRoute({
-//   getParentRoute: () => userLayoutRoute,
-//   path: "/register",
-// }).lazy(() => import("@/pages/reigster").then((d) => d.Route));
+}).lazy(() => import("@/pages/user/about").then((d) => d.Route));
 
 const profileRoute = createRoute({
   getParentRoute: () => userLayoutRoute,

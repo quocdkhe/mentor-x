@@ -8,15 +8,13 @@ using System.Security.Claims;
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("/users")]
     public class UserController : ControllerBase
     {
-        private readonly IFileService _fileService;
         private readonly IUserService _userService;
 
-        public UserController(IFileService fileService, IUserService userService)
+        public UserController(IUserService userService)
         {
-            _fileService = fileService;
             _userService = userService;
         }
 
