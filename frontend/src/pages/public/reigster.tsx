@@ -272,6 +272,6 @@ function Register() {
 }
 
 export default Register;
-export const Route = createLazyRoute('/user/register')({
+export const Route = createLazyRoute('/register')({
   component: Register,
 })

@@ -45,7 +45,7 @@ function LoginPage() {
         if (data.role === 'admin') {
           navigate({ to: '/admin' });
         } else {
-          navigate({ to: '/' });
+          navigate({ to: '/user' });
         }
         toast.success('Đăng nhập thành công');
       },
@@ -70,7 +70,7 @@ function LoginPage() {
           if (data.role === 'admin') {
             navigate({ to: '/admin' });
           } else {
-            navigate({ to: '/' });
+            navigate({ to: '/user' });
           }
           toast.success('Đăng nhập thành công');
         },
@@ -206,6 +206,6 @@ function LoginPage() {
 }
 
 export default LoginPage;
-export const Route = createLazyRoute('/user/login')({
+export const Route = createLazyRoute('/login')({
   component: LoginPage,
 })
