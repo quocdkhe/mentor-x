@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using backend.Models;
+using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics.Contracts;
+using System.Net.Mail;
 
 namespace backend.Controllers
 {
@@ -57,5 +60,37 @@ namespace backend.Controllers
             bool updated = await _userService.UpdateUserProfile(userId, dto);
             return updated ? Ok(new Message("Cập nhật thông tin thành công")) : BadRequest(new Message("Cập nhật thông tin thất bại"));
         }
+
+        [HttpPost("")]
+        public async Task<ActionResult<Message>> CreateUser([FromBody] AdminCreateUserDTO dto)
+        {
+            var result = await _userService.CreateUser(dto);
+            if (!result.Success)
+            {
+                return BadRequest(new Message("Tạo người dùng thất bại"));
+            }
+
+            return Ok(new Message("Tạo người dùng thành công"));
+        }
+
+        [HttpGet("")]
+        public async Task<ActionResult<List<UserResponseDTO>>> GetAllUsers()
+        {
+            var users = await _userService.GetAllUsers();
+            return Ok(users);
+        }
+
+        [HttpPatch("role")]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDTO dto)
+        {
+            var result = await _userService.UpdateRole(dto);
+            if (!result.Success)
+            {
+                return BadRequest(new Message("Cập nhật vai trò thất bại"));
+            }
+            return Ok(new Message("Cập nhật vai trò thành công"));
+        }
+
+    
     }
 }
