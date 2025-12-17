@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import {
   AudioWaveform,
@@ -46,9 +44,8 @@ const data = {
   navMain: [
     {
       title: "Quản lí người dùng ",
-      url: "#",
+      url: "/admin/user-management" as const,
       icon: User,
-      isActive: true,
     },
     // {
     //   title: "Models",
@@ -78,7 +75,6 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
-
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>

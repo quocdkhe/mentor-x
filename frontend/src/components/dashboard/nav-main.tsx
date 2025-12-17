@@ -1,4 +1,5 @@
-import { type LucideIcon } from "lucide-react"
+import {type LucideIcon} from "lucide-react"
+import {Link, type LinkProps} from "@tanstack/react-router" // 1. Import LinkProps
 
 import {
   Collapsible,
@@ -16,9 +17,9 @@ export function NavMain({
 }: {
   items: {
     title: string
-    url: string
+    // 2. This sets the type to the exact union of all valid routes in your app
+    url: LinkProps['to']
     icon?: LucideIcon
-    isActive?: boolean
   }[]
 }) {
   return (
@@ -29,17 +30,25 @@ export function NavMain({
           <Collapsible
             key={item.title}
             asChild
-            defaultOpen={item.isActive}
             className="group/collapsible"
           >
             <SidebarMenuItem>
               <SidebarMenuButton
+                asChild
                 tooltip={item.title}
-                isActive={item.isActive}
-                className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary cursor-pointer"
+                className="cursor-pointer"
               >
-                {item.icon && <item.icon />}
-                <span>{item.title}</span>
+                {/* 3. TypeScript now knows 'item.url' is a valid route */}
+                <Link
+                  to={item.url}
+                  activeProps={{
+                    "data-active": true,
+                    className: "bg-primary/10 text-primary"
+                  }}
+                >
+                  {item.icon && <item.icon/>}
+                  <span>{item.title}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </Collapsible>
