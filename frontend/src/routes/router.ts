@@ -21,7 +21,7 @@ const loginRoute = createRoute({
 const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "register",
-}).lazy(() => import("@/pages/public/reigster").then((d) => d.Route));
+}).lazy(() => import("@/pages/public/register.tsx").then((d) => d.Route));
 
 const routeTree = rootRoute.addChildren([
   userRouteTree,

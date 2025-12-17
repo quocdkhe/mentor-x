@@ -19,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { createLazyRoute, Link } from '@tanstack/react-router';
+import {createLazyRoute, Link, useNavigate} from '@tanstack/react-router';
 import { useRegister } from '@/api/auth';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
@@ -39,6 +39,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 function Register() {
   const registerMutation = useRegister();
+  const navigate = useNavigate();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,11 +61,11 @@ function Register() {
       {
         onSuccess: () => {
           toast.success('Đăng ký thành công!');
+          navigate({ to: '/login' });
         },
         onError: (err) => {
           const backendMessage =
             err.response?.data.message || "Đã xảy ra lỗi, vui lòng thử lại.";
-
           toast.error(`Đăng ký thất bại: ${backendMessage}`);
         },
       }

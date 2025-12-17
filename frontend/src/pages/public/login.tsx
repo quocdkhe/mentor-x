@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAppDispatch } from "@/store/hooks";
 import { setUser } from "@/store/auth.slice";
 import { GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
+import {USER_ROLES, type UserRole} from "@/types/user.ts";
 
 const formSchema = z.object({
   email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
@@ -33,6 +34,14 @@ function LoginPage() {
     },
   });
 
+  const navigationBasedOnRole = (role: UserRole) => {
+    if (role === USER_ROLES.ADMIN) {
+      navigate({ to: '/admin' });
+    } else {
+      navigate({ to: '/user' });
+    }
+  }
+
   const handleGoogleLogin = (credentialResponse: GoogleCredentialResponse) => {
     googleLoginMutation.mutate({
       token: credentialResponse.credential
@@ -42,11 +51,7 @@ function LoginPage() {
         dispatch(setUser(data));
         console.log("Logged in user data:", data);
         // check for role
-        if (data.role === 'admin') {
-          navigate({ to: '/admin' });
-        } else {
-          navigate({ to: '/user' });
-        }
+        navigationBasedOnRole(data.role);
         toast.success('Đăng nhập thành công');
       },
       onError: (err) => {
@@ -67,11 +72,7 @@ function LoginPage() {
           dispatch(setUser(data));
           console.log("Logged in user data:", data);
           // check for role
-          if (data.role === 'admin') {
-            navigate({ to: '/admin' });
-          } else {
-            navigate({ to: '/user' });
-          }
+          navigationBasedOnRole(data.role);
           toast.success('Đăng nhập thành công');
         },
         onError: (err) => {

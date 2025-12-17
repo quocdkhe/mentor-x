@@ -4,7 +4,7 @@ export interface UserResponseDTO {
   phone?: string;
   email: string;
   avatar?: string;
-  role: string;
+  role: UserRole;
 }
 
 export interface RegisterDTO {
@@ -29,3 +29,13 @@ export interface UpdateProfile {
 export interface GoogleLoginRequest {
   token: string | undefined;
 }
+
+// 1. Define the constant object
+export const USER_ROLES = {
+  ADMIN: "Admin",
+  USER: "User",
+  MENTOR: "Mentor",
+} as const; // 'as const' makes the values read-only
+
+// 2. Derive the type from the object (No need to write the strings twice!)
+export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
