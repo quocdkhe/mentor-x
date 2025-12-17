@@ -6,6 +6,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import {ThemeToggle} from "@/components/theme-toggle.tsx";
+import {Outlet} from "@tanstack/react-router";
 
 export default function AdminLayout() {
   return (
@@ -23,7 +24,7 @@ export default function AdminLayout() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <p>Trang quản trị người dùng, code tại đây</p>
+          <Outlet/>
         </div>
       </SidebarInset>
     </SidebarProvider>

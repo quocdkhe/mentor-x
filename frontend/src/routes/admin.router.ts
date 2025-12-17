@@ -9,8 +9,13 @@ const adminLayoutRoute = createRoute({
   component: AdminLayout,
 });
 
+const userManagementRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: "/user-management",
+}).lazy(() => import("@/pages/admin/user-management").then((d) => d.Route));
+
 const adminRouteTree = adminLayoutRoute.addChildren([
-  // Add admin child routes here
+  userManagementRoute,
 ]);
 
 export { adminRouteTree };

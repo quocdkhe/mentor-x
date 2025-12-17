@@ -1,6 +1,6 @@
+import {createLazyRoute} from "@tanstack/react-router";
 
-
-export default function UserManagementPage() {
+export default function UserManagement() {
   return <>
     <div className="grid auto-rows-min gap-4 md:grid-cols-3">
       <div className="bg-muted/50 aspect-video rounded-xl" />
@@ -10,3 +10,7 @@ export default function UserManagementPage() {
     <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
   </>
 }
+
+export const Route = createLazyRoute('/admin/user-management')({
+  component: UserManagement,
+})
