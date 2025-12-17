@@ -8,7 +8,6 @@ import {
 
 import { NavMain } from "@/components/dashboard/nav-main.tsx"
 import { NavUser } from "@/components/dashboard/nav-user.tsx"
-import { TeamSwitcher } from "@/components/dashboard/team-switcher.tsx"
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +15,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar.tsx"
+import {AppTitle} from "@/components/dashboard/app-title.tsx";
 
 // This is sample data.
 const data = {
@@ -69,7 +69,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <AppTitle />
       </SidebarHeader>
 
       <SidebarContent>
