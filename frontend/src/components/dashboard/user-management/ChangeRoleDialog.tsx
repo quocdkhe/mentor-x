@@ -61,7 +61,7 @@ export function ChangeRoleDialog({
               </Label>
               <Select
                 value={selectedRole}
-                onValueChange={(value) => setSelectedRole(value as UserRole)}
+                onValueChange={(value: UserRole) => setSelectedRole(value as UserRole)}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a role" />

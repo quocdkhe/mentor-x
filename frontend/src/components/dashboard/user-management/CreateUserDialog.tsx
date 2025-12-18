@@ -113,7 +113,7 @@ export function CreateUserDialog({ onCreateUser }: CreateUserDialogProps) {
               </Label>
               <Select
                 value={role}
-                onValueChange={(value) => setRole(value as UserRole)}
+                onValueChange={(value : UserRole) => setRole(value as UserRole)}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a role" />
