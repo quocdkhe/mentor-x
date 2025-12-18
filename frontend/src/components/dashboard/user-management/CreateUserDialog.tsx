@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePostUser } from "@/api/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { type UserRole, type UserResponseDTO, USER_ROLES } from "@/types/user";
+import {
+  type AdminCreateUser,
+  type UserRole,
+  type UserResponseDTO,
+  USER_ROLES,
+} from "@/types/user";
 import { Plus } from "lucide-react";
 
 interface CreateUserDialogProps {
@@ -31,27 +37,36 @@ export function CreateUserDialog({ onCreateUser }: CreateUserDialogProps) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<UserRole>(USER_ROLES.USER);
+  const createUser = usePostUser();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
 
-    onCreateUser({
-      name,
-      email,
-      phone: phone || undefined,
+    const userData: AdminCreateUser = {
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim() || undefined,
       role,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(
-        /\s/g,
-        ""
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+        name.trim().replace(/\s+/g, "")
       )}`,
-    });
+      // Remove the avatar line above if your backend generates it automatically
+    };
 
-    setName("");
-    setEmail("");
-    setPhone("");
-    setRole(USER_ROLES.USER);
-    setOpen(false);
+    createUser.mutate(userData, {
+      onSuccess: (data) => {
+        alert(`Success: User ${data.name as string} created.`);
+        setName("");
+        setEmail("");
+        setPhone("");
+        setRole(USER_ROLES.USER);
+        setOpen(false);
+      },
+      onError: (error) => {
+        alert(`Error: ${error.response?.data || "Failed to create user."}`);
+      },
+    });
   };
 
   return (
@@ -113,7 +128,7 @@ export function CreateUserDialog({ onCreateUser }: CreateUserDialogProps) {
               </Label>
               <Select
                 value={role}
-                onValueChange={(value : UserRole) => setRole(value as UserRole)}
+                onValueChange={(value: UserRole) => setRole(value as UserRole)}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a role" />

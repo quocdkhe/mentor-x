@@ -23,71 +23,6 @@ import { useGetUserList } from "@/api/user";
 // import { useToast } from "@/hooks/use-toast";
 import { Users, UserCog } from "lucide-react";
 
-// const initialUsers: UserResponseDTO[] = [
-//   {
-//     id: "550e8400-e29b-41d4-a716-446655440001",
-//     name: "John Doe",
-//     phone: "+1 234 567 8901",
-//     email: "john.doe@example.com",
-//     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-//     role: "Admin",
-//   },
-//   {
-//     id: "550e8400-e29b-41d4-a716-446655440002",
-//     name: "Jane Smith",
-//     phone: "+1 234 567 8902",
-//     email: "jane.smith@example.com",
-//     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane",
-//     role: "User",
-//   },
-//   {
-//     id: "550e8400-e29b-41d4-a716-446655440003",
-//     name: "Bob Wilson",
-//     email: "bob.wilson@example.com",
-//     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob",
-//     role: "User",
-//   },
-//   {
-//     id: "550e8400-e29b-41d4-a716-446655440004",
-//     name: "Alice Brown",
-//     phone: "+1 234 567 8904",
-//     email: "alice.brown@example.com",
-//     role: "Mentor",
-//   },
-//   {
-//     id: "550e8400-e29b-41d4-a716-446655440005",
-//     name: "Charlie Davis",
-//     phone: "+1 234 567 8905",
-//     email: "charlie.davis@example.com",
-//     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie",
-//     role: "User",
-//   },
-// ];
-
-// function getRoleBadgeVariant(
-//   role?: UserRole
-// ): "default" | "secondary" | "destructive" | "outline" {
-//   switch (role) {
-//     case USER_ROLES.ADMIN:
-//       return "destructive";
-//     case USER_ROLES.MENTOR:
-//       return "default";
-//     case USER_ROLES.USER:
-//       return "secondary";
-//     default:
-//       return "outline";
-//   }
-// }
-
-// function getInitials(name: string): string {
-//   return name
-//     .split(" ")
-//     .map((n) => n[0])
-//     .join("")
-//     .toUpperCase()
-//     .slice(0, 2);
-// }
-
 export default function UserManagement() {
   // const [users, setUsers] = useState<UserResponseDTO[]>(
   //   initialUsers as UserResponseDTO[]
@@ -100,6 +35,7 @@ export default function UserManagement() {
     null
   );
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   // const { toast } = useToast();
 
   // list handle
@@ -129,16 +65,10 @@ export default function UserManagement() {
 
   // create handle
   const handleCreateUser = (userData: AdminCreateUser) => {
-    const newUser: UserResponseDTO = {
-      ...userData,
-      id: crypto.randomUUID(),
-    };
-    // setUsers((prev) => [...prev, newUser]);
+    const newUser: AdminCreateUser = userData;
     console.log("Created User:", newUser);
-    // toast({
-    //   title: "User Created",
-    //   description: `${newUser.name} has been added successfully.`,
-    // });
+
+    setCreateDialogOpen(true);
   };
 
   // change role handle

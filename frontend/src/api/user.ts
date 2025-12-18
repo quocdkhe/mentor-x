@@ -1,5 +1,5 @@
 import type { Message } from "@/types/common";
-import type { UpdateProfile, UpdateRole, UserResponseDTO } from "@/types/user";
+import type { AdminCreateUser ,UpdateProfile, UpdateRole, UserResponseDTO } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import api from "./api";
@@ -51,6 +51,22 @@ export function usePatchUser(){
       // Invalidate users list to refetch updated data
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
+    }
+  )
+}
+
+export function usePostUser(){
+  const queryClient = useQueryClient();
+
+  return useMutation<UserResponseDTO, AxiosError<Message>, AdminCreateUser>(
+    {
+      mutationFn: async (userData): Promise<UserResponseDTO> =>{
+        const res = await api.post<UserResponseDTO>(`/users`, userData);
+        return res.data
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["users"]})
+      }
     }
   )
 }
