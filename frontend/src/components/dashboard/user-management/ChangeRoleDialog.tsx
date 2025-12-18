@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,29 +17,53 @@ import {
 } from "@/components/ui/select";
 import { type UserRole, type UserResponseDTO, USER_ROLES } from "@/types/user";
 import { Label } from "@/components/ui/label";
+import { usePatchUser } from "@/api/user";
 
 interface ChangeRoleDialogProps {
   user: UserResponseDTO | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onChangeRole: (userId: string, newRole: UserRole) => void;
 }
 
 export function ChangeRoleDialog({
   user,
   open,
   onOpenChange,
-  onChangeRole,
 }: ChangeRoleDialogProps) {
-  const [selectedRole, setSelectedRole] = useState<UserRole | undefined>(
-    user?.role
-  );
+  const [selectedRole, setSelectedRole] = useState<UserRole | "">("");
+  const updateRole = usePatchUser();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Set initial role when user changes
+  useEffect(() => {
+    if (user) {
+      setSelectedRole(user.role);
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (user && selectedRole) {
-      onChangeRole(user.id, selectedRole);
+
+    if (!user || !selectedRole) return;
+
+    try {
+      await updateRole.mutateAsync({
+        id: user.id,
+        role: selectedRole as UserRole,
+      });
+
+      toast({
+        title: "Success",
+        description: `Role updated to ${selectedRole} for ${user.name}`,
+      });
+
       onOpenChange(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update user role",
+      });
     }
   };
 
@@ -61,7 +85,7 @@ export function ChangeRoleDialog({
               </Label>
               <Select
                 value={selectedRole}
-                onValueChange={(value: UserRole) => setSelectedRole(value as UserRole)}
+                onValueChange={(value: UserRole) => setSelectedRole(value)}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a role" />
@@ -81,13 +105,19 @@ export function ChangeRoleDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={updateRole.isPending}
             >
               Cancel
             </Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={updateRole.isPending}>
+              {updateRole.isPending ? "Saving..." : "Save Changes"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
+}
+function useToast(): { toast: any } {
+  throw new Error("Function not implemented.");
 }

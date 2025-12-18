@@ -1,7 +1,7 @@
 import type { Message } from "@/types/common";
-import type { UpdateProfile, UserResponseDTO } from "@/types/user";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
+import type { UpdateProfile, UpdateRole, UserResponseDTO } from "@/types/user";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import api from "./api";
 
 export function useUpdateProfile() {
@@ -22,4 +22,35 @@ export function useGetCurrentUser() {
     },
     staleTime: 1000 * 60 * 10, // optional: cache for 10 minutes
   });
+}
+
+export function useGetUserList(){
+  return useQuery<UserResponseDTO[], AxiosError<Message>>({
+    queryKey: ["users"],
+    queryFn: async (): Promise<UserResponseDTO[]> => {
+      const res = await api.get<UserResponseDTO[]>("/users");
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 5, // optional: cache for 10 minutes
+  })
+}
+
+export function usePatchUser(){
+  const queryClient = useQueryClient();
+
+  return useMutation<UserResponseDTO, AxiosError<Message>, UpdateRole>(
+    {
+      mutationFn: async ({ id, role}): Promise<UserResponseDTO> => {
+        const res = await api.patch<UserResponseDTO>(`/users/role`, {
+        id,
+        role,
+      });
+      return res.data;
+      },
+      onSuccess: () => {
+      // Invalidate users list to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    }
+  )
 }

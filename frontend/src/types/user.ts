@@ -34,6 +34,11 @@ export interface UpdateProfile {
   password?: string;
 }
 
+export interface UpdateRole {
+  id: string;
+  role: UserRole;
+}
+
 export interface GoogleLoginRequest {
   token: string | undefined;
 }
