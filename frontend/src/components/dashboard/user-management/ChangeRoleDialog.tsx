@@ -1,5 +1,11 @@
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { usePatchUser } from "@/api/user";
+import {
+  type UserResponseDTO,
+  type UpdateRole,
+  USER_ROLES,
+  type UserRole,
+} from "@/types/user";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -15,9 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { type UserRole, type UserResponseDTO, USER_ROLES } from "@/types/user";
-import { Label } from "@/components/ui/label";
-import { usePatchUser } from "@/api/user";
 
 interface ChangeRoleDialogProps {
   user: UserResponseDTO | null;
@@ -32,7 +37,6 @@ export function ChangeRoleDialog({
 }: ChangeRoleDialogProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole | "">("");
   const updateRole = usePatchUser();
-  const { toast } = useToast();
 
   // Set initial role when user changes
   useEffect(() => {
@@ -52,18 +56,10 @@ export function ChangeRoleDialog({
         role: selectedRole as UserRole,
       });
 
-      toast({
-        title: "Success",
-        description: `Role updated to ${selectedRole} for ${user.name}`,
-      });
-
+      alert(`Success: Role updated to ${selectedRole} for ${user.name}`);
       onOpenChange(false);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update user role",
-      });
+      alert("Error: Failed to update user role");
     }
   };
 
@@ -117,7 +113,4 @@ export function ChangeRoleDialog({
       </DialogContent>
     </Dialog>
   );
-}
-function useToast(): { toast: any } {
-  throw new Error("Function not implemented.");
 }
