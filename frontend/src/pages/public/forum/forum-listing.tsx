@@ -1,9 +1,9 @@
-import {createLazyRoute} from "@tanstack/react-router";
+import { createLazyRoute } from "@tanstack/react-router";
 
-import {useState} from 'react';
-import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
-import {Badge} from '@/components/ui/badge';
-import {Button} from '@/components/ui/button';
+import { useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -12,8 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {PlusCircle, ChevronLeft, ChevronRight} from 'lucide-react';
-
+import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from "@tanstack/react-router";
 interface Topic {
   id: number;
   title: string;
@@ -31,105 +31,105 @@ const allMockTopics: Topic[] = [
     title: 'FE - ENT503',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-15T09:41:00',
-    author: {name: 'bka'},
+    author: { name: 'bka' },
   },
   {
     id: 2,
     title: 'Học lại cousera để lấy điểm bonus',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-14T22:25:00',
-    author: {name: 'vietdeptraI03'},
+    author: { name: 'vietdeptraI03' },
   },
   {
     id: 3,
     title: '[XAVALO – EXE101] Tuyển thêm 02 Mark',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-14T21:55:00',
-    author: {name: 'someoneudn'},
+    author: { name: 'someoneudn' },
   },
   {
     id: 4,
     title: 'Tìm đồng đội cho môn EXE101',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-14T09:45:00',
-    author: {name: 'Djm3m1y'},
+    author: { name: 'Djm3m1y' },
   },
   {
     id: 5,
     title: '[EXE101 IA1902-AS]',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-14T01:52:00',
-    author: {name: 'al4dyTqWin'},
+    author: { name: 'al4dyTqWin' },
   },
   {
     id: 6,
     title: '[SWP391] tìm đồng đội môn SWP391 cơ',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-13T23:59:00',
-    author: {name: 'dangonthi'},
+    author: { name: 'dangonthi' },
   },
   {
     id: 7,
     title: 'Đổi chéo lớp EXE101 mình hiện tại đang ',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-11T17:40:00',
-    author: {name: 'Trần Thùy Dung'},
+    author: { name: 'Trần Thùy Dung' },
   },
   {
     id: 8,
     title: 'TUYỂN THÀNH VIÊN IB CHO MÔN EXE10',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-11T09:07:00',
-    author: {name: 'leminhuan'},
+    author: { name: 'leminhuan' },
   },
   {
     id: 9,
     title: 'FTEST',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-10T19:07:00',
-    author: {name: 'Phạm Nhật Duẩn'},
+    author: { name: 'Phạm Nhật Duẩn' },
   },
   {
     id: 10,
     title: 'cái check điểm của hệ thống xác xuất lệch d',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-10T23:23:00',
-    author: {name: 'CuIMan'},
+    author: { name: 'CuIMan' },
   },
   {
     id: 11,
     title: 'Hỏi về deadline nộp assignment',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-09T15:30:00',
-    author: {name: 'nguyenvan'},
+    author: { name: 'nguyenvan' },
   },
   {
     id: 12,
     title: 'Share tài liệu ôn thi giữa kỳ',
     type: 'Tài Liệu',
     dateCreated: '2024-01-09T10:20:00',
-    author: {name: 'thitle'},
+    author: { name: 'thitle' },
   },
   {
     id: 13,
     title: 'Tìm mentor cho project cuối kỳ',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-08T18:45:00',
-    author: {name: 'hoangminh'},
+    author: { name: 'hoangminh' },
   },
   {
     id: 14,
     title: 'Review khóa học Java cơ bản',
     type: 'Thảo Luận',
     dateCreated: '2024-01-08T14:10:00',
-    author: {name: 'phương'},
+    author: { name: 'phương' },
   },
   {
     id: 15,
     title: 'Câu hỏi về Database Design',
     type: 'Hỏi Đáp',
     dateCreated: '2024-01-07T20:30:00',
-    author: {name: 'tuananh'},
+    author: { name: 'tuananh' },
   },
 ];
 
@@ -149,14 +149,14 @@ const formatDate = (dateString: string) => {
   const diffInDays = Math.floor(diffInHours / 24);
 
   if (diffInDays === 0) {
-    return `Hôm nay, lúc ${date.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}`;
+    return `Hôm nay, lúc ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
   } else if (diffInDays === 1) {
-    return `Hôm qua, lúc ${date.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}`;
+    return `Hôm qua, lúc ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
   } else if (diffInDays <= 7) {
     const days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-    return `${days[date.getDay()]} lúc ${date.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}`;
+    return `${days[date.getDay()]} lúc ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
   } else {
-    return date.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 };
 
@@ -186,7 +186,7 @@ export function ForumListing() {
             {allMockTopics.length} topics
           </div>
           <Button>
-            <PlusCircle className="mr-2 h-4 w-4"/>
+            <PlusCircle className="mr-2 h-4 w-4" />
             Create New Topic
           </Button>
         </div>
@@ -209,13 +209,13 @@ export function ForumListing() {
                     {startIndex + index + 1}
                   </TableCell>
                   <TableCell className="text-left">
-                    <a
-                      href="#"
+                    <Link
+                      to="/forum/topic/$topicId"
+                      params={{ topicId: topic.id.toString() }}
                       className="font-medium hover:underline"
-                      onClick={(e) => e.preventDefault()}
                     >
                       {topic.title}
-                    </a>
+                    </Link>
                   </TableCell>
                   <TableCell className="text-left">
                     <Badge variant="outline">{topic.type}</Badge>
@@ -226,7 +226,7 @@ export function ForumListing() {
                   <TableCell className="text-left">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={topic.author.avatar}/>
+                        <AvatarImage src={topic.author.avatar} />
                         <AvatarFallback>{getInitials(topic.author.name)}</AvatarFallback>
                       </Avatar>
                       <span className="text-sm">{topic.author.name}</span>
@@ -249,7 +249,7 @@ export function ForumListing() {
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4"/>
+              <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
             <Button
@@ -259,7 +259,7 @@ export function ForumListing() {
               disabled={currentPage === totalPages}
             >
               Next
-              <ChevronRight className="h-4 w-4"/>
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

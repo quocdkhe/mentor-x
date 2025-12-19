@@ -2,7 +2,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ThumbsUp, Flag } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { ThumbsUp, MessageSquare } from 'lucide-react';
 
 interface Comment {
   id: number;
@@ -10,9 +11,6 @@ interface Comment {
     name: string;
     avatar?: string;
     role: string;
-    joinDate: string;
-    postCount: number;
-    points: number;
   };
   content: string;
   timestamp: string;
@@ -43,7 +41,7 @@ export function CommentCard({ comment, commentNumber }: CommentCardProps) {
   return (
     <Card className="p-6">
       <div className="flex gap-6">
-        <div className="flex flex-col items-center gap-3 w-32 flex-shrink-0">
+        <div className="flex flex-col items-center gap-3 flex-shrink-0">
           <Avatar className="h-20 w-20">
             <AvatarImage src={comment.author.avatar} />
             <AvatarFallback className="text-xl">
@@ -56,12 +54,9 @@ export function CommentCard({ comment, commentNumber }: CommentCardProps) {
               {comment.author.role}
             </Badge>
           </div>
-          <div className="text-xs text-muted-foreground space-y-1 text-center">
-            <p>Tham gia: {comment.author.joinDate}</p>
-            <p>Bài viết: {comment.author.postCount}</p>
-            <p>FUO Point: {comment.author.points.toLocaleString()}</p>
-          </div>
         </div>
+
+        <Separator orientation="vertical" className="h-auto" />
 
         <div className="flex-1 space-y-4">
           <div className="flex items-start justify-between">
@@ -73,20 +68,15 @@ export function CommentCard({ comment, commentNumber }: CommentCardProps) {
             <p>{comment.content}</p>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t">
-            <Button variant="link" size="sm" className="text-muted-foreground h-auto p-0">
-              <Flag className="h-4 w-4 mr-1" />
-              Báo cáo
+          <div className="flex items-center gap-4 pt-4 border-t">
+            <Button variant="link" size="sm" className="h-auto p-0">
+              <ThumbsUp className="h-4 w-4 mr-2" />
+              Like
             </Button>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm">
-                <ThumbsUp className="h-4 w-4 mr-2" />
-                Like
-              </Button>
-              <Button variant="ghost" size="sm">
-                Trả lời
-              </Button>
-            </div>
+            <Button variant="link" size="sm" className="h-auto p-0">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Trả lời
+            </Button>
           </div>
         </div>
       </div>

@@ -16,11 +16,19 @@ const landingRoute = createRoute({
 const forumListingRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: "/forum",
-}).lazy(() => import("@/pages/public/forum-listing").then((d) => d.Route))
+}).lazy(() =>
+  import("@/pages/public/forum/forum-listing").then((d) => d.Route)
+);
+
+export const topicDetailRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: "/forum/topic/$topicId",
+}).lazy(() => import("@/pages/public/forum/topic-detail").then((d) => d.Route));
 
 const publicRouteTree = publicLayoutRoute.addChildren([
   landingRoute,
-  forumListingRoute
+  forumListingRoute,
+  topicDetailRoute,
 ]);
 
 export { publicRouteTree };
