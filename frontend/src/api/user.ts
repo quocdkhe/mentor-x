@@ -1,6 +1,6 @@
 import type { Message } from "@/types/common";
 import type { AdminCreateUser ,UpdateProfile, UpdateRole, UserResponseDTO } from "@/types/user";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import api from "./api";
 
@@ -26,7 +26,7 @@ export function useGetCurrentUser() {
 
 export function useGetUserList(){
   return useQuery<UserResponseDTO[], AxiosError<Message>>({
-    queryKey: ["users"],
+    queryKey: ["user-list"],
     queryFn: async (): Promise<UserResponseDTO[]> => {
       const res = await api.get<UserResponseDTO[]>("/users");
       return res.data;
@@ -36,37 +36,26 @@ export function useGetUserList(){
 }
 
 export function usePatchUser(){
-  const queryClient = useQueryClient();
-
-  return useMutation<UserResponseDTO, AxiosError<Message>, UpdateRole>(
+  return useMutation<Message, AxiosError<Message>, UpdateRole>(
     {
-      mutationFn: async ({ id, role}): Promise<UserResponseDTO> => {
-        const res = await api.patch<UserResponseDTO>(`/users/role`, {
+      mutationFn: async ({ id, role}): Promise<Message> => {
+        const res = await api.patch<Message>(`/users/role`, {
         id,
         role,
       });
       return res.data;
       },
-      onSuccess: () => {
-      // Invalidate users list to refetch updated data
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    },
     }
   )
 }
 
 export function usePostUser(){
-  const queryClient = useQueryClient();
-
-  return useMutation<UserResponseDTO, AxiosError<Message>, AdminCreateUser>(
+  return useMutation<Message, AxiosError<Message>, AdminCreateUser>(
     {
-      mutationFn: async (userData): Promise<UserResponseDTO> =>{
-        const res = await api.post<UserResponseDTO>(`/users`, userData);
+      mutationFn: async (userData): Promise<Message> =>{
+        const res = await api.post<Message>(`/users`, userData);
         return res.data
       },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["users"]})
-      }
     }
   )
 }

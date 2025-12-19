@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePatchUser } from "@/api/user";
 import {
   type UserResponseDTO,
-  type UpdateRole,
   USER_ROLES,
   type UserRole,
 } from "@/types/user";
@@ -23,6 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ChangeRoleDialogProps {
   user: UserResponseDTO | null;
@@ -37,30 +39,25 @@ export function ChangeRoleDialog({
 }: ChangeRoleDialogProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole | "">("");
   const updateRole = usePatchUser();
-
-  // Set initial role when user changes
-  useEffect(() => {
-    if (user) {
-      setSelectedRole(user.role);
-    }
-  }, [user]);
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user || !selectedRole) return;
 
-    try {
-      await updateRole.mutateAsync({
-        id: user.id,
-        role: selectedRole as UserRole,
-      });
-
-      alert(`Success: Role updated to ${selectedRole} for ${user.name}`);
-      onOpenChange(false);
-    } catch (error) {
-      alert("Error: Failed to update user role");
-    }
+    updateRole.mutate({ id: user.id, role: selectedRole }, {
+      onSuccess: (responseData) => {
+        toast.success(responseData.message || "User created successfully");
+        queryClient.invalidateQueries({ queryKey: ["user-list"] });
+        onOpenChange(false);
+      },
+      onError: (err) => {
+        const backendMessage =
+          err.response?.data.message || "Đã xảy ra lỗi, vui lòng thử lại.";
+        toast.error(`Thất bại: ${backendMessage}`);
+      },
+    });
   };
 
   return (
@@ -106,6 +103,7 @@ export function ChangeRoleDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={updateRole.isPending}>
+              {updateRole.isPending ? <Spinner /> : null}
               {updateRole.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>

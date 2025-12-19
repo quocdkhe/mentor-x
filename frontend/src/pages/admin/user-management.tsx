@@ -15,13 +15,11 @@ import { CreateUserDialog } from "@/components/dashboard/user-management/CreateU
 import { ChangeRoleDialog } from "@/components/dashboard/user-management/ChangeRoleDialog";
 import {
   type UserResponseDTO,
-  type AdminCreateUser,
-  type UserRole,
-  USER_ROLES,
 } from "@/types/user";
 import { useGetUserList } from "@/api/user";
 // import { useToast } from "@/hooks/use-toast";
 import { Users, UserCog } from "lucide-react";
+import DefaultSkeleton from "@/components/skeletons/default.skeleton";
 
 export default function UserManagement() {
   // const [users, setUsers] = useState<UserResponseDTO[]>(
@@ -35,7 +33,6 @@ export default function UserManagement() {
     null
   );
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   // const { toast } = useToast();
 
   // list handle
@@ -64,12 +61,12 @@ export default function UserManagement() {
   };
 
   // create handle
-  const handleCreateUser = (userData: AdminCreateUser) => {
-    const newUser: AdminCreateUser = userData;
-    console.log("Created User:", newUser);
+  // const handleCreateUser = (userData: AdminCreateUser) => {
+  //   const newUser: AdminCreateUser = userData;
+  //   console.log("Created User:", newUser);
 
-    setCreateDialogOpen(true);
-  };
+  //   setCreateDialogOpen(true);
+  // };
 
   // change role handle
 
@@ -79,6 +76,10 @@ export default function UserManagement() {
     setSelectedUser(user);
     setDialogOpen(true);
   };
+
+  if (isLoading) {
+    return <DefaultSkeleton/>;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -95,7 +96,7 @@ export default function UserManagement() {
               </p>
             </div>
           </div>
-          <CreateUserDialog onCreateUser={handleCreateUser} />
+          <CreateUserDialog />
         </div>
 
         <div className="rounded-md border">

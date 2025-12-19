@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { usePostUser } from "@/api/user";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,52 +20,57 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  type AdminCreateUser,
-  type UserRole,
-  type UserResponseDTO,
-  USER_ROLES,
-} from "@/types/user";
+import { type AdminCreateUser, type UserRole, USER_ROLES } from "@/types/user";
+import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { useQueryClient } from "@tanstack/react-query";
 
-interface CreateUserDialogProps {
-  onCreateUser: (user: Omit<UserResponseDTO, "id">) => void;
-}
-
-export function CreateUserDialog({ onCreateUser }: CreateUserDialogProps) {
+export function CreateUserDialog() {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [role, setRole] = useState<UserRole>(USER_ROLES.USER);
   const createUser = usePostUser();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email) return;
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<AdminCreateUser>({
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      role: USER_ROLES.USER,
+    },
+  });
 
+  const role = watch("role");
+
+  const onSubmit = (data: AdminCreateUser) => {
     const userData: AdminCreateUser = {
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim() || undefined,
-      role,
+      name: data.name.trim(),
+      email: data.email.trim(),
+      phone: data.phone?.trim(),
+      role: data.role,
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-        name.trim().replace(/\s+/g, "")
+        data.name.trim().replace(/\s+/g, "")
       )}`,
-      // Remove the avatar line above if your backend generates it automatically
     };
 
     createUser.mutate(userData, {
-      onSuccess: (data) => {
-        alert(`Success: User ${data.name as string} created.`);
-        setName("");
-        setEmail("");
-        setPhone("");
-        setRole(USER_ROLES.USER);
+      onSuccess: (responseData) => {
+        toast.success(responseData.message || "User created successfully");
+        reset();
+        queryClient.invalidateQueries({ queryKey: ["user-list"] });
         setOpen(false);
       },
-      onError: (error) => {
-        alert(`Error: ${error.response?.data || "Failed to create user."}`);
+      onError: (err) => {
+        const backendMessage =
+          err.response?.data.message || "Đã xảy ra lỗi, vui lòng thử lại.";
+        toast.error(`Đăng ký thất bại: ${backendMessage}`);
       },
     });
   };
@@ -78,7 +84,7 @@ export function CreateUserDialog({ onCreateUser }: CreateUserDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Create New User</DialogTitle>
             <DialogDescription>
@@ -90,37 +96,46 @@ export function CreateUserDialog({ onCreateUser }: CreateUserDialogProps) {
               <Label htmlFor="name" className="text-right">
                 Name *
               </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="col-span-3"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="name"
+                  {...register("name", { required: "Name is required" })}
+                />
+                {errors.name && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email" className="text-right">
                 Email *
               </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="col-span-3"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address",
+                    },
+                  })}
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="phone" className="text-right">
                 Phone
               </Label>
-              <Input
-                id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="col-span-3"
-              />
+              <Input id="phone" {...register("phone")} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">
@@ -128,7 +143,7 @@ export function CreateUserDialog({ onCreateUser }: CreateUserDialogProps) {
               </Label>
               <Select
                 value={role}
-                onValueChange={(value: UserRole) => setRole(value as UserRole)}
+                onValueChange={(value: UserRole) => setValue("role", value)}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a role" />
@@ -147,11 +162,17 @@ export function CreateUserDialog({ onCreateUser }: CreateUserDialogProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                reset();
+                setOpen(false);
+              }}
             >
               Cancel
             </Button>
-            <Button type="submit">Create User</Button>
+            <Button type="submit" disabled={createUser.isPending}>
+              {createUser.isPending ? <Spinner /> : null}
+              Create User
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
