@@ -4,6 +4,7 @@ import { CommentCard } from '@/components/forum/comment-card'
 import { ArrowLeft } from 'lucide-react';
 import { createLazyRoute, getRouteApi } from '@tanstack/react-router';
 import { formatDate } from '@/lib/utils';
+import TextEditor from '@/components/forum/text-editor';
 
 interface Comment {
   id: number;
@@ -100,6 +101,8 @@ export function TopicDetail() {
             <CommentCard key={comment.id} comment={comment} commentNumber={index + 1} />
           ))}
         </div>
+
+        <TextEditor />
       </div>
     </div>
   );
