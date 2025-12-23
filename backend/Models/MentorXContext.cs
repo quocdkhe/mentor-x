@@ -19,6 +19,12 @@ public partial class MentorXContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<MentorProfile> MentorProfiles { get; set; }
+
+    public virtual DbSet<Skill> Skills { get; set; }
+
+    public virtual DbSet<MentorReview> MentorReviews { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -151,7 +157,7 @@ modelBuilder.Entity<MentorReview>(entity =>
 
 // pivot table mentor_skill (no entity)
 modelBuilder.Entity<MentorProfile>()
-    .HasMany(d => d.Skills)
+    .HasMany(d => d.MentorSkills)
     .WithMany(p => p.MentorProfiles)
     .UsingEntity<Dictionary<string, object>>(
         "MentorSkill",
