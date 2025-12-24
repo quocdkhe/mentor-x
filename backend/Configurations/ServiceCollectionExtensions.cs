@@ -14,6 +14,7 @@ namespace backend.Configurations
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
+            services.AddScoped<IMentorService, MentorService>();
             return services;
         }
     }
