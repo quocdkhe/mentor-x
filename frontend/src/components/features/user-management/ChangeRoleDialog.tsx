@@ -62,26 +62,26 @@ export function ChangeRoleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Change User Role</DialogTitle>
+            <DialogTitle>Đổi vai trò</DialogTitle>
             <DialogDescription>
-              Update the role for{" "}
+              Đổi vai trò cho người dùng: {" "}
               <span className="font-medium">{user?.name}</span>
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">
-                New Role
+                Vai trò
               </Label>
               <Select
                 value={selectedRole}
                 onValueChange={(value: UserRole) => setSelectedRole(value)}
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select a role" />
+                  <SelectValue placeholder="Chọn vai trò" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(USER_ROLES).map((r) => (
@@ -100,11 +100,11 @@ export function ChangeRoleDialog({
               onClick={() => onOpenChange(false)}
               disabled={updateRole.isPending}
             >
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" disabled={updateRole.isPending}>
               {updateRole.isPending ? <Spinner /> : null}
-              {updateRole.isPending ? "Saving..." : "Save Changes"}
+              {updateRole.isPending ? "Đang lưu..." : "Lưu thay đổi"}
             </Button>
           </DialogFooter>
         </form>

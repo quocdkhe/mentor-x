@@ -79,22 +79,22 @@ export function CreateUserDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Create User
+          <Plus className="h-4 w-4" />
+          Thêm
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Create New User</DialogTitle>
+            <DialogTitle>Thêm mới người dùng</DialogTitle>
             <DialogDescription>
-              Add a new user to the system. Fill in the required information.
+              Tạo mới người dùng bằng cách điền vào form bên dưới.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
-                Name *
+                Tên *
               </Label>
               <div className="col-span-3">
                 <Input
@@ -133,13 +133,13 @@ export function CreateUserDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="phone" className="text-right">
-                Phone
+                SĐT
               </Label>
               <Input id="phone" {...register("phone")} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">
-                Role
+                Vai trò
               </Label>
               <Select
                 value={role}
@@ -167,11 +167,11 @@ export function CreateUserDialog() {
                 setOpen(false);
               }}
             >
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" disabled={createUser.isPending}>
               {createUser.isPending ? <Spinner /> : null}
-              Create User
+              Tạo mới người dùng
             </Button>
           </DialogFooter>
         </form>

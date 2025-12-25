@@ -11,8 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { CreateUserDialog } from "@/components/dashboard/user-management/CreateUserDialog";
-import { ChangeRoleDialog } from "@/components/dashboard/user-management/ChangeRoleDialog";
+import { CreateUserDialog } from "@/components/features/user-management/CreateUserDialog";
+import { ChangeRoleDialog } from "@/components/features/user-management/ChangeRoleDialog";
 import {
   type UserResponseDTO,
 } from "@/types/user";
@@ -22,21 +22,11 @@ import { Users, UserCog } from "lucide-react";
 import DefaultSkeleton from "@/components/skeletons/default.skeleton";
 
 export default function UserManagement() {
-  // const [users, setUsers] = useState<UserResponseDTO[]>(
-  //   initialUsers as UserResponseDTO[]
-  // );
-  // test
 
-  const { data: users, isLoading, error } = useGetUserList();
-
-  const [selectedUser, setSelectedUser] = useState<UserResponseDTO | null>(
-    null
-  );
+  const { data: users, isLoading } = useGetUserList();
+  const [selectedUser, setSelectedUser] = useState<UserResponseDTO | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  // const { toast } = useToast();
 
-  // list handle
-  // Helper function to get initials from name
   const getInitials = (name: string): string => {
     return name
       .split(" ")
@@ -60,39 +50,28 @@ export default function UserManagement() {
     }
   };
 
-  // create handle
-  // const handleCreateUser = (userData: AdminCreateUser) => {
-  //   const newUser: AdminCreateUser = userData;
-  //   console.log("Created User:", newUser);
-
-  //   setCreateDialogOpen(true);
-  // };
-
-  // change role handle
 
   const handleChangeRoleClick = (user: UserResponseDTO) => {
-    console.log("Change role for:", user);
-
     setSelectedUser(user);
     setDialogOpen(true);
   };
 
   if (isLoading) {
-    return <DefaultSkeleton/>;
+    return <DefaultSkeleton />;
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-10">
+      <div className="container mx-auto py-5">
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Users className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
-                User Management
+                Quản lí người dùng
               </h1>
               <p className="text-muted-foreground">
-                Manage users and their roles in the system
+                Quản lý người dùng và vai trò của họ trong hệ thống
               </p>
             </div>
           </div>
@@ -103,19 +82,19 @@ export default function UserManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Avatar</TableHead>
+                <TableHead className="w-[80px]">Ảnh đại diện</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {!users || users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center">
-                    No users found.
+                    Không tìm thấy người dùng
                   </TableCell>
                 </TableRow>
               ) : (
@@ -146,7 +125,7 @@ export default function UserManagement() {
                         onClick={() => handleChangeRoleClick(user)}
                       >
                         <UserCog className="mr-2 h-4 w-4" />
-                        Change Role
+                        Đổi vai trò
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -163,7 +142,7 @@ export default function UserManagement() {
         />
 
         <div className="mt-4 text-sm text-muted-foreground">
-          Total users: {users ? users.length : 0}
+          Tổng số: {users ? users.length : 0}
         </div>
       </div>
     </div>
