@@ -1,21 +1,23 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CommentCard } from '@/components/forum/comment-card'
+import { CommentCard } from '@/components/features/forum/comment-card'
 import { ArrowLeft } from 'lucide-react';
 import { createLazyRoute, getRouteApi } from '@tanstack/react-router';
 import { formatDate } from '@/lib/utils';
-import TextEditor from '@/components/forum/text-editor';
+import TextEditor from '@/components/features/forum/text-editor';
+
+interface Author {
+  name: string;
+  avatar?: string;
+  role: string;
+}
 
 interface Comment {
   id: number;
-  author: {
-    name: string;
-    avatar?: string;
-    role: string;
-  };
+  author: Author;
   content: string;
   timestamp: string;
-  likes: number;
+  likes: Author[]; // Changed from number to Author[]
 }
 
 
@@ -36,7 +38,11 @@ const mockComments: Comment[] = [
     content:
       'Cho mình hỏi môn PMG201c retake FE mới năm có bị out suốt so với thì lần 1 không ạ 🤔',
     timestamp: '2024-01-11T21:27:00',
-    likes: 0,
+    likes: [
+      { name: "John Doe", role: "User", avatar: "..." },
+      { name: "Mary Smith", role: "User", avatar: "..." },
+      { name: "Robert Johnson", role: "Dev", avatar: "..." },
+    ]
   },
   {
     id: 2,
@@ -47,7 +53,11 @@ const mockComments: Comment[] = [
     content:
       'Theo mình biết thì đề retake thường khó hơn một chút so với lần đầu, nhưng không quá nhiều. Quan trọng là bạn cần ôn kỹ những phần đã sai ở lần trước.',
     timestamp: '2024-01-11T21:35:00',
-    likes: 3,
+    likes: [
+      { name: "John Doe", role: "User", avatar: "..." },
+      { name: "Mary Smith", role: "User", avatar: "..." },
+      { name: "Robert Johnson", role: "Dev", avatar: "..." },
+    ]
   },
   {
     id: 3,
@@ -58,7 +68,7 @@ const mockComments: Comment[] = [
     content:
       'Chào bạn! Mình là mentor môn PMG201c. Đề retake sẽ có độ khó tương đương với đề chính, nhưng format câu hỏi có thể khác một chút. Bạn nên focus vào các concepts chính và làm thêm bài tập để quen với nhiều dạng câu hỏi nhé.',
     timestamp: '2024-01-11T22:10:00',
-    likes: 12,
+    likes: []
   },
   {
     id: 4,
@@ -69,7 +79,7 @@ const mockComments: Comment[] = [
     content:
       'Mình cũng vừa retake môn này học kỳ trước. Cảm giác đề không khó hơn lần đầu đâu, chỉ là mình cần chuẩn bị kỹ hơn thôi. Chúc bạn thi tốt!',
     timestamp: '2024-01-11T22:45:00',
-    likes: 5,
+    likes: []
   },
 ];
 

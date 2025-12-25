@@ -3,7 +3,7 @@ import { Editor } from '@tinymce/tinymce-react';
 import type { AxiosError, AxiosProgressEvent } from 'axios';
 import api from '@/api/api'; // Your API path
 import type { Message } from '@/types/common'; // Your types
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/theme-provider'; // Import your hook
 
 export default function TextEditor() {
