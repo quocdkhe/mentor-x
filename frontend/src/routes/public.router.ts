@@ -13,14 +13,6 @@ const landingRoute = createRoute({
   path: "/",
 }).lazy(() => import("@/pages/public/landing").then((d) => d.Route));
 
-const forumListingRoute = createRoute({
-  getParentRoute: () => publicLayoutRoute,
-  path: "/forum",
-}).lazy(() => import("@/pages/public/forum-listing").then((d) => d.Route))
-
-const publicRouteTree = publicLayoutRoute.addChildren([
-  landingRoute,
-  forumListingRoute
-]);
+const publicRouteTree = publicLayoutRoute.addChildren([landingRoute]);
 
 export { publicRouteTree };
