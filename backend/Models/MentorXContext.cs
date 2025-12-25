@@ -74,6 +74,38 @@ public partial class MentorXContext : DbContext
                 .HasColumnName("updated_at");
         });
 
+        modelBuilder.Entity<ForumTopic>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("forum_topics_pkey");
+            
+            entity.ToTable("forum_topics");
+            
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            
+            entity.Property(e => e.Type)
+                .HasConversion<string>()
+                .HasColumnName("type");
+            
+            entity.Property(e => e.Topic)
+                .HasColumnName("topic");
+            
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_user");
+            
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 

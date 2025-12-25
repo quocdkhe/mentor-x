@@ -65,7 +65,7 @@ export default function TextEditor() {
         init={{
           height: 400,
           menubar: false,
-          plugins: ['image', 'link', 'lists'],
+          plugins: ['image', 'link', 'lists', 'code'],
           toolbar: 'undo redo | formatselect | bold italic | image | code | bullist numlist | link',
           images_upload_handler: handleImageUpload,
           language: 'vi',
