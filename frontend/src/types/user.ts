@@ -7,6 +7,14 @@ export interface UserResponseDTO {
   role: UserRole;
 }
 
+export interface AdminCreateUser {
+  name: string;
+  phone?: string;
+  email: string;
+  avatar?: string;
+  role: UserRole;
+}
+
 export interface RegisterDTO {
   name: string;
   phone: string;
@@ -24,6 +32,11 @@ export interface UpdateProfile {
   phone: string;
   avatar: string;
   password?: string;
+}
+
+export interface UpdateRole {
+  id: string;
+  role: UserRole;
 }
 
 export interface GoogleLoginRequest {
