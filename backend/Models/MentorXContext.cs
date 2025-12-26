@@ -18,6 +18,10 @@ public partial class MentorXContext : DbContext
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+    
+    public virtual DbSet<ForumTopic> ForumTopics { get; set; }
+    
+    public virtual DbSet<ForumPost> ForumPosts { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
