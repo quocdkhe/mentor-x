@@ -17,4 +17,6 @@ public partial class ForumPost
     public virtual User User { get; set; }
     
     public virtual ForumTopic ForumTopic { get; set; }
+    
+    public virtual ICollection<User> Likers { get; set; } = new List<User>();
 }

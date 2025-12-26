@@ -95,7 +95,7 @@ public partial class MentorXContext : DbContext
 
             entity.HasOne(d => d.User).WithMany()
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("fk_user");
+                .HasConstraintName("fk_forum_topic_created_by");
             
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")
@@ -103,7 +103,62 @@ public partial class MentorXContext : DbContext
             
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+        });
+
+        modelBuilder.Entity<ForumPost>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("forum_posts_pkey");
+
+            entity.ToTable("forum_posts");
+            
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            
+            entity.Property(e => e.Content)
+                .HasColumnName("content");
+            
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_forum_post_created_by");
+            
+            entity.Property(e => e.ForumTopicId).HasColumnName("forum_topic_id");
+            entity.HasOne(d => d.ForumTopic).WithMany(p => p.ForumPosts)
+                .HasForeignKey(d => d.ForumTopicId)
+                .HasConstraintName("fk_forum_topic_id");
+            
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
+            
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+
+            entity.HasMany(p => p.Likers)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "forum_post_likes",
+                    j => j
+                        .HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .HasConstraintName("fk_forum_post_likes_user")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<ForumPost>()
+                        .WithMany()
+                        .HasForeignKey("forum_post_id")
+                        .HasConstraintName("fk_forum_post_likes_post")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j =>
+                    {
+                        j.HasKey("forum_post_id", "user_id");
+                        j.ToTable("forum_post_likes");
+                    }
+                );
         });
 
         OnModelCreatingPartial(modelBuilder);
