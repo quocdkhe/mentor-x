@@ -1,6 +1,6 @@
 namespace backend.Models.DTOs;
 
-public class PaginationDTO<T>
+public class PaginationDto<T>
 {
     public List<T> Items { get; init; } = new();
     
