@@ -9,22 +9,23 @@ import { ThumbsUp, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import LikesInfo from './likes-info';
 import { cn } from '@/lib/utils';
 
-interface Author {
-  name: string;
-  avatar?: string;
-  role: string;
-}
 
-interface Comment {
+interface Post {
   id: number;
-  author: Author;
-  content: string; // HTML string
+  author: {
+    name: string;
+    avatar?: string;
+    role: string;
+  };
+  content: string;
   timestamp: string;
-  likes: Author[];
+  likes: {
+    name: string;
+  }[];
 }
 
 interface CommentCardProps {
-  comment: Comment;
+  post: Post;
   commentNumber: number;
 }
 
@@ -40,7 +41,7 @@ const getInitials = (name: string) => {
 // Maximum height for collapsed content
 const MAX_HEIGHT = 160;
 
-export function CommentCard({ comment, commentNumber }: CommentCardProps) {
+export function CommentCard({ post, commentNumber }: CommentCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   // Track if content is overflowing - defaults to true to show button initially
   const [showToggle, setShowToggle] = useState(true);
@@ -60,15 +61,15 @@ export function CommentCard({ comment, commentNumber }: CommentCardProps) {
         {/* Left Side: User Info */}
         <div className="flex flex-col items-center gap-3 shrink-0">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={comment.author.avatar} />
+            <AvatarImage src={post.author.avatar} />
             <AvatarFallback className="text-xl">
-              {getInitials(comment.author.name)}
+              {getInitials(post.author.name)}
             </AvatarFallback>
           </Avatar>
           <div className="text-center space-y-1">
-            <p className="font-semibold text-sm">{comment.author.name}</p>
+            <p className="font-semibold text-sm">{post.author.name}</p>
             <Badge variant="secondary" className="text-xs">
-              {comment.author.role}
+              {post.author.role}
             </Badge>
           </div>
         </div>
@@ -79,7 +80,7 @@ export function CommentCard({ comment, commentNumber }: CommentCardProps) {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <div className="flex items-start justify-between mb-2">
-            <p className="text-sm text-muted-foreground">{formatDate(comment.timestamp)}</p>
+            <p className="text-sm text-muted-foreground">{formatDate(post.timestamp)}</p>
             <span className="text-sm text-muted-foreground">#{commentNumber}</span>
           </div>
 
@@ -94,7 +95,7 @@ export function CommentCard({ comment, commentNumber }: CommentCardProps) {
                   // Apply max height only when collapsed and content overflows
                   !isExpanded && showToggle ? `max-h-40` : ""
                 )}
-                dangerouslySetInnerHTML={{ __html: comment.content }}
+                dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
               {/* Gradient overlay - only shows when collapsed and overflowing */}
@@ -132,7 +133,7 @@ export function CommentCard({ comment, commentNumber }: CommentCardProps) {
           {/* Footer Area */}
           <div>
             {/* Likes Summary Box */}
-            <LikesInfo likers={comment.likes} />
+            <LikesInfo likers={post.likes} />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-6">
@@ -142,7 +143,7 @@ export function CommentCard({ comment, commentNumber }: CommentCardProps) {
                 className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer"
               >
                 <ThumbsUp className="h-4 w-4" />
-                <span className="font-medium">Like {comment.likes.length > 0 && `(${comment.likes.length})`}</span>
+                <span className="font-medium">Like {post.likes.length > 0 && `(${post.likes.length})`}</span>
               </Button>
 
               <Button

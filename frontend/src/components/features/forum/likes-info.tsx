@@ -1,10 +1,4 @@
-interface Author {
-  name: string;
-  avatar?: string;
-  role: string;
-}
-
-export default function LikesInfo({ likers }: { likers: Author[] }) {
+export default function LikesInfo({ likers }: { likers: { name: string }[] }) {
   if (!likers || likers.length === 0) return null;
 
   const count = likers.length;

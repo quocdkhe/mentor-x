@@ -52,6 +52,14 @@ export function ForumListing() {
     return <div className="p-6 text-red-500">Failed to load topics</div>;
   }
 
+  function handlePageChange(page: number) {
+    setCurrentPage(page);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
   const { items, totalItems, currentPage: page } = data;
   const startIndex = (page - 1) * pageSize;
 
@@ -136,7 +144,7 @@ export function ForumListing() {
         {/* Pagination */}
         <ApiPagination
           pagination={data}
-          onPageChange={setCurrentPage}
+          onPageChange={handlePageChange}
         />
       </div>
     </div>

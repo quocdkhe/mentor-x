@@ -10,7 +10,7 @@ export function useGetTopicPagination(page: number, pageSize: number) {
     queryKey: ["forum-topics", page, pageSize],
     queryFn: async (): Promise<PaginationDto<ForumTopic>> => {
       const res = await api.get<PaginationDto<ForumTopic>>(
-        `/forum-topics?page=${page}&pageSize=${pageSize}`
+        `/forum/topics?page=${page}&pageSize=${pageSize}`
       );
       return res.data;
     },

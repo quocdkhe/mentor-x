@@ -9,23 +9,16 @@ type PaginationProps = {
 
 function getPageNumbers(current: number, total: number) {
   const pages: (number | 'ellipsis')[] = [];
-
-  if (total <= 7) {
+  if (total <= 3) {
     return Array.from({ length: total }, (_, i) => i + 1);
   }
-
   pages.push(1);
-
   if (current > 3) pages.push('ellipsis');
-
   for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
     pages.push(i);
   }
-
   if (current < total - 2) pages.push('ellipsis');
-
   pages.push(total);
-
   return pages;
 }
 

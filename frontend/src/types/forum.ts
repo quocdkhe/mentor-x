@@ -9,6 +9,20 @@ export interface ForumTopic {
   };
 }
 
+export interface Post {
+  id: number;
+  author: {
+    name: string;
+    avatar?: string;
+    role: string;
+  };
+  content: string;
+  timestamp: string;
+  likes: {
+    name: string;
+  }[];
+}
+
 export const TOPIC_TYPES = {
   QUESTION_AND_ANSWER: "QuestionAndAnswer",
   NEWS: "News",

@@ -6,18 +6,19 @@ import { createLazyRoute, getRouteApi, Link } from '@tanstack/react-router';
 import { formatDate } from '@/lib/utils';
 import TextEditor from '@/components/features/forum/text-editor';
 
-interface Author {
-  name: string;
-  avatar?: string;
-  role: string;
-}
 
-interface Comment {
+interface Post {
   id: number;
-  author: Author;
+  author: {
+    name: string;
+    avatar?: string;
+    role: string;
+  };
   content: string;
   timestamp: string;
-  likes: Author[]; // Changed from number to Author[]
+  likes: {
+    name: string;
+  }[];
 }
 
 
@@ -28,7 +29,7 @@ const mockTopic = {
   dateCreated: '2024-01-15T09:41:00',
 };
 
-const mockComments: Comment[] = [
+const mockComments: Post[] = [
   {
     id: 1,
     author: {
@@ -39,9 +40,9 @@ const mockComments: Comment[] = [
       'Cho mình hỏi môn PMG201c retake FE mới năm có bị out suốt so với thì lần 1 không ạ 🤔',
     timestamp: '2024-01-11T21:27:00',
     likes: [
-      { name: "John Doe", role: "User", avatar: "..." },
-      { name: "Mary Smith", role: "User", avatar: "..." },
-      { name: "Robert Johnson", role: "Dev", avatar: "..." },
+      { name: "John Doe" },
+      { name: "Mary Smith" },
+      { name: "Robert Johnson" },
     ]
   },
   {
@@ -54,9 +55,9 @@ const mockComments: Comment[] = [
       'Theo mình biết thì đề retake thường khó hơn một chút so với lần đầu, nhưng không quá nhiều. Quan trọng là bạn cần ôn kỹ những phần đã sai ở lần trước.',
     timestamp: '2024-01-11T21:35:00',
     likes: [
-      { name: "John Doe", role: "User", avatar: "..." },
-      { name: "Mary Smith", role: "User", avatar: "..." },
-      { name: "Robert Johnson", role: "Dev", avatar: "..." },
+      { name: "John Doe", },
+      { name: "Mary Smith" },
+      { name: "Robert Johnson" },
     ]
   },
   {
@@ -121,8 +122,8 @@ export function TopicDetail() {
         </div>
 
         <div className="space-y-4">
-          {mockComments.map((comment, index) => (
-            <CommentCard key={comment.id} comment={comment} commentNumber={index + 1} />
+          {mockComments.map((post, index) => (
+            <CommentCard key={post.id} post={post} commentNumber={index + 1} />
           ))}
         </div>
 
