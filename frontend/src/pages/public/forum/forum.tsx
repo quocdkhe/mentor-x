@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useGetTopicPagination } from "@/api/forum";
+import { ApiPagination } from "@/components/api-pagination";
+import { AddTopicDialog } from "@/components/features/forum/add-topic-dialog";
+import { ForumTableSkeleton } from "@/components/skeletons/forum-table-skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,12 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle } from "lucide-react";
-import { createLazyRoute, Link } from "@tanstack/react-router";
 import { formatDate, getInitials, getTopicTypeMeta } from "@/lib/utils";
-import { useGetTopicPagination } from "@/api/forum";
-import { ApiPagination } from "@/components/api-pagination";
-import { ForumTableSkeleton } from "@/components/skeletons/forum-table-skeleton";
+import { createLazyRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 
 export function ForumListing() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,11 +49,7 @@ export function ForumListing() {
             {Math.min(startIndex + items.length, totalItems)} trong tổng số {" "}
             {totalItems} chủ đề
           </div>
-
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create New Topic
-          </Button>
+          <AddTopicDialog />
         </div>
 
         {/* Table */}
