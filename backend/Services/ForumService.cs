@@ -50,8 +50,9 @@ public class ForumService : IForumService
                 Title = t.Topic,
                 Type = t.Type.ToString(),
                 DateCreated = t.CreatedAt,
-                Author = new ForumTopicDto.AuthorDto
+                Author = new AuthorDto
                 {
+                    Role = t.User.Role.ToString(),
                     Name = t.User.Name,
                     Avatar = t.User.Avatar
                 }
@@ -90,7 +91,7 @@ public class ForumService : IForumService
                 Content = p.Content,
                 Timestamp = p.CreatedAt.ToString(),
                 Likes = p.Likers.Select(u => new ForumPostDto.LikeDto { Name = u.Name }).ToList(),
-                Author = new ForumPostDto.AuthorDto
+                Author = new AuthorDto
                 {
                     Name = p.User.Name,
                     Avatar = p.User.Avatar,

@@ -3,19 +3,18 @@ export interface ForumTopic {
   title: string;
   type: TopicType;
   dateCreated: Date;
-  author: {
-    name: string;
-    avatar?: string;
-  };
+  author: Author;
+}
+
+interface Author {
+  name: string;
+  avatar?: string;
+  role: string;
 }
 
 export interface Post {
   id: number;
-  author: {
-    name: string;
-    avatar?: string;
-    role: string;
-  };
+  author: Author;
   content: string;
   timestamp: string;
   likes: {
