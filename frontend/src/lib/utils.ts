@@ -1,3 +1,6 @@
+import type { Badge } from "@/components/ui/badge";
+import { TOPIC_TYPES, type TopicType } from "@/types/forum";
+import type { VariantProps } from "class-variance-authority";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -5,7 +8,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(dateString: string) {
+export function formatDate(dateString: string | undefined) {
+  if (!dateString) return "";
   const date = new Date(dateString);
   const now = new Date();
   const diffInHours = Math.floor(
@@ -53,4 +57,29 @@ export function getInitials(name: string) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+}
+
+export function getTopicTypeMeta(type: TopicType | undefined): {
+  label: string;
+  variant: VariantProps<typeof Badge>["variant"];
+} {
+  if (!type) {
+    return { label: "Khác", variant: "outline" };
+  }
+  switch (type) {
+    case TOPIC_TYPES.QUESTION_AND_ANSWER:
+      return { label: "Hỏi & Đáp", variant: "default" };
+
+    case TOPIC_TYPES.NEWS:
+      return { label: "Tin tức", variant: "secondary" };
+
+    case TOPIC_TYPES.DISCUSSIOIN:
+      return { label: "Thảo luận", variant: "outline" };
+
+    case TOPIC_TYPES.SUGGESTION:
+      return { label: "Đề xuất", variant: "destructive" };
+
+    default:
+      return { label: "Khác", variant: "outline" };
+  }
 }

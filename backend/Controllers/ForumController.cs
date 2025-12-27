@@ -84,6 +84,17 @@ namespace backend.Controllers
         
             return Ok(result.Data);
         }
+
+        [HttpGet("topics/{topicId}")]
+        public async Task<ActionResult<ForumTopic>> GetPostById(Guid topicId)
+        {
+            var result = await _forumService.GetTopicById(topicId);
+            if (!result.Success)
+            {
+                return NotFound(new Message(result.Message));
+            }
+            return Ok(result.Data);
+        }
     }
 }
 

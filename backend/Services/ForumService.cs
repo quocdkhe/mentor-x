@@ -127,5 +127,29 @@ public class ForumService : IForumService
         
         return ServiceResult<ForumPost>.Ok(result.Entity);
     }
+
+    public async Task<ServiceResult<ForumTopicDto>>  GetTopicById(Guid id)
+    {
+        var query = _context.ForumTopics
+            .AsNoTracking();
+
+        var result = await query
+            .Where(t => t.Id == id)
+            .Select(t => new ForumTopicDto
+            {
+                Id = t.Id.ToString(),
+                Title = t.Topic,
+                Type = t.Type.ToString(),
+                DateCreated = t.CreatedAt,
+                Author = new AuthorDto
+                {
+                    Role = t.User.Role.ToString(),
+                    Name = t.User.Name,
+                    Avatar = t.User.Avatar
+                }
+            }).FirstOrDefaultAsync();
+        return result != null ? 
+            ServiceResult<ForumTopicDto>.Ok(result) : ServiceResult<ForumTopicDto>.Fail("Không tìm thấy topic");
+    }
     
 }

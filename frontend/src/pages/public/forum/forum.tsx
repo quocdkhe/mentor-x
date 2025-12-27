@@ -12,33 +12,10 @@ import {
 } from "@/components/ui/table";
 import { PlusCircle } from "lucide-react";
 import { createLazyRoute, Link } from "@tanstack/react-router";
-import { formatDate, getInitials } from "@/lib/utils";
+import { formatDate, getInitials, getTopicTypeMeta } from "@/lib/utils";
 import { useGetTopicPagination } from "@/api/forum";
 import { ApiPagination } from "@/components/api-pagination";
 import { ForumTableSkeleton } from "@/components/skeletons/forum-table-skeleton";
-import { TOPIC_TYPES, type TopicType } from "@/types/forum";
-import type { VariantProps } from "class-variance-authority";
-
-function getTopicTypeMeta(
-  type: TopicType
-): { label: string; variant: VariantProps<typeof Badge>["variant"] } {
-  switch (type) {
-    case TOPIC_TYPES.QUESTION_AND_ANSWER:
-      return { label: "Hỏi & Đáp", variant: "default" };
-
-    case TOPIC_TYPES.NEWS:
-      return { label: "Tin tức", variant: "secondary" };
-
-    case TOPIC_TYPES.DISCUSSIOIN:
-      return { label: "Thảo luận", variant: "outline" };
-
-    case TOPIC_TYPES.SUGGESTION:
-      return { label: "Đề xuất", variant: "destructive" };
-
-    default:
-      return { label: "Khác", variant: "outline" };
-  }
-}
 
 export function ForumListing() {
   const [currentPage, setCurrentPage] = useState(1);
