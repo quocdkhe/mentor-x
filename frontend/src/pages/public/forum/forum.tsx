@@ -22,6 +22,7 @@ export function ForumListing() {
   const queryClient = useQueryClient();
   const pageSize = 10;
   const { data, isLoading, isError } = useGetTopicPagination(currentPage, pageSize);
+
   if (isLoading) {
     return <ForumTableSkeleton />;
   }

@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { ApiPagination } from '@/components/api-pagination';
 import { formatDate, getTopicTypeMeta } from '@/lib/utils';
 import { ForumPostSkeletonList } from '@/components/skeletons/topic-detail-skeleton';
+import { useLikeOrDislikePost } from '@/api/forum';
 
 const route = getRouteApi('/public/forum/topic/$topicId');
 

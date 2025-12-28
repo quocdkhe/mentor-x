@@ -8,21 +8,9 @@ import { formatDate } from '@/lib/utils';
 import { ThumbsUp, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import LikesInfo from './likes-info';
 import { cn } from '@/lib/utils';
-
-
-interface Post {
-  id: number;
-  author: {
-    name: string;
-    avatar?: string;
-    role: string;
-  };
-  content: string;
-  timestamp: string;
-  likes: {
-    name: string;
-  }[];
-}
+import { useLikeOrDislikePost } from '@/api/forum';
+import type { Post } from '@/types/forum';
+import { useAppSelector } from '@/store/hooks';
 
 interface CommentCardProps {
   post: Post;
@@ -42,10 +30,13 @@ const getInitials = (name: string) => {
 const MAX_HEIGHT = 160;
 
 export function CommentCard({ post, commentNumber }: CommentCardProps) {
+  const { user } = useAppSelector((state) => state.auth);
   const [isExpanded, setIsExpanded] = useState(false);
   // Track if content is overflowing - defaults to true to show button initially
   const [showToggle, setShowToggle] = useState(true);
+  const [likers, setLikers] = useState<{ name: string }[]>(post.likes);
   const contentRef = useRef<HTMLDivElement>(null);
+  const likeOrDislikePostMutation = useLikeOrDislikePost(post.id);
 
   // Callback ref to check overflow when element is mounted/updated
   const handleContentRef = (node: HTMLDivElement | null) => {
@@ -54,6 +45,17 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
       setShowToggle(node.scrollHeight > MAX_HEIGHT);
     }
   };
+
+  function handeLikeOrDislikePost() {
+    likeOrDislikePostMutation.mutate(undefined, {
+      onSuccess: () => {
+        setLikers((prev) => [...prev, { name: user?.name || 'You' }]);
+      },
+      onError: (error) => {
+        console.log(error);
+      },
+    });
+  }
 
   return (
     <Card className="p-6">
@@ -133,7 +135,7 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
           {/* Footer Area */}
           <div>
             {/* Likes Summary Box */}
-            <LikesInfo likers={post.likes} />
+            <LikesInfo likers={likers} />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-6">
@@ -141,9 +143,10 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer"
+                onClick={handeLikeOrDislikePost}
               >
                 <ThumbsUp className="h-4 w-4" />
-                <span className="font-medium">Like {post.likes.length > 0 && `(${post.likes.length})`}</span>
+                <span className="font-medium">Like {likers.length > 0 && `(${likers.length})`}</span>
               </Button>
 
               <Button

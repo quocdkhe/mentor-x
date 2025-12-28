@@ -63,3 +63,12 @@ export function useCreatePost(topicId: string) {
     },
   });
 }
+
+export function useLikeOrDislikePost(postId: string){
+  return useMutation<Message, AxiosError<Message>>({
+    mutationFn: async (): Promise<Message> => {
+      const res = await api.patch<Message>(`/forum/topics/posts/${postId}`);
+      return res.data;
+    },
+  });
+}

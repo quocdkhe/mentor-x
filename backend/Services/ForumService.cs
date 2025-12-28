@@ -159,36 +159,33 @@ public class ForumService : IForumService
             return ServiceResult<Message>.Fail("Không tìm thấy người dùng");
         }
 
-        if (!await _context.ForumPosts.AnyAsync(p => p.Id == postId))
+        var post = await _context.ForumPosts
+            .Include(p => p.Likers)
+            .FirstOrDefaultAsync(p => p.Id == postId);
+
+        if (post == null)
         {
             return ServiceResult<Message>.Fail("Không tìm thấy bài viết");
         }
 
-        // check if the like already exists (join table check)
-        bool alreadyLiked = await _context.ForumPosts
-            .AnyAsync(p =>
-                p.Id == postId &&
-                p.Likers.Any(u => u.Id == userId)
-            );
+        var existingUser = post.Likers.FirstOrDefault(u => u.Id == userId);
 
-        var post = new ForumPost { Id = postId };
-        _context.ForumPosts.Attach(post);
-
-        var user = new User { Id = userId };
-        _context.Users.Attach(user);
-
-        if (alreadyLiked)
+        if (existingUser != null)
         {
-            post.Likers.Remove(user); // dislike
+            post.Likers.Remove(existingUser); 
         }
         else
         {
-            post.Likers.Add(user); // like
+            var user = new User { Id = userId };
+            _context.Users.Attach(user);  
+            post.Likers.Add(user);
         }
 
         await _context.SaveChangesAsync();
 
         return ServiceResult<Message>.Ok(new Message("ok"));
     }
+
+
 
 }
