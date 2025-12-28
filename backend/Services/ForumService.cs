@@ -16,17 +16,17 @@ public class ForumService : IForumService
         _context = context;
     }
     
-    public async Task<ServiceResult<ForumTopic>> CreateNewTopic(ForumTopic topic)
+    public async Task<ServiceResult<Message>> CreateNewTopic(ForumTopic topic)
     {
         if (!await _context.Users.AnyAsync(e => e.Id == topic.UserId))
         {
-            return ServiceResult<ForumTopic>.Fail("Không tìm thấy người dùng");
+            return ServiceResult<Message>.Fail("Không tìm thấy người dùng");
         }
         
         var result = await _context.ForumTopics.AddAsync(topic);
         await _context.SaveChangesAsync(); 
         
-        return ServiceResult<ForumTopic>.Ok(result.Entity);
+        return ServiceResult<Message>.Ok(new Message("Tạo chủ đề thành công"));
     }
     
     public async Task<PaginationDto<ForumTopicDto>> GetAllTopicPagination(
@@ -110,25 +110,25 @@ public class ForumService : IForumService
         };
     }
 
-    public async Task<ServiceResult<ForumPost>> CreateNewPost(ForumPost post)
+    public async Task<ServiceResult<Message>> CreateNewPost(ForumPost post)
     {
         if (!await _context.Users.AnyAsync(e => e.Id == post.UserId))
         {
-            return ServiceResult<ForumPost>.Fail("Không tìm thấy người dùng");
+            return ServiceResult<Message>.Fail("Không tìm thấy người dùng");
         }
 
         if (!await _context.ForumTopics.AnyAsync(t => t.Id == post.ForumTopicId))
         {
-            return ServiceResult<ForumPost>.Fail("Không tìm thấy chủ đề");
+            return ServiceResult<Message>.Fail("Không tìm thấy chủ đề");
         }
         
         var result = await _context.ForumPosts.AddAsync(post);
         await _context.SaveChangesAsync(); 
         
-        return ServiceResult<ForumPost>.Ok(result.Entity);
+        return ServiceResult<Message>.Ok(new Message("Đăng bài thành công"));
     }
 
-    public async Task<ServiceResult<ForumTopicDto>>  GetTopicById(Guid id)
+    public async Task<ServiceResult<ForumTopicDto>> GetTopicById(Guid id)
     {
         var query = _context.ForumTopics
             .AsNoTracking();
@@ -151,5 +151,44 @@ public class ForumService : IForumService
         return result != null ? 
             ServiceResult<ForumTopicDto>.Ok(result) : ServiceResult<ForumTopicDto>.Fail("Không tìm thấy topic");
     }
-    
+
+    public async Task<ServiceResult<Message>> LikePost(Guid postId, Guid userId)
+    {
+        if (!await _context.Users.AnyAsync(u => u.Id == userId))
+        {
+            return ServiceResult<Message>.Fail("Không tìm thấy người dùng");
+        }
+
+        if (!await _context.ForumPosts.AnyAsync(p => p.Id == postId))
+        {
+            return ServiceResult<Message>.Fail("Không tìm thấy bài viết");
+        }
+
+        // check if the like already exists (join table check)
+        bool alreadyLiked = await _context.ForumPosts
+            .AnyAsync(p =>
+                p.Id == postId &&
+                p.Likers.Any(u => u.Id == userId)
+            );
+
+        var post = new ForumPost { Id = postId };
+        _context.ForumPosts.Attach(post);
+
+        var user = new User { Id = userId };
+        _context.Users.Attach(user);
+
+        if (alreadyLiked)
+        {
+            post.Likers.Remove(user); // dislike
+        }
+        else
+        {
+            post.Likers.Add(user); // like
+        }
+
+        await _context.SaveChangesAsync();
+
+        return ServiceResult<Message>.Ok(new Message("ok"));
+    }
+
 }

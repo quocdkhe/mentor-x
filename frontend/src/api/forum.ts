@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./api";
 import type { AxiosError } from "axios";
 import type { Message } from "@/types/common";
-import type { CreateTopic, ForumTopic, Post } from "@/types/forum";
+import type { CreatePost, CreateTopic, ForumTopic, Post } from "@/types/forum";
 import type { PaginationDto } from "@/types/pagination";
 
 export function useGetTopicPagination(page: number, pageSize: number) {
@@ -50,6 +50,15 @@ export function useCreateTopic() {
   return useMutation<Message, AxiosError<Message>, CreateTopic>({
     mutationFn: async (topic: CreateTopic): Promise<Message> => {
       const res = await api.post<Message>(`/forum/topics`, topic);
+      return res.data;
+    },
+  });
+}
+
+export function useCreatePost(topicId: string) {
+  return useMutation<Message, AxiosError<Message>, CreatePost>({
+    mutationFn: async (post: CreatePost): Promise<Message> => {
+      const res = await api.post<Message>(`/forum/topics/${topicId}/posts`, post);
       return res.data;
     },
   });

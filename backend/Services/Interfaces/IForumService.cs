@@ -6,13 +6,15 @@ namespace backend.Services.Interfaces;
 
 public interface IForumService
 {
-    Task<ServiceResult<ForumTopic>> CreateNewTopic(ForumTopic topic);
+    Task<ServiceResult<Message>> CreateNewTopic(ForumTopic topic);
 
     Task<PaginationDto<ForumTopicDto>> GetAllTopicPagination(PaginationRequest paginationRequest);
     
     Task<PaginationDto<ForumPostDto>> GetAllPostPagination(Guid topicId, PaginationRequest paginationRequest);
     
-    Task<ServiceResult<ForumPost>> CreateNewPost(ForumPost post);
+    Task<ServiceResult<Message>> CreateNewPost(ForumPost post);
     
     Task<ServiceResult<ForumTopicDto>> GetTopicById(Guid id);
+
+    Task<ServiceResult<Message>> LikePost(Guid postId, Guid userId);
 }   

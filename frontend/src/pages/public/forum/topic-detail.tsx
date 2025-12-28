@@ -66,7 +66,7 @@ export function TopicDetail() {
           ))}
         </div>
 
-        <TextEditor />
+        <TextEditor topicId={topicId} />
         <ApiPagination
           pagination={postsQuery.data}
           onPageChange={handlePageChange}

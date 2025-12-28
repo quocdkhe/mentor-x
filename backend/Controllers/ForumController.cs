@@ -6,6 +6,7 @@ using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Forum;
 using backend.Services.Interfaces;
+using backend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,13 +26,9 @@ namespace backend.Controllers
         
         [HttpPost("topics")]
         [Authorize]
-        public async Task<ActionResult<ForumTopic>> CreateNewTopic([FromBody] CreateTopicDTO dto)
+        public async Task<ActionResult<Message>> CreateNewTopic([FromBody] CreateTopicDTO dto)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userIdString == null || !Guid.TryParse(userIdString, out Guid userId))
-            {
-                return Unauthorized(new Message("Không tìm thấy user"));
-            }
+            var userId = User.GetUserId();
             
             var newTopic = new ForumTopic
             {
@@ -62,13 +59,9 @@ namespace backend.Controllers
         
         [HttpPost("topics/{topicId}/posts")]
         [Authorize]
-        public async Task<ActionResult<ForumPost>> CreateNewPost(Guid topicId, [FromBody] CreatePostDto dto)
+        public async Task<ActionResult<Message>> CreateNewPost(Guid topicId, [FromBody] CreatePostDto dto)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userIdString == null || !Guid.TryParse(userIdString, out Guid userId))
-            {
-                return Unauthorized(new Message("Không tìm thấy user"));
-            }
+            var userId = User.GetUserId();
             ForumPost newPost = new ForumPost
             {
                 Content = dto.Content,
@@ -93,6 +86,20 @@ namespace backend.Controllers
             {
                 return NotFound(new Message(result.Message));
             }
+            return Ok(result.Data);
+        }
+
+        [HttpPatch("topics/posts/{postId}")]
+        [Authorize]
+        public async Task<ActionResult<Message>> LikeOrDislikePostById(Guid postId)
+        {
+            var userId = User.GetUserId();
+            var result = await _forumService.LikePost(postId, userId);
+            if (!result.Success)
+            {
+                return NotFound(result.Message);
+            }
+
             return Ok(result.Data);
         }
     }

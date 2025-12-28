@@ -27,6 +27,10 @@ export interface CreateTopic {
   type: TopicType;
 }
 
+export interface CreatePost {
+  content: string;
+}
+
 export const TOPIC_TYPES = {
   QUESTION_AND_ANSWER: "QuestionAndAnswer",
   NEWS: "News",
