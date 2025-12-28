@@ -1,23 +1,37 @@
+import { useAppSelector } from "@/store/hooks";
+
 export default function LikesInfo({ likers }: { likers: { name: string }[] }) {
+  const { user } = useAppSelector((state) => state.auth);
+
   if (!likers || likers.length === 0) return null;
 
-  const count = likers.length;
-  const first = likers[0].name;
-  const second = likers[1]?.name;
+  const processedLikers = [...likers];
+  const userIndex = processedLikers.findIndex((liker) => liker.name === user?.name);
+
+  if (userIndex !== -1) {
+    // Remove user from current position
+    processedLikers.splice(userIndex, 1);
+    // Add "Bạn" to the beginning
+    processedLikers.unshift({ name: "Bạn" });
+  }
+
+  const count = processedLikers.length;
+  const first = processedLikers[0].name;
+  const second = processedLikers[1]?.name;
 
   let textContent;
 
   if (count === 1) {
     textContent = (
       <span>
-        <span className="font-semibold text-foreground">{first}</span> liked this
+        <span className="font-semibold text-foreground">{first}</span> đã thích bài viết này
       </span>
     );
   } else if (count === 2) {
     textContent = (
       <span>
-        <span className="font-semibold text-foreground">{first}</span> and{' '}
-        <span className="font-semibold text-foreground">{second}</span> liked this
+        <span className="font-semibold text-foreground">{first}</span> và{' '}
+        <span className="font-semibold text-foreground">{second}</span> đã thích bài viết này
       </span>
     );
   } else {
@@ -25,8 +39,8 @@ export default function LikesInfo({ likers }: { likers: { name: string }[] }) {
     textContent = (
       <span>
         <span className="font-semibold text-foreground">{first}</span>,{' '}
-        <span className="font-semibold text-foreground">{second}</span> and{' '}
-        <span className="font-semibold text-foreground">{othersCount} others</span> liked this
+        <span className="font-semibold text-foreground">{second}</span> và{' '}
+        <span className="font-semibold text-foreground">{othersCount} người khác</span> đã thích bài viết này
       </span>
     );
   }

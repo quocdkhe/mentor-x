@@ -14,7 +14,6 @@ export function useGetTopicPagination(page: number, pageSize: number) {
       );
       return res.data;
     },
-    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -31,7 +30,6 @@ export function useGetAllPostsByTopicId(
       );
       return res.data;
     },
-    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -42,7 +40,6 @@ export function useGetTopicById(topicId: string) {
       const res = await api.get<ForumTopic>(`/forum/topics/${topicId}`);
       return res.data;
     },
-    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -58,13 +55,16 @@ export function useCreateTopic() {
 export function useCreatePost(topicId: string) {
   return useMutation<Message, AxiosError<Message>, CreatePost>({
     mutationFn: async (post: CreatePost): Promise<Message> => {
-      const res = await api.post<Message>(`/forum/topics/${topicId}/posts`, post);
+      const res = await api.post<Message>(
+        `/forum/topics/${topicId}/posts`,
+        post
+      );
       return res.data;
     },
   });
 }
 
-export function useLikeOrDislikePost(postId: string){
+export function useLikeOrDislikePost(postId: string) {
   return useMutation<Message, AxiosError<Message>>({
     mutationFn: async (): Promise<Message> => {
       const res = await api.patch<Message>(`/forum/topics/posts/${postId}`);

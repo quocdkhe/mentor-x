@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import type { AxiosError, AxiosProgressEvent } from 'axios';
 import api from '@/api/api'; // Your API path
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function TextEditor({ initContent, topicId }: { initContent?: string, topicId: string }) {
-  const editorRef = useRef<string>(initContent || "");
+  const editorRef = useRef<string>(initContent || "abc");
   const apiKey = import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key';
   const createPostMutation = useCreatePost(topicId);
   const { theme } = useTheme();
@@ -21,6 +21,10 @@ export default function TextEditor({ initContent, topicId }: { initContent?: str
     }
     return theme === 'dark';
   }, [theme]);
+
+  const [loadedTheme, setLoadedTheme] = useState<"dark-mode" | "light-mode" | null>(null);
+  const currentThemeKey = isDark ? "dark-mode" : "light-mode";
+  const isLoading = loadedTheme !== currentThemeKey;
 
   const onSubmit = (content: string) => {
     createPostMutation.mutate({ content }, {
@@ -37,6 +41,7 @@ export default function TextEditor({ initContent, topicId }: { initContent?: str
   };
 
   const handleImageUpload = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     blobInfo: any,
     progress: (percent: number) => void
   ): Promise<string> => {
@@ -61,30 +66,41 @@ export default function TextEditor({ initContent, topicId }: { initContent?: str
   };
   return (
     <>
-      <Editor
-        // This makes TinyMCE reload with the new skin
-        key={isDark ? "dark-mode" : "light-mode"}
+      <div className="relative min-h-[400px]">
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50">
+            <Spinner />
+          </div>
+        )}
+        <div style={{ opacity: isLoading ? 0 : 1 }} className="transition-opacity duration-200">
+          <Editor
+            // This makes TinyMCE reload with the new skin
+            key={currentThemeKey}
 
-        apiKey={apiKey}
-        onInit={(evt, editor) => (editorRef.current = editor)}
+            apiKey={apiKey}
+            onInit={() => {
+              setLoadedTheme(currentThemeKey);
+            }}
 
-        // 5. Use 'value' + 'onEditorChange' instead of 'initialValue'
-        value={editorRef.current}
-        onEditorChange={(newValue) => editorRef.current = newValue}
+            // 5. Use 'value' + 'onEditorChange' instead of 'initialValue'
+            value={initContent || ""}
+            onEditorChange={(newValue) => editorRef.current = newValue}
 
-        init={{
-          height: 400,
-          menubar: false,
-          plugins: ['image', 'link', 'lists', 'code'],
-          toolbar: 'undo redo | formatselect | bold italic | image | code | bullist numlist | link',
-          images_upload_handler: handleImageUpload,
-          language: 'vi',
+            init={{
+              height: 400,
+              menubar: false,
+              plugins: ['image', 'link', 'lists', 'code'],
+              toolbar: 'undo redo | formatselect | bold italic | image | code | bullist numlist | link',
+              images_upload_handler: handleImageUpload,
+              language: 'vi',
 
-          // 6. Dynamic Skin Configuration
-          skin: isDark ? "oxide-dark" : "snow",
-          content_css: isDark ? "dark" : "default",
-        }}
-      />
+              // 6. Dynamic Skin Configuration
+              skin: isDark ? "oxide-dark" : "snow",
+              content_css: isDark ? "dark" : "default",
+            }}
+          />
+        </div>
+      </div>
       <div className="flex justify-end gap-2 mt-4">
         <Button disabled={createPostMutation.isPending} onClick={() => onSubmit(editorRef.current)}>
           {createPostMutation.isPending && <Spinner />} Đăng bình luận

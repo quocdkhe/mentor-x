@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 import { useLikeOrDislikePost } from '@/api/forum';
 import type { Post } from '@/types/forum';
 import { useAppSelector } from '@/store/hooks';
-
 interface CommentCardProps {
   post: Post;
   commentNumber: number;
@@ -38,6 +37,8 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const likeOrDislikePostMutation = useLikeOrDislikePost(post.id);
 
+  const isLiked = likers.some((liker) => liker.name === user?.name);
+
   // Callback ref to check overflow when element is mounted/updated
   const handleContentRef = (node: HTMLDivElement | null) => {
     contentRef.current = node;
@@ -49,7 +50,11 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
   function handeLikeOrDislikePost() {
     likeOrDislikePostMutation.mutate(undefined, {
       onSuccess: () => {
-        setLikers((prev) => [...prev, { name: user?.name || 'You' }]);
+        if (isLiked) {
+          setLikers((prev) => prev.filter((liker) => liker.name !== user?.name));
+        } else {
+          setLikers((prev) => [...prev, { name: user?.name || 'Bạn' }]);
+        }
       },
       onError: (error) => {
         console.log(error);
@@ -142,10 +147,13 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer"
+                className={cn(
+                  "h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer",
+                  isLiked && "text-primary font-bold"
+                )}
                 onClick={handeLikeOrDislikePost}
               >
-                <ThumbsUp className="h-4 w-4" />
+                <ThumbsUp className={cn("h-4 w-4", isLiked && "fill-current")} />
                 <span className="font-medium">Like {likers.length > 0 && `(${likers.length})`}</span>
               </Button>
 
