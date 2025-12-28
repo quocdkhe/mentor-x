@@ -9,10 +9,17 @@ import { useCreatePost } from '@/api/forum';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 
-export default function TextEditor({ initContent, topicId }: { initContent?: string, topicId: string }) {
+interface TextEditorProps {
+  initContent?: string;
+  topicId: string;
+  onAfterPostCreate: (page: number) => void;
+}
+
+export default function TextEditor({ initContent, topicId, onAfterPostCreate }: TextEditorProps) {
   const editorRef = useRef<string>(initContent || "abc");
   const apiKey = import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key';
   const createPostMutation = useCreatePost(topicId);
+  const pageSize = 10;
   const { theme } = useTheme();
 
   const isDark = useMemo(() => {
@@ -30,7 +37,9 @@ export default function TextEditor({ initContent, topicId }: { initContent?: str
     createPostMutation.mutate({ content }, {
       onSuccess: (data) => {
         editorRef.current = "";
-        toast.success(data.message);
+        toast.success("Đăng bài thành công");
+        const lastPage = Math.ceil(data.totalCount / pageSize)
+        onAfterPostCreate?.(lastPage);
       },
       onError: (err) => {
         const backendMessage =

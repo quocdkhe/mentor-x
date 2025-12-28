@@ -14,6 +14,7 @@ const route = getRouteApi('/public/forum/topic/$topicId');
 
 
 export function TopicDetail() {
+  const [initContent, setInitContent] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const { topicId } = route.useParams();
   const pageSize = 10;
@@ -30,10 +31,16 @@ export function TopicDetail() {
   const { label, variant } = getTopicTypeMeta(topicQuery.data?.type);
   function handlePageChange(page: number) {
     setCurrentPage(page);
+    console.log("Triggered state change");
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
+  }
+
+  function handleAfterPostCreate(page: number) {
+    setCurrentPage(page);
+    postsQuery.refetch();
   }
 
   return (
@@ -66,7 +73,7 @@ export function TopicDetail() {
           ))}
         </div>
 
-        <TextEditor topicId={topicId} />
+        <TextEditor initContent={initContent} topicId={topicId} onAfterPostCreate={handleAfterPostCreate} />
         <ApiPagination
           pagination={postsQuery.data}
           onPageChange={handlePageChange}

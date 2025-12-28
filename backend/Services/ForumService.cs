@@ -77,7 +77,7 @@ public class ForumService : IForumService
         
         var query = _context.ForumPosts
             .AsNoTracking()
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderBy(p => p.CreatedAt)
             .Where(p => p.ForumTopicId == topicId);
         
         var totalItems = await query.CountAsync();
@@ -110,22 +110,25 @@ public class ForumService : IForumService
         };
     }
 
-    public async Task<ServiceResult<Message>> CreateNewPost(ForumPost post)
+    public async Task<ServiceResult<TotalPostCountDto>> CreateNewPost(ForumPost post)
     {
         if (!await _context.Users.AnyAsync(e => e.Id == post.UserId))
         {
-            return ServiceResult<Message>.Fail("Không tìm thấy người dùng");
+            return ServiceResult<TotalPostCountDto>.Fail("Không tìm thấy người dùng");
         }
 
         if (!await _context.ForumTopics.AnyAsync(t => t.Id == post.ForumTopicId))
         {
-            return ServiceResult<Message>.Fail("Không tìm thấy chủ đề");
+            return ServiceResult<TotalPostCountDto>.Fail("Không tìm thấy chủ đề");
         }
         
         var result = await _context.ForumPosts.AddAsync(post);
         await _context.SaveChangesAsync(); 
         
-        return ServiceResult<Message>.Ok(new Message("Đăng bài thành công"));
+        // Now return a new total count
+        var newTotalCount = await _context.ForumPosts.CountAsync();
+        
+        return ServiceResult<TotalPostCountDto>.Ok(new TotalPostCountDto(newTotalCount));
     }
 
     public async Task<ServiceResult<ForumTopicDto>> GetTopicById(Guid id)

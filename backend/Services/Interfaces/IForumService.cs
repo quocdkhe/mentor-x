@@ -12,7 +12,7 @@ public interface IForumService
     
     Task<PaginationDto<ForumPostDto>> GetAllPostPagination(Guid topicId, PaginationRequest paginationRequest);
     
-    Task<ServiceResult<Message>> CreateNewPost(ForumPost post);
+    Task<ServiceResult<TotalPostCountDto>> CreateNewPost(ForumPost post);
     
     Task<ServiceResult<ForumTopicDto>> GetTopicById(Guid id);
 

@@ -31,6 +31,10 @@ export interface CreatePost {
   content: string;
 }
 
+export interface TotalPostCount {
+  totalCount: number;
+}
+
 export const TOPIC_TYPES = {
   QUESTION_AND_ANSWER: "QuestionAndAnswer",
   NEWS: "News",

@@ -59,7 +59,7 @@ namespace backend.Controllers
         
         [HttpPost("topics/{topicId}/posts")]
         [Authorize]
-        public async Task<ActionResult<Message>> CreateNewPost(Guid topicId, [FromBody] CreatePostDto dto)
+        public async Task<ActionResult<TotalPostCountDto>> CreateNewPost(Guid topicId, [FromBody] CreatePostDto dto)
         {
             var userId = User.GetUserId();
             ForumPost newPost = new ForumPost
