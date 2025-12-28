@@ -14,6 +14,7 @@ import { useAppSelector } from '@/store/hooks';
 interface CommentCardProps {
   post: Post;
   commentNumber: number;
+  onReplyClick?: (content: string) => void;
 }
 
 const getInitials = (name: string) => {
@@ -28,7 +29,7 @@ const getInitials = (name: string) => {
 // Maximum height for collapsed content
 const MAX_HEIGHT = 160;
 
-export function CommentCard({ post, commentNumber }: CommentCardProps) {
+export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardProps) {
   const { user } = useAppSelector((state) => state.auth);
   const [isExpanded, setIsExpanded] = useState(false);
   // Track if content is overflowing - defaults to true to show button initially
@@ -36,7 +37,6 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
   const [likers, setLikers] = useState<{ name: string }[]>(post.likes);
   const contentRef = useRef<HTMLDivElement>(null);
   const likeOrDislikePostMutation = useLikeOrDislikePost(post.id);
-
   const isLiked = likers.some((liker) => liker.name === user?.name);
 
   // Callback ref to check overflow when element is mounted/updated
@@ -60,6 +60,12 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
         console.log(error);
       },
     });
+  }
+
+  function handleReplyClick() {
+    onReplyClick?.(`
+      <p>@${post.author.name}</p>
+    `);
   }
 
   return (
@@ -161,9 +167,10 @@ export function CommentCard({ post, commentNumber }: CommentCardProps) {
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer"
+                onClick={handleReplyClick}
               >
                 <MessageSquare className="h-4 w-4" />
-                <span className="font-medium">Reply</span>
+                <span className="font-medium">Trả lời</span>
               </Button>
             </div>
           </div>

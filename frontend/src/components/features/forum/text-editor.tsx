@@ -12,7 +12,7 @@ import { Spinner } from '@/components/ui/spinner';
 interface TextEditorProps {
   initContent?: string;
   topicId: string;
-  onAfterPostCreate: (page: number) => void;
+  onAfterPostCreate: (lastPage: number) => void;
 }
 
 export default function TextEditor({ initContent, topicId, onAfterPostCreate }: TextEditorProps) {
@@ -92,9 +92,8 @@ export default function TextEditor({ initContent, topicId, onAfterPostCreate }: 
             }}
 
             // 5. Use 'value' + 'onEditorChange' instead of 'initialValue'
-            value={initContent || ""}
             onEditorChange={(newValue) => editorRef.current = newValue}
-
+            initialValue={initContent || ""}
             init={{
               height: 400,
               menubar: false,

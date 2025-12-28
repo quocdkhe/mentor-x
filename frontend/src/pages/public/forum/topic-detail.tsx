@@ -38,9 +38,11 @@ export function TopicDetail() {
     });
   }
 
-  function handleAfterPostCreate(page: number) {
-    setCurrentPage(page);
-    postsQuery.refetch();
+  function handleAfterPostCreate(lastPage: number) {
+    setCurrentPage(lastPage);
+    if (currentPage === lastPage) {
+      postsQuery.refetch();
+    }
   }
 
   return (
@@ -69,7 +71,7 @@ export function TopicDetail() {
 
         <div className="space-y-4">
           {postsQuery.data.items.map((post, index) => (
-            <CommentCard key={post.id} post={post} commentNumber={index + 1} />
+            <CommentCard key={post.id} post={post} commentNumber={index + 1} onReplyClick={setInitContent} />
           ))}
         </div>
 
