@@ -15,12 +15,13 @@ import {
 import { formatDate, getInitials, getTopicTypeMeta } from "@/lib/utils";
 import { createLazyRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function ForumListing() {
   const [currentPage, setCurrentPage] = useState(1);
+  const queryClient = useQueryClient();
   const pageSize = 10;
   const { data, isLoading, isError } = useGetTopicPagination(currentPage, pageSize);
-
   if (isLoading) {
     return <ForumTableSkeleton />;
   }
@@ -36,6 +37,11 @@ export function ForumListing() {
     });
   }
 
+  function handleRefetchAfterCreateTopic() {
+    handlePageChange(1);
+    queryClient.invalidateQueries({ queryKey: ["forum-topics"] });
+  }
+
   const { items, totalItems, currentPage: page } = data;
   const startIndex = (page - 1) * pageSize;
 
@@ -49,7 +55,7 @@ export function ForumListing() {
             {Math.min(startIndex + items.length, totalItems)} trong tổng số {" "}
             {totalItems} chủ đề
           </div>
-          <AddTopicDialog />
+          <AddTopicDialog onRefetchAfterCreateTopic={handleRefetchAfterCreateTopic} />
         </div>
 
         {/* Table */}

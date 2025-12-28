@@ -1,3 +1,4 @@
+import { useCreateTopic } from "@/api/forum";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,11 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { TOPIC_TYPES } from "@/types/forum";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -48,9 +51,9 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function AddTopicDialog() {
+export function AddTopicDialog({ onRefetchAfterCreateTopic }: { onRefetchAfterCreateTopic: () => void }) {
   const [open, setOpen] = useState(false);
-
+  const createTopicMutation = useCreateTopic();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,8 +63,24 @@ export function AddTopicDialog() {
   });
 
   function onSubmit(values: FormValues) {
-    console.log("Submitting topic:", values);
-    // TODO: Implement actual create API call
+    createTopicMutation.mutate({
+      topic: values.title,
+      type: values.type,
+    },
+      {
+        onSuccess: () => {
+          onRefetchAfterCreateTopic();
+          toast.success("Thêm chủ đề thành công");
+          setOpen(false);
+          form.reset();
+        },
+        onError: (error) => {
+          const backendMessage =
+            error.response?.data.message || "Đã xảy ra lỗi, vui lòng thử lại.";
+          toast.error(`Thất bại: ${backendMessage}`);
+        },
+      }
+    );
     setOpen(false);
     form.reset();
   }
@@ -132,7 +151,9 @@ export function AddTopicDialog() {
             />
 
             <DialogFooter>
-              <Button type="submit">Lưu lại</Button>
+              <Button type="submit" disabled={createTopicMutation.isPending}>
+                {createTopicMutation.isPending && <Spinner />}
+                Lưu lại</Button>
             </DialogFooter>
           </form>
         </Form>
