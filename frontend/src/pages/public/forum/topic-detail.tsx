@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button';
 import { CommentCard } from '@/components/features/forum/comment-card'
 import { ArrowLeft } from 'lucide-react';
 import { createLazyRoute, getRouteApi, Link } from '@tanstack/react-router';
-import TextEditor from '@/components/features/forum/text-editor';
+import TextEditor, { type TextEditorHandle } from '@/components/features/forum/text-editor';
 import { useGetAllPostsByTopicId, useGetTopicById } from '@/api/forum';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ApiPagination } from '@/components/api-pagination';
 import { formatDate, getTopicTypeMeta } from '@/lib/utils';
 import { ForumPostSkeletonList } from '@/components/skeletons/topic-detail-skeleton';
@@ -14,7 +14,7 @@ const route = getRouteApi('/public/forum/topic/$topicId');
 
 
 export function TopicDetail() {
-  const [initContent, setInitContent] = useState('');
+  const textEditorRef = useRef<TextEditorHandle>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const { topicId } = route.useParams();
   const pageSize = 10;
@@ -44,6 +44,11 @@ export function TopicDetail() {
     }
   }
 
+  function handleReply(content: string) {
+    textEditorRef.current?.focus();
+    textEditorRef.current?.insertContent(content);
+  }
+
   return (
     <div className="container mx-auto px-4 pt-6 pb-6">
       <div className="w-full space-y-6">
@@ -70,11 +75,11 @@ export function TopicDetail() {
 
         <div className="space-y-4">
           {postsQuery.data.items.map((post, index) => (
-            <CommentCard key={post.id} post={post} commentNumber={index + 1} onReplyClick={setInitContent} />
+            <CommentCard key={post.id} post={post} commentNumber={index + 1} onReplyClick={handleReply} />
           ))}
         </div>
 
-        <TextEditor initContent={initContent} topicId={topicId} onAfterPostCreate={handleAfterPostCreate} />
+        <TextEditor ref={textEditorRef} topicId={topicId} onAfterPostCreate={handleAfterPostCreate} />
         <ApiPagination
           pagination={postsQuery.data}
           onPageChange={handlePageChange}

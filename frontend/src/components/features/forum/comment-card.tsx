@@ -67,7 +67,11 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
 
   function handleReplyClick() {
     onReplyClick?.(`
-      <p>@${post.author.name}</p>
+      <blockquote>
+        <strong>@${post.author.name}</strong>:<br/>
+        ${post.content}
+      </blockquote>
+      <p>&nbsp;</p>
     `);
   }
 

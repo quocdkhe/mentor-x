@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useMemo, useState, forwardRef, useImperativeHandle } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import type { AxiosError, AxiosProgressEvent } from 'axios';
 import api from '@/api/api'; // Your API path
@@ -16,13 +16,34 @@ interface TextEditorProps {
   onAfterPostCreate: (lastPage: number) => void;
 }
 
-export default function TextEditor({ initContent, topicId, onAfterPostCreate }: TextEditorProps) {
+export interface TextEditorHandle {
+  focus: () => void;
+  insertContent: (content: string) => void;
+}
+
+const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent, topicId, onAfterPostCreate }, ref) => {
   const editorRef = useRef<string>(initContent || "abc");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const editorInstanceRef = useRef<any>(null);
   const apiKey = import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key';
   const createPostMutation = useCreatePost(topicId);
   const pageSize = 10;
   const { theme } = useTheme();
   const queryClient = useQueryClient();
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      if (editorInstanceRef.current) {
+        editorInstanceRef.current.focus();
+        editorInstanceRef.current.getContainer().scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    },
+    insertContent: (content: string) => {
+      if (editorInstanceRef.current) {
+        editorInstanceRef.current.insertContent(content);
+      }
+    }
+  }));
 
   const isDark = useMemo(() => {
     if (theme === 'system') {
@@ -39,6 +60,9 @@ export default function TextEditor({ initContent, topicId, onAfterPostCreate }: 
     createPostMutation.mutate({ content }, {
       onSuccess: (data) => {
         editorRef.current = "";
+        if (editorInstanceRef.current) {
+          editorInstanceRef.current.setContent("");
+        }
         toast.success("Đăng bài thành công");
         const lastPage = Math.ceil(data.totalCount / pageSize)
         onAfterPostCreate?.(lastPage);
@@ -92,7 +116,8 @@ export default function TextEditor({ initContent, topicId, onAfterPostCreate }: 
             key={currentThemeKey}
 
             apiKey={apiKey}
-            onInit={() => {
+            onInit={(_evt, editor) => {
+              editorInstanceRef.current = editor;
               setLoadedTheme(currentThemeKey);
             }}
 
@@ -121,4 +146,6 @@ export default function TextEditor({ initContent, topicId, onAfterPostCreate }: 
       </div>
     </>
   );
-}
+});
+
+export default TextEditor;
