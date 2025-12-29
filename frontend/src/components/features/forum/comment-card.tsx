@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useLikeOrDislikePost } from '@/api/forum';
 import type { Post } from '@/types/forum';
 import { useAppSelector } from '@/store/hooks';
+import { useQueryClient } from '@tanstack/react-query';
 interface CommentCardProps {
   post: Post;
   commentNumber: number;
@@ -31,14 +32,13 @@ const MAX_HEIGHT = 160;
 
 export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardProps) {
   const { user } = useAppSelector((state) => state.auth);
-  const [isExpanded, setIsExpanded] = useState(false);
-  // Track if content is overflowing - defaults to true to show button initially
+  const [isExpanded, setIsExpanded] = useState(false); // Track if content is overflowing - defaults to true to show button initially
   const [showToggle, setShowToggle] = useState(true);
   const [likers, setLikers] = useState<{ name: string }[]>(post.likes);
   const contentRef = useRef<HTMLDivElement>(null);
   const likeOrDislikePostMutation = useLikeOrDislikePost(post.id);
   const isLiked = likers.some((liker) => liker.name === user?.name);
-
+  const queryClient = useQueryClient();
   // Callback ref to check overflow when element is mounted/updated
   const handleContentRef = (node: HTMLDivElement | null) => {
     contentRef.current = node;
@@ -50,6 +50,9 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
   function handeLikeOrDislikePost() {
     likeOrDislikePostMutation.mutate(undefined, {
       onSuccess: () => {
+        queryClient.removeQueries({
+          queryKey: ['forum-topic-posts'],
+        });
         if (isLiked) {
           setLikers((prev) => prev.filter((liker) => liker.name !== user?.name));
         } else {

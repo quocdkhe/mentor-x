@@ -20,6 +20,7 @@ export function useGetTopicPagination(page: number, pageSize: number) {
       );
       return res.data;
     },
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -36,6 +37,7 @@ export function useGetAllPostsByTopicId(
       );
       return res.data;
     },
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -46,6 +48,7 @@ export function useGetTopicById(topicId: string) {
       const res = await api.get<ForumTopic>(`/forum/topics/${topicId}`);
       return res.data;
     },
+    staleTime: 1000 * 60 * 5,
   });
 }
 

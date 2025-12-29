@@ -8,6 +8,7 @@ import { useTheme } from '@/components/theme-provider'; // Import your hook
 import { useCreatePost } from '@/api/forum';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface TextEditorProps {
   initContent?: string;
@@ -21,6 +22,7 @@ export default function TextEditor({ initContent, topicId, onAfterPostCreate }: 
   const createPostMutation = useCreatePost(topicId);
   const pageSize = 10;
   const { theme } = useTheme();
+  const queryClient = useQueryClient();
 
   const isDark = useMemo(() => {
     if (theme === 'system') {
@@ -40,6 +42,9 @@ export default function TextEditor({ initContent, topicId, onAfterPostCreate }: 
         toast.success("Đăng bài thành công");
         const lastPage = Math.ceil(data.totalCount / pageSize)
         onAfterPostCreate?.(lastPage);
+        queryClient.invalidateQueries({
+          queryKey: ['forum-topic-posts', topicId],
+        });
       },
       onError: (err) => {
         const backendMessage =

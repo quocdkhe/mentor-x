@@ -39,9 +39,8 @@ export function TopicDetail() {
   }
 
   function handleAfterPostCreate(lastPage: number) {
-    setCurrentPage(lastPage);
-    if (currentPage === lastPage) {
-      postsQuery.refetch();
+    if (currentPage !== lastPage) {
+      setCurrentPage(lastPage);
     }
   }
 
