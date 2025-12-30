@@ -38,7 +38,7 @@ namespace backend.Controllers
         {
             var mentor = await _mentorService.GetMentorById(id);
             if (mentor == null)
-                return NotFound(new { message = "Mentor not found" });
+                return NotFound(new { message = "Không tìm thấy mentor." });
 
             return Ok(mentor);
         }   

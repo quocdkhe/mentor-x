@@ -49,6 +49,44 @@ namespace backend.Services
             return skills;
         }
 
-        
+        public async Task<MentorDetailResponseDTO?> GetMentorById(Guid mentorId)
+        {
+            var mentor = await _context.MentorProfiles
+                .Include(m => m.User)
+                .Include(m => m.MentorSkills)
+                .Include(m => m.MentorReviews)
+                .ThenInclude(r => r.User)
+                .FirstOrDefaultAsync(m => m.Id == mentorId);
+
+            if (mentor == null)
+                return null;
+
+            var mentorDetail = new MentorDetailResponseDTO
+            {
+                Id = mentor.Id,
+                Name = mentor.User.Name,
+                Avatar = mentor.User.Avatar,
+                Biography = mentor.Biography,
+                Skills = mentor.MentorSkills.Select(s => s.Name).ToList(),
+                AvgRating = mentor.AvgRating,
+                TotalRatings = mentor.TotalRatings,
+                PricePerHour = mentor.PricePerHour,
+                Reviews = mentor.MentorReviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => new MentorReviewDTO
+                    {
+                        Id = r.Id,
+                        UserId = r.UserId,
+                        UserName = r.User.Name,
+                        UserAvatar = r.User.Avatar,
+                        Rating = r.Rating,
+                        Comment = r.Comment,
+                        Date = r.CreatedAt
+                    })
+                    .ToList()
+            };
+            return mentorDetail;
+
+        }
     }
 }
