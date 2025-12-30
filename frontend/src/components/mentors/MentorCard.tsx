@@ -2,12 +2,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Mentor } from "@/types/mentor";
+import type { MentorCard } from "@/types/mentor";
 import { Eye, Star } from "lucide-react";
 
 interface MentorCardProps {
-  mentor: Mentor;
-  onView: (mentor: Mentor) => void;
+  mentor: MentorCard;
+  onView: (mentor: MentorCard) => void;
 }
 
 function StarRating({

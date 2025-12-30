@@ -23,3 +23,4 @@ export function useGetCurrentUser() {
     staleTime: 1000 * 60 * 10, // optional: cache for 10 minutes
   });
 }
+
