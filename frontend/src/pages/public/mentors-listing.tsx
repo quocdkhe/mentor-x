@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { createLazyRoute, useNavigate } from "@tanstack/react-router";
 import { MentorCard } from "@/components/mentors/MentorCard";
 import {
@@ -8,6 +8,7 @@ import {
 import { type Mentor } from "@/types/mentor";
 import { Users } from "lucide-react";
 import { useGetMentorCard } from "@/api/mentor";
+import DefaultSkeleton from "@/components/skeletons/default.skeleton";
 
 const defaultFilters: Filters = {
   search: "",
@@ -18,18 +19,20 @@ const defaultFilters: Filters = {
 
 const MentorListing = () => {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
-  const { data: mentors = [] } = useGetMentorCard();
+  const { data: mentors = [], isLoading } = useGetMentorCard();
   const navigate = useNavigate();
 
-  console.log(mentors);
-
   const handleViewMentor = (mentor: Mentor | import("@/types/mentor").MentorCard) => {
-    navigate({ to: "/mentors/$mentorId", params: { mentorId: mentor. } });
+    navigate({ to: "/mentors/$mentorId", params: { mentorId: mentor.id } });
   };
 
   const handleResetFilters = () => {
     setFilters(defaultFilters);
   };
+
+  if (isLoading) {
+    return <DefaultSkeleton/>
+  }
 
   return (
     <div className="min-h-screen bg-background">

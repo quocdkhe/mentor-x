@@ -1,10 +1,11 @@
 import { createLazyRoute } from "@tanstack/react-router";
 import { useGetMentorProfile } from "@/api/mentor";
-import { Loader2, Star, Globe, Clock, Calendar, CheckCircle2 } from "lucide-react";
+import { Star, Globe, Clock, Calendar, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import DefaultSkeleton from "@/components/skeletons/default.skeleton";
 // import { Separator } from "@/components/ui/separator"; // Unused
 
 const MentorProfilePage = () => {
@@ -12,11 +13,7 @@ const MentorProfilePage = () => {
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <DefaultSkeleton/>
   }
 
   if (error || !mentor) {
