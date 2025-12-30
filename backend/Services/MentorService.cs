@@ -13,7 +13,7 @@ namespace backend.Services
         {
             _context = context;
         }
-        
+
         public async Task<MentorListResponseDTO> GetAllMentors()
         {
             var mentors = await _context.MentorProfiles
@@ -36,5 +36,19 @@ namespace backend.Services
                 Mentors = mentors
             };
         }
+
+        public async Task<List<SkillDTO>> GetMentorSkills()
+        {
+            var skills = await _context.Skills
+                .Select(s => new SkillDTO
+                {
+                    Id = s.Id,
+                    Name = s.Name
+                })
+                .ToListAsync();
+            return skills;
+        }
+
+        
     }
 }

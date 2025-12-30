@@ -24,6 +24,23 @@ namespace backend.Controllers
         {
             var mentorList = await _mentorService.GetAllMentors();
             return Ok(mentorList);
+        }
+
+        [HttpGet("skills")]
+        public async Task<ActionResult<List<SkillDTO>>> GetMentorSkills()
+        {
+            var skills = await _mentorService.GetMentorSkills();
+            return Ok(skills);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<MentorDetailResponseDTO>> GetMentorById(Guid id)
+        {
+            var mentor = await _mentorService.GetMentorById(id);
+            if (mentor == null)
+                return NotFound(new { message = "Mentor not found" });
+
+            return Ok(mentor);
         }   
             
 
