@@ -21,7 +21,7 @@ namespace backend.Services
             .Include(m => m.MentorSkills)
             .Select(m => new MentorListItemDTO
             {
-                Id = m.UserId,                // mentor id = user id
+                Id = m.Id,                
                 Name = m.User.Name,
                 Avatar = m.User.Avatar,
                 Biography = m.Biography,
