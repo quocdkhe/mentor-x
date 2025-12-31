@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { formatDate } from '@/lib/utils';
-import { ThumbsUp, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { ThumbsUp, MessageSquare, ChevronDown, ChevronUp, Quote } from 'lucide-react';
 import LikesInfo from './likes-info';
 import { cn } from '@/lib/utils';
 import { useLikeOrDislikePost } from '@/api/forum';
@@ -35,10 +35,57 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
   const [isExpanded, setIsExpanded] = useState(false); // Track if content is overflowing - defaults to true to show button initially
   const [showToggle, setShowToggle] = useState(true);
   const [likers, setLikers] = useState<{ name: string }[]>(post.likes);
+  const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const likeOrDislikePostMutation = useLikeOrDislikePost(post.id);
   const isLiked = likers.some((liker) => liker.name === user?.name);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setSelection(null);
+        window.getSelection()?.removeAllRanges();
+      }
+    };
+
+    if (selection) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [selection]);
+
+  const handleMouseUp = () => {
+    const sel = window.getSelection();
+    if (sel && sel.toString().trim().length > 0 && !sel.isCollapsed) {
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+
+      if (rect.width === 0 || rect.height === 0) {
+        setSelection(null);
+        return;
+      }
+
+      // Check if the selection is within the content container
+      if (contentRef.current && contentRef.current.contains(sel.anchorNode)) {
+        const containerRect = contentRef.current.parentElement?.getBoundingClientRect();
+        if (containerRect) {
+          setSelection({
+            text: sel.toString().trim(),
+            x: rect.left - containerRect.left + rect.width / 2,
+            y: rect.top - containerRect.top,
+          });
+        }
+      }
+    } else {
+      setSelection(null);
+    }
+  };
+
   // Callback ref to check overflow when element is mounted/updated
   const handleContentRef = (node: HTMLDivElement | null) => {
     contentRef.current = node;
@@ -75,6 +122,18 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
     `);
   }
 
+  function handleReplyToSelection() {
+    if (selection) {
+      onReplyClick?.(`
+        <blockquote>
+          <strong>@${post.author.name}</strong>:<br/>
+          ${selection.text}
+        </blockquote>
+      `);
+      setSelection(null);
+    }
+  }
+
   return (
     <Card className="p-6">
       <div className="flex gap-6">
@@ -105,7 +164,7 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
           </div>
 
           {/* Body with HTML Support and Truncation */}
-          <div className="mb-4">
+          <div className="mb-4" onMouseUp={handleMouseUp}>
             {/* Content container with gradient overlay */}
             <div className="relative">
               <div
@@ -117,6 +176,30 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
                 )}
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
+
+              {/* Selection context menu */}
+              {selection && (
+                <div
+                  ref={menuRef}
+                  onMouseUp={(e) => e.stopPropagation()}
+                  className="absolute z-50 bg-popover text-popover-foreground rounded shadow-lg border p-1 flex items-center animate-in fade-in zoom-in duration-200"
+                  style={{
+                    left: `${selection.x}px`,
+                    top: `${selection.y - 10}px`, // Slightly above the selection
+                    transform: 'translate(-50%, -100%)',
+                  }}
+                >
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 px-2 gap-1 text-xs font-medium cursor-pointer"
+                    onClick={handleReplyToSelection}
+                  >
+                    <Quote className="h-3 w-3" />
+                    Trích dẫn
+                  </Button>
+                </div>
+              )}
 
               {/* Gradient overlay - only shows when collapsed and overflowing */}
               {!isExpanded && showToggle && (
