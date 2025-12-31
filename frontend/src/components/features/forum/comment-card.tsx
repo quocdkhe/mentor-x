@@ -79,7 +79,7 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
     <Card className="p-6">
       <div className="flex gap-6">
         {/* Left Side: User Info */}
-        <div className="flex flex-col items-center gap-3 shrink-0">
+        <div className="flex flex-col items-center gap-3 shrink-0 w-28">
           <Avatar className="h-20 w-20">
             <AvatarImage src={post.author.avatar} />
             <AvatarFallback className="text-xl">
