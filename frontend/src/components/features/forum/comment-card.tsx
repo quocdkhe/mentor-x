@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getInitials } from '@/lib/utils';
 import { ThumbsUp, MessageSquare, ChevronDown, ChevronUp, Quote } from 'lucide-react';
 import LikesInfo from './likes-info';
 import { cn } from '@/lib/utils';
@@ -18,14 +18,6 @@ interface CommentCardProps {
   onReplyClick?: (content: string) => void;
 }
 
-const getInitials = (name: string) => {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-};
 
 // Maximum height for collapsed content
 const MAX_HEIGHT = 160;
@@ -43,32 +35,24 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setSelection(null);
-        window.getSelection()?.removeAllRanges();
+    const handleSelectionChange = () => {
+      const sel = window.getSelection();
+
+      // If no valid selection, clears it
+      if (!sel || sel.isCollapsed || sel.toString().trim().length === 0) {
+        // Only clear if we're not clicking inside the menu (handled by click outside logic)
+        // But actually, we usually want to clear if the user clicks elsewhere to start a new selection.
+        // Let's rely on the separate click handler for clearing if needed, BUT:
+        // If the user simply 'mouseups' with no selection, we might want to clear IF they were trying to select.
+        // However, existing logic clears on 'mousedown' outside.
+        // Let's stick to the plan: Check if selection is valid.
+        return;
       }
-    };
 
-    if (selection) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [selection]);
-
-  const handleMouseUp = () => {
-    const sel = window.getSelection();
-    if (sel && sel.toString().trim().length > 0 && !sel.isCollapsed) {
       const range = sel.getRangeAt(0);
       const rect = range.getBoundingClientRect();
 
-      if (rect.width === 0 || rect.height === 0) {
-        setSelection(null);
-        return;
-      }
+      if (rect.width === 0 || rect.height === 0) return;
 
       // Check if the selection is within the content container
       if (contentRef.current && contentRef.current.contains(sel.anchorNode)) {
@@ -80,11 +64,38 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
             y: rect.top - containerRect.top,
           });
         }
+      } else {
+        // If selection is NOT in our content (and potentially in another comment), 
+        // we might want to close ours. 
+        // But simpler: just let the other one take over or user click to dismiss.
+        // For self-contained logic: IF we had a selection and now the user selected somewhere else,
+        // we should probably clear ours? 
+        // Actually, if the selection is elsewhere, `sel.anchorNode` won't be invalid.
+        // Let's check if we currently have a selection and the NEW selection is elsewhere.
+        // But selection object is global. So if selection is elsewhere, it is NOT here.
+        setSelection(null);
       }
-    } else {
-      setSelection(null);
-    }
-  };
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setSelection(null);
+        window.getSelection()?.removeAllRanges();
+      }
+    };
+
+    document.addEventListener('mouseup', handleSelectionChange);
+    document.addEventListener('keyup', handleSelectionChange); // For keyboard selection
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mouseup', handleSelectionChange);
+      document.removeEventListener('keyup', handleSelectionChange);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []); // Empty dependency array to run only on mount/unmount
+
+  // Removed handleMouseUp as it's now handled by the effect
 
   // Callback ref to check overflow when element is mounted/updated
   const handleContentRef = (node: HTMLDivElement | null) => {
@@ -164,7 +175,7 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
           </div>
 
           {/* Body with HTML Support and Truncation */}
-          <div className="mb-4" onMouseUp={handleMouseUp}>
+          <div className="mb-4">
             {/* Content container with gradient overlay */}
             <div className="relative">
               <div

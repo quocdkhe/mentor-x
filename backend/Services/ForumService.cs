@@ -126,7 +126,9 @@ public class ForumService : IForumService
         await _context.SaveChangesAsync(); 
         
         // Now return a new total count
-        var newTotalCount = await _context.ForumPosts.CountAsync();
+        var newTotalCount = await _context.ForumPosts
+            .Where(p => p.ForumTopicId == post.ForumTopicId)
+            .CountAsync();
         
         return ServiceResult<TotalPostCountDto>.Ok(new TotalPostCountDto(newTotalCount));
     }

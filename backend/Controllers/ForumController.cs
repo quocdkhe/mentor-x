@@ -1,7 +1,3 @@
-
-
-
-using System.Security.Claims;
 using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Forum;

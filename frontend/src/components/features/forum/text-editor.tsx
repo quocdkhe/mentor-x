@@ -64,6 +64,8 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent,
           editorInstanceRef.current.setContent("");
         }
         toast.success("Đăng bài thành công");
+        console.log(" data.totalCount " + data.totalCount, " pageSize " + pageSize);
+        console.log(" Math.ceil(data.totalCount / pageSize) " + Math.ceil(data.totalCount / pageSize));
         const lastPage = Math.ceil(data.totalCount / pageSize)
         onAfterPostCreate?.(lastPage);
         queryClient.invalidateQueries({
