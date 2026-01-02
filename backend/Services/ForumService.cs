@@ -52,6 +52,7 @@ public class ForumService : IForumService
                 DateCreated = t.CreatedAt,
                 Author = new AuthorDto
                 {
+                    Id = t.UserId,
                     Role = t.User.Role.ToString(),
                     Name = t.User.Name,
                     Avatar = t.User.Avatar
@@ -93,6 +94,7 @@ public class ForumService : IForumService
                 Likes = p.Likers.Select(u => new ForumPostDto.LikeDto { Name = u.Name }).ToList(),
                 Author = new AuthorDto
                 {
+                    Id = p.UserId,
                     Name = p.User.Name,
                     Avatar = p.User.Avatar,
                     Role = p.User.Role.ToString()
@@ -148,6 +150,7 @@ public class ForumService : IForumService
                 DateCreated = t.CreatedAt,
                 Author = new AuthorDto
                 {
+                    Id = t.UserId,
                     Role = t.User.Role.ToString(),
                     Name = t.User.Name,
                     Avatar = t.User.Avatar
@@ -190,6 +193,41 @@ public class ForumService : IForumService
 
         return ServiceResult<Message>.Ok(new Message("ok"));
     }
+
+    public async Task<ServiceResult<Message>> DeletePost(Guid postId)
+    {
+        var post = new ForumPost { Id = postId };
+
+        if (!await _context.ForumPosts.AnyAsync(p => p.Id == postId))
+        {
+            return ServiceResult<Message>.Fail("Không tìm thấy post");
+        }
+        
+        _context.ForumPosts.Attach(post);
+        _context.ForumPosts.Remove(post);
+        await _context.SaveChangesAsync();
+
+        return ServiceResult<Message>.Ok(new Message("ok"));
+    }
+
+    public async Task<ServiceResult<Message>> UpdatePostContent(Guid postId, string newContent)
+    {
+        var post = await _context.ForumPosts.FindAsync(postId);
+
+        if (post == null)
+        {
+            return ServiceResult<Message>.Fail("Không tìm thấy post");
+        }
+
+        post.Content = newContent;
+        post.UpdatedAt = DateTime.UtcNow; 
+
+        await _context.SaveChangesAsync();
+
+        return ServiceResult<Message>.Ok(new Message("Cập nhật bài viết thành công"));
+    }
+
+
 
 
 

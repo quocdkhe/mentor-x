@@ -17,4 +17,8 @@ public interface IForumService
     Task<ServiceResult<ForumTopicDto>> GetTopicById(Guid id);
 
     Task<ServiceResult<Message>> LikePost(Guid postId, Guid userId);
+    
+    Task<ServiceResult<Message>> DeletePost(Guid postId);
+    
+    Task<ServiceResult<Message>> UpdatePostContent(Guid postId, string newContent);
 }   

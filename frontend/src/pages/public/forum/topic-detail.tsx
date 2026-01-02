@@ -4,11 +4,22 @@ import { CommentCard } from '@/components/features/forum/comment-card'
 import { ArrowLeft } from 'lucide-react';
 import { createLazyRoute, getRouteApi, Link } from '@tanstack/react-router';
 import TextEditor, { type TextEditorHandle } from '@/components/features/forum/text-editor';
-import { useGetAllPostsByTopicId, useGetTopicById } from '@/api/forum';
+import { useGetAllPostsByTopicId, useGetTopicById, useDeletePost, useUpdatePost } from '@/api/forum';
 import { useState, useRef } from 'react';
 import { ApiPagination } from '@/components/api-pagination';
 import { formatDate, getTopicTypeMeta } from '@/lib/utils';
 import { ForumPostSkeletonList } from '@/components/skeletons/topic-detail-skeleton';
+import type { Post } from '@/types/forum';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const route = getRouteApi('/public/forum/topic/$topicId');
 
@@ -16,10 +27,16 @@ const route = getRouteApi('/public/forum/topic/$topicId');
 export function TopicDetail() {
   const textEditorRef = useRef<TextEditorHandle>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const { topicId } = route.useParams();
   const pageSize = 10;
   const postsQuery = useGetAllPostsByTopicId(topicId, currentPage, pageSize);
   const topicQuery = useGetTopicById(topicId);
+  const queryClient = useQueryClient();
+
+  const deletePostMutation = useDeletePost();
+  const updatePostMutation = useUpdatePost();
 
   if (postsQuery.isLoading || topicQuery.isLoading) {
     return <ForumPostSkeletonList />
@@ -49,6 +66,58 @@ export function TopicDetail() {
     textEditorRef.current?.insertContent(content);
   }
 
+  function handleEdit(post: Post) {
+    setEditingPost(post);
+    textEditorRef.current?.focus();
+    textEditorRef.current?.setContent(post.content);
+    // Smooth scroll to editor
+    textEditorRef.current?.focus();
+  }
+
+  function handleDelete(postId: string) {
+    setDeletingPostId(postId);
+  }
+
+  function handleConfirmDelete() {
+    if (!deletingPostId) return;
+
+    deletePostMutation.mutate(deletingPostId, {
+      onSuccess: () => {
+        toast.success("Xóa bình luận thành công");
+        setDeletingPostId(null);
+        queryClient.invalidateQueries({
+          queryKey: ['forum-topic-posts', topicId],
+        });
+      },
+      onError: (error) => {
+        toast.error("Không thể xóa bình luận: " + (error.response?.data.message || error.message));
+      }
+    });
+  }
+
+  function handleCancelEdit() {
+    setEditingPost(null);
+    textEditorRef.current?.setContent("");
+  }
+
+  function handleUpdatePost(content: string) {
+    if (!editingPost) return;
+
+    updatePostMutation.mutate({ postId: editingPost.id, post: { content } }, {
+      onSuccess: () => {
+        toast.success("Cập nhật bình luận thành công");
+        setEditingPost(null);
+        textEditorRef.current?.setContent("");
+        queryClient.invalidateQueries({
+          queryKey: ['forum-topic-posts', topicId],
+        });
+      },
+      onError: (error) => {
+        toast.error("Không thể cập nhật bình luận: " + (error.response?.data.message || error.message));
+      }
+    });
+  }
+
   return (
     <div className="container mx-auto px-4 pt-6 pb-6">
       <div className="w-full space-y-6">
@@ -75,16 +144,45 @@ export function TopicDetail() {
 
         <div className="space-y-4">
           {postsQuery.data.items.map((post, index) => (
-            <CommentCard key={post.id} post={post} commentNumber={index + 1} onReplyClick={handleReply} />
+            <CommentCard
+              key={post.id}
+              post={post}
+              commentNumber={index + 1}
+              onReplyClick={handleReply}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
 
-        <TextEditor ref={textEditorRef} topicId={topicId} onAfterPostCreate={handleAfterPostCreate} />
+        <TextEditor
+          ref={textEditorRef}
+          topicId={topicId}
+          onAfterPostCreate={handleAfterPostCreate}
+          isEditing={!!editingPost}
+          onCancel={handleCancelEdit}
+          onUpdate={handleUpdatePost}
+        />
         <ApiPagination
           pagination={postsQuery.data}
           onPageChange={handlePageChange}
         />
       </div>
+
+      <Dialog open={!!deletingPostId} onOpenChange={(open) => !open && setDeletingPostId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn xóa bình luận này không? Hành động này không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingPostId(null)}>Hủy</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>Xóa</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

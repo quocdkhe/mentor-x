@@ -98,6 +98,32 @@ namespace backend.Controllers
 
             return Ok(result.Data);
         }
+
+        [HttpDelete("topics/posts/{postId}")]
+        [Authorize]
+        public async Task<ActionResult<Message>> DeletePost(Guid postId)
+        {
+            var result = await _forumService.DeletePost(postId);
+            if (!result.Success)
+            {
+                return NotFound(result.Message);
+            }
+            
+            return Ok(result.Data);
+        }
+
+        [HttpPut("topics/posts/{postId}")]
+        [Authorize]
+        public async Task<ActionResult<Message>> UpdatePostContent(CreatePostDto dto, Guid postId)
+        {
+            var result = await _forumService.UpdatePostContent(postId, dto.Content);
+            if (!result.Success)
+            {
+                return NotFound(result.Message);
+            }
+            
+            return Ok(result.Data);
+        }
     }
 }
 

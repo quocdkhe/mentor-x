@@ -14,14 +14,18 @@ interface TextEditorProps {
   initContent?: string;
   topicId: string;
   onAfterPostCreate: (lastPage: number) => void;
+  isEditing?: boolean;
+  onCancel?: () => void;
+  onUpdate?: (content: string) => void;
 }
 
 export interface TextEditorHandle {
   focus: () => void;
   insertContent: (content: string) => void;
+  setContent: (content: string) => void;
 }
 
-const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent, topicId, onAfterPostCreate }, ref) => {
+const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent, topicId, onAfterPostCreate, isEditing, onCancel, onUpdate }, ref) => {
   const editorRef = useRef<string>(initContent || "abc");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editorInstanceRef = useRef<any>(null);
@@ -42,6 +46,12 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent,
       if (editorInstanceRef.current) {
         editorInstanceRef.current.insertContent(content);
       }
+    },
+    setContent: (content: string) => {
+      if (editorInstanceRef.current) {
+        editorInstanceRef.current.setContent(content);
+        editorRef.current = content;
+      }
     }
   }));
 
@@ -57,6 +67,11 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent,
   const isLoading = loadedTheme !== currentThemeKey;
 
   const onSubmit = (content: string) => {
+    if (isEditing && onUpdate) {
+      onUpdate(content);
+      return;
+    }
+
     createPostMutation.mutate({ content }, {
       onSuccess: (data) => {
         editorRef.current = "";
@@ -64,8 +79,6 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent,
           editorInstanceRef.current.setContent("");
         }
         toast.success("Đăng bài thành công");
-        console.log(" data.totalCount " + data.totalCount, " pageSize " + pageSize);
-        console.log(" Math.ceil(data.totalCount / pageSize) " + Math.ceil(data.totalCount / pageSize));
         const lastPage = Math.ceil(data.totalCount / pageSize)
         onAfterPostCreate?.(lastPage);
         queryClient.invalidateQueries({
@@ -107,6 +120,13 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent,
   return (
     <>
       <div className="relative min-h-[400px]">
+        {isEditing && (
+          <div className="mb-4 bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-yellow-700 dark:text-yellow-200 p-4 rounded shadow-sm animate-in fade-in duration-300">
+            <p className="font-bold text-lg">Đang sửa bài viết</p>
+            <p className="text-sm opacity-90">Bạn đang chỉnh sửa nội dung bài viết của mình.</p>
+          </div>
+        )}
+
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50">
             <Spinner />
@@ -142,8 +162,18 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ initContent,
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-4">
-        <Button disabled={createPostMutation.isPending} onClick={() => onSubmit(editorRef.current)}>
-          {createPostMutation.isPending && <Spinner />} Đăng bình luận
+        {isEditing && (
+          <Button variant="destructive" onClick={onCancel} className="gap-2">
+            Hủy
+          </Button>
+        )}
+        <Button
+          disabled={createPostMutation.isPending}
+          onClick={() => onSubmit(editorRef.current)}
+          className={isEditing ? "bg-blue-600 hover:bg-blue-700" : ""}
+        >
+          {createPostMutation.isPending && <Spinner />}
+          {isEditing ? "Lưu thay đổi" : "Đăng bình luận"}
         </Button>
       </div>
     </>

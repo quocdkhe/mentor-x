@@ -81,3 +81,31 @@ export function useLikeOrDislikePost(postId: string) {
     },
   });
 }
+
+export function useDeletePost() {
+  return useMutation<Message, AxiosError<Message>, string>({
+    mutationFn: async (postId: string): Promise<Message> => {
+      const res = await api.delete<Message>(`/forum/topics/posts/${postId}`);
+      return res.data;
+    },
+  });
+}
+
+export function useUpdatePost() {
+  return useMutation<
+    Message,
+    AxiosError<Message>,
+    { postId: string; post: CreatePost }
+  >({
+    mutationFn: async ({
+      postId,
+      post,
+    }: {
+      postId: string;
+      post: CreatePost;
+    }): Promise<Message> => {
+      const res = await api.put<Message>(`/forum/topics/posts/${postId}`, post);
+      return res.data;
+    },
+  });
+}

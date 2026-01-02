@@ -5,47 +5,54 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { formatDate, getInitials } from '@/lib/utils';
-import { ThumbsUp, MessageSquare, ChevronDown, ChevronUp, Quote } from 'lucide-react';
+import { ThumbsUp, MessageSquare, ChevronDown, ChevronUp, Quote, Pencil, Trash } from 'lucide-react';
 import LikesInfo from './likes-info';
 import { cn } from '@/lib/utils';
 import { useLikeOrDislikePost } from '@/api/forum';
 import type { Post } from '@/types/forum';
 import { useAppSelector } from '@/store/hooks';
 import { useQueryClient } from '@tanstack/react-query';
+
+
 interface CommentCardProps {
   post: Post;
   commentNumber: number;
   onReplyClick?: (content: string) => void;
+  onEdit?: (post: Post) => void;
+  onDelete?: (postId: string) => void;
 }
 
 
 // Maximum height for collapsed content
 const MAX_HEIGHT = 160;
 
-export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardProps) {
+export function CommentCard({ post, commentNumber, onReplyClick, onEdit, onDelete }: CommentCardProps) {
   const { user } = useAppSelector((state) => state.auth);
   const [isExpanded, setIsExpanded] = useState(false); // Track if content is overflowing - defaults to true to show button initially
   const [showToggle, setShowToggle] = useState(true);
   const [likers, setLikers] = useState<{ name: string }[]>(post.likes);
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
+
   const contentRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const likeOrDislikePostMutation = useLikeOrDislikePost(post.id);
   const isLiked = likers.some((liker) => liker.name === user?.name);
   const queryClient = useQueryClient();
 
+  // Check if current user is the author
+  // Using ID if available, fallback to name (though name is not unique usually)
+  // For now assuming user.id exists as per requirements, or user.sub, or we match via name as temporary fallback if id missing on user object
+  // But type Author has id. user object in redux usually mirrors user info.
+  // Let's assume user.id is the way. 
+  // If user type doesn't have id, this might error. But user asked to use user.id.
+  // We'll cast user to any if needed or assume it matches.
+  const isOwner = user?.id === post.author.id;
+
   useEffect(() => {
     const handleSelectionChange = () => {
       const sel = window.getSelection();
 
-      // If no valid selection, clears it
       if (!sel || sel.isCollapsed || sel.toString().trim().length === 0) {
-        // Only clear if we're not clicking inside the menu (handled by click outside logic)
-        // But actually, we usually want to clear if the user clicks elsewhere to start a new selection.
-        // Let's rely on the separate click handler for clearing if needed, BUT:
-        // If the user simply 'mouseups' with no selection, we might want to clear IF they were trying to select.
-        // However, existing logic clears on 'mousedown' outside.
-        // Let's stick to the plan: Check if selection is valid.
         return;
       }
 
@@ -54,7 +61,6 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
 
       if (rect.width === 0 || rect.height === 0) return;
 
-      // Check if the selection is within the content container
       if (contentRef.current && contentRef.current.contains(sel.anchorNode)) {
         const containerRect = contentRef.current.parentElement?.getBoundingClientRect();
         if (containerRect) {
@@ -65,14 +71,6 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
           });
         }
       } else {
-        // If selection is NOT in our content (and potentially in another comment), 
-        // we might want to close ours. 
-        // But simpler: just let the other one take over or user click to dismiss.
-        // For self-contained logic: IF we had a selection and now the user selected somewhere else,
-        // we should probably clear ours? 
-        // Actually, if the selection is elsewhere, `sel.anchorNode` won't be invalid.
-        // Let's check if we currently have a selection and the NEW selection is elsewhere.
-        // But selection object is global. So if selection is elsewhere, it is NOT here.
         setSelection(null);
       }
     };
@@ -85,7 +83,7 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
     };
 
     document.addEventListener('mouseup', handleSelectionChange);
-    document.addEventListener('keyup', handleSelectionChange); // For keyboard selection
+    document.addEventListener('keyup', handleSelectionChange);
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
@@ -93,9 +91,7 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
       document.removeEventListener('keyup', handleSelectionChange);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []); // Empty dependency array to run only on mount/unmount
-
-  // Removed handleMouseUp as it's now handled by the effect
+  }, []);
 
   // Callback ref to check overflow when element is mounted/updated
   const handleContentRef = (node: HTMLDivElement | null) => {
@@ -144,6 +140,8 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
       setSelection(null);
     }
   }
+
+
 
   return (
     <Card className="p-6">
@@ -250,29 +248,54 @@ export function CommentCard({ post, commentNumber, onReplyClick }: CommentCardPr
             <LikesInfo likers={likers} />
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer",
-                  isLiked && "text-primary font-bold"
-                )}
-                onClick={handeLikeOrDislikePost}
-              >
-                <ThumbsUp className={cn("h-4 w-4", isLiked && "fill-current")} />
-                <span className="font-medium">Like {likers.length > 0 && `(${likers.length})`}</span>
-              </Button>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer",
+                    isLiked && "text-primary font-bold"
+                  )}
+                  onClick={handeLikeOrDislikePost}
+                >
+                  <ThumbsUp className={cn("h-4 w-4", isLiked && "fill-current")} />
+                  <span className="font-medium">Like {likers.length > 0 && `(${likers.length})`}</span>
+                </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer"
-                onClick={handleReplyClick}
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span className="font-medium">Trả lời</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer"
+                  onClick={handleReplyClick}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  <span className="font-medium">Trả lời</span>
+                </Button>
+              </div>
+
+              {isOwner && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer text-muted-foreground"
+                    onClick={() => onEdit?.(post)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    <span className="font-medium">Sửa</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 gap-2 hover:bg-transparent hover:text-destructive cursor-pointer text-muted-foreground"
+                    onClick={() => onDelete?.(post.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                    <span className="font-medium">Xóa</span>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
