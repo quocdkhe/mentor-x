@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "./api";
 import type { Mentor } from "@/types/mentor";
@@ -28,5 +28,25 @@ export function useGetMentorProfile(id: string) {
       return res.data;
     },
     enabled: !!id,
+  });
+}
+
+export interface MentorRegistrationRequest {
+  biography: string;
+  pricePerHour: number;
+  skills: string[];
+}
+
+export function useRegisterMentor() {
+  const queryClient = useQueryClient();
+  return useMutation<void, AxiosError<Message>, MentorRegistrationRequest>({
+    mutationFn: async (data) => {
+      await api.post("/mentors/register", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      // Also maybe invalidate mentors list
+      queryClient.invalidateQueries({ queryKey: ["mentors"] });
+    },
   });
 }

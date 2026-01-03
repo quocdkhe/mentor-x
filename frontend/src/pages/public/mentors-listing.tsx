@@ -30,7 +30,7 @@ const MentorListing = () => {
     setFilters(defaultFilters);
   };
 
-  if (isLoading) {
+  if (isLoading) { 
     return <DefaultSkeleton/>
   }
 

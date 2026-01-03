@@ -44,5 +44,32 @@ namespace backend.Controllers
         }   
             
 
+
+        [HttpPost("register")]
+        [Authorize]
+        public async Task<IActionResult> RegisterMentor([FromBody] MentorRegistrationRequestDTO request)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return Unauthorized(new { message = "User ID not found in token." });
+            }
+
+            if (!Guid.TryParse(userIdStr, out var userId))
+            {
+                 return Unauthorized(new { message = "Invalid User ID format." });
+            }
+
+            try 
+            {
+                await _mentorService.RegisterMentor(userId, request);
+                return Ok(new { message = "Registered successfully" });
+            } 
+            catch (Exception ex) 
+            {
+                // In production, probably shouldn't return exact exception message
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }
