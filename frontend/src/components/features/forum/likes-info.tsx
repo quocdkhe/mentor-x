@@ -1,4 +1,9 @@
 import { useAppSelector } from "@/store/hooks";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function LikesInfo({ likers }: { likers: { name: string }[] }) {
   const { user } = useAppSelector((state) => state.auth);
@@ -36,11 +41,27 @@ export default function LikesInfo({ likers }: { likers: { name: string }[] }) {
     );
   } else {
     const othersCount = count - 2;
+    const otherLikers = processedLikers.slice(2);
+
     textContent = (
       <span>
         <span className="font-semibold text-foreground">{first}</span>,{' '}
         <span className="font-semibold text-foreground">{second}</span> và{' '}
-        <span className="font-semibold text-foreground">{othersCount} người khác</span> đã thích bài viết này
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="font-semibold text-foreground cursor-pointer hover:underline">
+              {othersCount} người khác
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-[300px] break-words">
+            <div className="flex flex-col gap-1">
+              {otherLikers.map((liker, index) => (
+                <span key={index}>{liker.name}</span>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>{' '}
+        đã thích bài viết này
       </span>
     );
   }

@@ -121,7 +121,6 @@ namespace backend.Controllers
             {
                 return NotFound(result.Message);
             }
-            
             return Ok(result.Data);
         }
     }
