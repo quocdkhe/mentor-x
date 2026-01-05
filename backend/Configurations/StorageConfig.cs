@@ -15,7 +15,7 @@ namespace backend.Configurations
                 };
                 return new AmazonS3Client(configuration["S3Credential:ACCESS_KEY"], configuration["S3Credential:SECRET_KEY"], config);
             });
-
+            
             return services;
         }
     }

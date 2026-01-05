@@ -29,6 +29,7 @@
     "@tanstack/react-query-devtools": "^5.91.1",
     "@tanstack/react-router": "^1.143.6",
     "@tanstack/react-router-devtools": "^1.143.6",
+    "@tinymce/tinymce-react": "^6.3.0",
     "axios": "^1.13.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@tailwindcss/typography": "^0.5.19",
     "@tanstack/eslint-plugin-query": "^5.91.2",
     "@types/node": "^24.10.4",
     "@types/react": "^19.2.7",

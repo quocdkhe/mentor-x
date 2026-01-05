@@ -1,75 +1,111 @@
-# React + TypeScript + Vite
+# MentorX Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive frontend for the MentorX platform, built with React 19, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## 🚀 Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Framework:** [React 19](https://react.dev/)
+- **Build Tool:** [Vite 7](https://vitejs.dev/)
+- **Package Manager:** [Bun](https://bun.sh/)
+- **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
+- **UI Components:** [Radix UI](https://www.radix-ui.com/) & [Lucide React](https://lucide.dev/)
+- **State Management:** [Redux Toolkit](https://redux-toolkit.js.org/)
+- **Data Fetching:** [TanStack React Query](https://tanstack.com/query/latest)
+- **Routing:** [TanStack Router](https://tanstack.com/router/latest)
+- **Forms:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+- **HTTP Client:** [Axios](https://axios-http.com/)
+- **Editor:** [TinyMCE React](https://www.tiny.cloud/docs/tinymce/latest/react-cloud/)
 
-## React Compiler
+## 📁 Project Structure
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+├── api/          # API service definitions (Axios instances, endpoints)
+├── components/   # Reusable UI components
+│   ├── dashboard/ # Dashboard specific components
+│   ├── features/  # Feature-based components (forum, user-management)
+│   ├── landing/   # Landing page sections
+│   ├── ui/        # Atomic UI components (Shadcn-like)
+│   └── ...
+├── hooks/        # Custom React hooks
+├── layouts/      # Page layout components (Admin, Public, User)
+├── lib/          # Utility functions and shared libraries
+├── pages/        # Page components mapped to routes
+├── routes/       # TanStack Router configuration
+├── store/        # Redux store and slices
+├── types/        # TypeScript type definitions and interfaces
+├── App.tsx       # Root component
+└── main.tsx      # Application entry point
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠️ Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Requirements
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- [Bun](https://bun.sh/) installed on your machine.
+- Node.js (Vite requirement, though Bun is used for package management).
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   bun install
+   ```
+
+3. Set up environment variables:
+   Create a `.env` file in the root directory and add the following:
+   ```env
+   VITE_API_URL=http://localhost:4000
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id
+   VITE_TINYMCE_API_KEY=your-tinymce-api-key
+   ```
+
+### Running the Application
+
+- **Development Mode:**
+  ```bash
+  bun dev
+  ```
+  The app will be available at `http://localhost:5173`.
+
+- **Production Build:**
+  ```bash
+  bun run build
+  ```
+
+- **Preview Production Build:**
+  ```bash
+  bun run preview
+  ```
+
+## 📜 Available Scripts
+
+| Script | Description |
+| :--- | :--- |
+| `bun dev` | Starts the development server with HMR. |
+| `bun run build` | Runs type checking and builds the app for production. |
+| `bun run lint` | Runs ESLint to check for code quality issues. |
+| `bun run preview` | Previews the locally built production app. |
+
+## 🧪 Tests
+
+> [!IMPORTANT]
+> **TODO:** No automated tests are currently configured. 
+> Plan to integrate [Vitest](https://vitest.dev/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/).
+
+## 🔑 Environment Variables
+
+- `VITE_API_URL`: The base URL for the backend API.
+- `VITE_GOOGLE_CLIENT_ID`: Google OAuth 2.0 Client ID for authentication.
+- `VITE_TINYMCE_API_KEY`: API Key for the TinyMCE rich text editor.
+
+## 📄 License
+
+> [!NOTE]
+> **TODO:** Add a LICENSE file. Currently, the project does not specify a license.
