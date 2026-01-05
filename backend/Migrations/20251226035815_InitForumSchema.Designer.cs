@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Models;
@@ -11,9 +12,11 @@ using backend.Models;
 namespace backend.Migrations
 {
     [DbContext(typeof(MentorXContext))]
-    partial class MentorXContextModelSnapshot : ModelSnapshot
+    [Migration("20251226035815_InitForumSchema")]
+    partial class InitForumSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -107,118 +110,6 @@ namespace backend.Migrations
                     b.ToTable("forum_topics", (string)null);
                 });
 
-            modelBuilder.Entity("MentorSkill", b =>
-                {
-                    b.Property<Guid>("MentorProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("mentor_profile_id");
-
-                    b.Property<Guid>("SkillId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("skill_id");
-
-                    b.HasKey("MentorProfileId", "SkillId")
-                        .HasName("mentor_skill_pkey");
-
-                    b.HasIndex(new[] { "SkillId" }, "idx_mentor_skill_skill_id");
-
-                    b.ToTable("mentor_skill", (string)null);
-                });
-
-            modelBuilder.Entity("backend.Models.MentorProfile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<double>("AvgRating")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("double precision")
-                        .HasDefaultValue(0.0)
-                        .HasColumnName("avg_rating");
-
-                    b.Property<string>("Biography")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("biography");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<decimal>("PricePerHour")
-                        .HasColumnType("numeric")
-                        .HasColumnName("price_per_hour");
-
-                    b.Property<int>("TotalRatings")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("total_ratings");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("mentor_profiles_pkey");
-
-                    b.HasIndex(new[] { "UserId" }, "mentor_profiles_user_id_key")
-                        .IsUnique();
-
-                    b.ToTable("mentor_profiles", (string)null);
-                });
-
-            modelBuilder.Entity("backend.Models.MentorReview", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("Comment")
-                        .HasColumnType("text")
-                        .HasColumnName("comment");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("MentorProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("mentor_profile_id");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("integer")
-                        .HasColumnName("rating");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("mentor_reviews_pkey");
-
-                    b.HasIndex(new[] { "MentorProfileId" }, "idx_mentor_reviews_mentor_profile_id");
-
-                    b.HasIndex(new[] { "UserId" }, "idx_mentor_reviews_user_id");
-
-                    b.ToTable("mentor_reviews", (string)null);
-                });
-
             modelBuilder.Entity("backend.Models.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -255,28 +146,6 @@ namespace backend.Migrations
                     b.HasIndex(new[] { "UserId" }, "idx_refresh_tokens_user_id");
 
                     b.ToTable("refresh_tokens", (string)null);
-                });
-
-            modelBuilder.Entity("backend.Models.Skill", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id")
-                        .HasName("skills_pkey");
-
-                    b.HasIndex(new[] { "Name" }, "skills_name_key")
-                        .IsUnique();
-
-                    b.ToTable("skills", (string)null);
                 });
 
             modelBuilder.Entity("backend.Models.User", b =>
@@ -386,56 +255,6 @@ namespace backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MentorSkill", b =>
-                {
-                    b.HasOne("backend.Models.MentorProfile", null)
-                        .WithMany()
-                        .HasForeignKey("MentorProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_mentor_skill_mentor_profile");
-
-                    b.HasOne("backend.Models.Skill", null)
-                        .WithMany()
-                        .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_mentor_skill_skill");
-                });
-
-            modelBuilder.Entity("backend.Models.MentorProfile", b =>
-                {
-                    b.HasOne("backend.Models.User", "User")
-                        .WithOne("MentorProfile")
-                        .HasForeignKey("backend.Models.MentorProfile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_mentor_profiles_user");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("backend.Models.MentorReview", b =>
-                {
-                    b.HasOne("backend.Models.MentorProfile", "MentorProfile")
-                        .WithMany("MentorReviews")
-                        .HasForeignKey("MentorProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_mentor_reviews_mentor_profile");
-
-                    b.HasOne("backend.Models.User", "User")
-                        .WithMany("MentorReviews")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_mentor_reviews_user");
-
-                    b.Navigation("MentorProfile");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("backend.Models.RefreshToken", b =>
                 {
                     b.HasOne("backend.Models.User", "User")
@@ -470,17 +289,8 @@ namespace backend.Migrations
                     b.Navigation("ForumPosts");
                 });
 
-            modelBuilder.Entity("backend.Models.MentorProfile", b =>
-                {
-                    b.Navigation("MentorReviews");
-                });
-
             modelBuilder.Entity("backend.Models.User", b =>
                 {
-                    b.Navigation("MentorProfile");
-
-                    b.Navigation("MentorReviews");
-
                     b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618

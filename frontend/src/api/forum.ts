@@ -1,0 +1,111 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import api from "./api";
+import type { AxiosError } from "axios";
+import type { Message } from "@/types/common";
+import type {
+  CreatePost,
+  CreateTopic,
+  ForumTopic,
+  Post,
+  TotalPostCount,
+} from "@/types/forum";
+import type { PaginationDto } from "@/types/pagination";
+
+export function useGetTopicPagination(page: number, pageSize: number) {
+  return useQuery<PaginationDto<ForumTopic>, AxiosError<Message>>({
+    queryKey: ["forum-topics", page, pageSize],
+    queryFn: async (): Promise<PaginationDto<ForumTopic>> => {
+      const res = await api.get<PaginationDto<ForumTopic>>(
+        `/forum/topics?page=${page}&pageSize=${pageSize}`
+      );
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useGetAllPostsByTopicId(
+  topicId: string,
+  page: number,
+  pageSize: number
+) {
+  return useQuery<PaginationDto<Post>, AxiosError<Message>>({
+    queryKey: ["forum-topic-posts", topicId, page, pageSize],
+    queryFn: async (): Promise<PaginationDto<Post>> => {
+      const res = await api.get<PaginationDto<Post>>(
+        `/forum/topics/${topicId}/posts?page=${page}&pageSize=${pageSize}`
+      );
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useGetTopicById(topicId: string) {
+  return useQuery<ForumTopic, AxiosError<Message>>({
+    queryKey: ["forum-topic", topicId],
+    queryFn: async (): Promise<ForumTopic> => {
+      const res = await api.get<ForumTopic>(`/forum/topics/${topicId}`);
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useCreateTopic() {
+  return useMutation<Message, AxiosError<Message>, CreateTopic>({
+    mutationFn: async (topic: CreateTopic): Promise<Message> => {
+      const res = await api.post<Message>(`/forum/topics`, topic);
+      return res.data;
+    },
+  });
+}
+
+export function useCreatePost(topicId: string) {
+  return useMutation<TotalPostCount, AxiosError<Message>, CreatePost>({
+    mutationFn: async (post: CreatePost): Promise<TotalPostCount> => {
+      const res = await api.post<TotalPostCount>(
+        `/forum/topics/${topicId}/posts`,
+        post
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useLikeOrDislikePost(postId: string) {
+  return useMutation<Message, AxiosError<Message>>({
+    mutationFn: async (): Promise<Message> => {
+      const res = await api.patch<Message>(`/forum/topics/posts/${postId}`);
+      return res.data;
+    },
+  });
+}
+
+export function useDeletePost() {
+  return useMutation<Message, AxiosError<Message>, string>({
+    mutationFn: async (postId: string): Promise<Message> => {
+      const res = await api.delete<Message>(`/forum/topics/posts/${postId}`);
+      return res.data;
+    },
+  });
+}
+
+export function useUpdatePost() {
+  return useMutation<
+    Message,
+    AxiosError<Message>,
+    { postId: string; post: CreatePost }
+  >({
+    mutationFn: async ({
+      postId,
+      post,
+    }: {
+      postId: string;
+      post: CreatePost;
+    }): Promise<Message> => {
+      const res = await api.put<Message>(`/forum/topics/posts/${postId}`, post);
+      return res.data;
+    },
+  });
+}
