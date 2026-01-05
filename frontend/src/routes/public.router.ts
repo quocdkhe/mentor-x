@@ -34,13 +34,10 @@ export const topicDetailRoute = createRoute({
 }).lazy(() => import("@/pages/public/forum/topic-detail").then((d) => d.Route));
 
 const publicRouteTree = publicLayoutRoute.addChildren([
-  
   landingRoute,
   forumListingRoute,
   mentorListingRoute,
-  mentorProfileRoute
-,
-  forumListingRoute,
+  mentorProfileRoute,
   topicDetailRoute,
 ]);
 
