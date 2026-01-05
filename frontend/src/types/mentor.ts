@@ -33,12 +33,17 @@ export interface Mentor {
 }
 
 export interface MentorCard {
-    id: string;
-    name: string;
-    avatar: string;
-    biography: string;
-    avgRating: number;
-    totalRatings: number;
-    skills: string[];
-    pricePerHour: number;
+  id: string;
+  name: string;
+  avatar: string;
+  biography: string;
+  avgRating: number;
+  totalRatings: number;
+  skills: string[];
+  pricePerHour: number;
+}
+
+export interface Skill {
+  id: string;
+  name: string;
 }

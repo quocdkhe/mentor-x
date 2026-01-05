@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAppSelector } from "@/store/hooks";
 import { useEffect } from "react";
 import { Plus, Trash } from "lucide-react"; 
+import { SkillSelector } from "@/components/mentors/SkillSelector"; 
 
 const formSchema = z.object({
   biography: z.string().min(10, "Tiểu sử phải có ít nhất 10 ký tự"),
@@ -126,9 +127,10 @@ function BecomeMentorPage() {
                          render={({ field: inputField }) => (
                            <FormItem>
                              <div className="flex gap-2">
-                               <FormControl>
-                                 <Input placeholder="Nhập kỹ năng (ví dụ: React, .NET)" {...inputField} />
-                               </FormControl>
+                               <SkillSelector 
+                                 placeholder="Nhập kỹ năng (ví dụ: React, .NET)" 
+                                 {...inputField} 
+                               />
                                {fields.length > 1 && (
                                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
                                      <Trash className="w-4 h-4" />

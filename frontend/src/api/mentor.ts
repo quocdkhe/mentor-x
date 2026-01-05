@@ -1,12 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "./api";
-import type { Mentor } from "@/types/mentor";
+import type { Mentor, Skill } from "@/types/mentor";
 import type { Message } from "@/types/common";
 import type { MentorCard } from "@/types/mentor";
 
 interface MentorListResponse {
   mentors: MentorCard[];
+}
+
+export function useGetSkills() {
+  return useQuery<Skill[], AxiosError<Message>>({
+    queryKey: ["skills"],
+    queryFn: async (): Promise<Skill[]> => {
+      const res = await api.get<Skill[]>("/mentors/skills");
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 60, // cache for 1 hour
+  });
 }
 
 export function useGetMentorCard() {
