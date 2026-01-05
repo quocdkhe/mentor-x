@@ -32,7 +32,7 @@ export interface Mentor {
   reviews: Review[];
 }
 
-export interface MentorCard {
+export interface MentorInfo {
   id: string;
   name: string;
   avatar: string;

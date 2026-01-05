@@ -12,7 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAppSelector } from "@/store/hooks";
 import { useEffect } from "react";
 import { Plus, Trash } from "lucide-react"; 
-import { SkillSelector } from "@/components/mentors/SkillSelector"; 
+import { SkillSelector } from "@/components/features/mentor-list/SkillSelector"; 
 
 const formSchema = z.object({
   biography: z.string().min(10, "Tiểu sử phải có ít nhất 10 ký tự"),
