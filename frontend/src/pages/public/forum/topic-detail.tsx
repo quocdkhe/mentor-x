@@ -48,7 +48,6 @@ export function TopicDetail() {
   const { label, variant } = getTopicTypeMeta(topicQuery.data?.type);
   function handlePageChange(page: number) {
     setCurrentPage(page);
-    console.log("Triggered state change");
     window.scrollTo({
       top: 0,
       behavior: "smooth",

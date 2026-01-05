@@ -105,7 +105,7 @@ export function CommentCard({ post, commentNumber, onReplyClick, onEdit, onDelet
     likeOrDislikePostMutation.mutate(undefined, {
       onSuccess: () => {
         queryClient.removeQueries({
-          queryKey: ['forum-topic-posts'],
+          queryKey: ['forum-topic-posts', post.id],
         });
         if (isLiked) {
           setLikers((prev) => prev.filter((liker) => liker.name !== user?.name));
