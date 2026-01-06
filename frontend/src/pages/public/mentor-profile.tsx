@@ -1,4 +1,4 @@
-import { createLazyRoute } from "@tanstack/react-router";
+import { createLazyRoute, getRouteApi } from "@tanstack/react-router";
 import { useGetMentorProfile } from "@/api/mentor";
 import { Star, Globe, Clock, Calendar, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,8 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DefaultSkeleton from "@/components/skeletons/default.skeleton";
 // import { Separator } from "@/components/ui/separator"; // Unused
 
+const route = getRouteApi('/public/mentors/$mentorId');
+
 const MentorProfilePage = () => {
-  const { mentorId } = Route.useParams();
+  const { mentorId } = route.useParams();
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
 
   if (isLoading) {

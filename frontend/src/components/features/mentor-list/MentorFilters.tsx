@@ -1,208 +1,155 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Search, SlidersHorizontal, Zap, Award, Sparkles, Bot, Users, Palette, Package, Code, Megaphone, BarChart, Feather, Eye } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-// import { useSkills } from "@/hooks/useSkills";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
-export interface Filters {
-  search: string;
-  skill: string;
-  minRating: number;
-  priceRange: [number, number];
+interface Category {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  hasNotification?: boolean;
 }
 
-// data
-export const skills: string[] = [
-  "Agile",
-  "Android",
-  "AWS",
-  "CI/CD",
-  "Data Analysis",
-  "Design Systems",
-  "Docker",
-  "Entrepreneurship",
-  "Figma",
-  "Flutter",
-  "Fundraising",
-  "iOS",
-  "Kubernetes",
-  "Leadership",
-  "Machine Learning",
-  "Network Security",
-  "Node.js",
-  "OWASP",
-  "Penetration Testing",
-  "Product Management",
-  "Python",
-  "React",
-  "React Native",
-  "SaaS",
-  "Security",
-  "Strategy",
-  "System Design",
-  "TensorFlow",
-  "TypeScript",
-  "User Research",
-  "User Testing",
-  "UX Design",
+const categories: Category[] = [
+  { id: 'all', label: 'All', icon: Users },
+  { id: 'new', label: 'New', icon: Sparkles, hasNotification: true },
+  { id: 'available-asap', label: 'Available ASAP', icon: Zap },
+  { id: 'notable', label: 'Notable', icon: Award, hasNotification: true },
+  { id: 'ai', label: 'AI', icon: Bot, hasNotification: true },
+  { id: 'soft-skills', label: 'Soft Skills', icon: Users },
+  { id: 'design', label: 'Design', icon: Palette },
+  { id: 'product', label: 'Product', icon: Package },
+  { id: 'engineering', label: 'Engineering', icon: Code },
+  { id: 'marketing', label: 'Marketing', icon: Megaphone },
+  { id: 'data-science', label: 'Data Science', icon: BarChart },
+  { id: 'content-writing', label: 'Content Writing', icon: Feather },
+  { id: 'no-low-code', label: 'No/Low Code', icon: Eye },
 ];
 
-interface MentorFiltersProps {
-  filters: Filters;
-  onFiltersChange: (filters: Filters) => void;
-  onReset: () => void;
+interface FilterBarProps {
+  searchQuery: string;
+  selectedSkill: string;
+  selectedCategory: string;
+  onSearchChange: (value: string) => void;
+  onSkillChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
+  availableSkills: string[];
 }
 
-export function MentorFilters({
-  filters,
-  onFiltersChange,
-  onReset,
-}: MentorFiltersProps) {
-  //   const { data: skills = [], isLoading: skillsLoading } = useSkills();
-
-  const hasActiveFilters =
-    filters.search ||
-    filters.skill ||
-    filters.minRating > 0 ||
-    filters.priceRange[0] > 0 ||
-    filters.priceRange[1] < 250;
-
+export function FilterBar({
+  searchQuery,
+  selectedSkill,
+  selectedCategory,
+  onSearchChange,
+  onSkillChange,
+  onCategoryChange,
+  availableSkills,
+}: FilterBarProps) {
   return (
-    <div className="bg-card rounded-xl shadow-card p-6 mb-8">
-      <div className="flex items-center gap-2 mb-5">
-        <SlidersHorizontal className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">
-          Find Your Mentor
-        </h2>
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="bg-card rounded-lg shadow-sm border mb-8">
+      <div className="p-6">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
-            placeholder="Search by name..."
-            value={filters.search}
-            onChange={(e) =>
-              onFiltersChange({ ...filters, search: e.target.value })
-            }
-            className="pl-10 bg-background border-border"
+            type="text"
+            placeholder="Search mentors by name, skills, or expertise..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-10 h-12"
           />
         </div>
 
-        {/* Skill Filter */}
-        <Select
-          value={filters.skill}
-          onValueChange={(value) =>
-            onFiltersChange({ ...filters, skill: value === "all" ? "" : value })
-          }
-        >
-          <SelectTrigger className="bg-background border-border">
-            <SelectValue placeholder="All Skills" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            <SelectItem value="all">All Skills</SelectItem>
-            {skills.map((skill) => (
-              <SelectItem key={skill} value={skill}>
-                {skill}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Rating Filter */}
-        <Select
-          value={filters.minRating.toString()}
-          onValueChange={(value) =>
-            onFiltersChange({ ...filters, minRating: parseFloat(value) })
-          }
-        >
-          <SelectTrigger className="bg-background border-border">
-            <SelectValue placeholder="Min Rating" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            <SelectItem value="0">Any Rating</SelectItem>
-            <SelectItem value="4">4+ Stars</SelectItem>
-            <SelectItem value="4.5">4.5+ Stars</SelectItem>
-            <SelectItem value="4.8">4.8+ Stars</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {/* Price Range */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Price Range</span>
-            <span className="font-medium text-foreground">
-              ${filters.priceRange[0]} - ${filters.priceRange[1]}
-            </span>
-          </div>
-          <Slider
-            value={filters.priceRange}
-            onValueChange={(value) =>
-              onFiltersChange({
-                ...filters,
-                priceRange: value as [number, number],
-              })
-            }
-            max={250}
-            min={0}
-            step={10}
-            className="[&_[role=slider]]:bg-primary [&_[role=slider]]:border-primary"
-          />
+        <div className="flex gap-3">
+          <Select value={selectedSkill} onValueChange={onSkillChange}>
+            <SelectTrigger className="w-[200px] h-12">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4" />
+                <SelectValue placeholder="All Skills" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Skills</SelectItem>
+              {availableSkills.map((skill) => (
+                <SelectItem key={skill} value={skill}>
+                  {skill}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Active Filters & Reset */}
-      {hasActiveFilters && (
-        <div className="flex items-center gap-3 mt-5 pt-5 border-t border-border">
+      {(searchQuery || selectedSkill !== 'all') && (
+        <div className="flex items-center gap-2 mt-4 pt-4 border-t">
           <span className="text-sm text-muted-foreground">Active filters:</span>
-          <div className="flex flex-wrap gap-2">
-            {filters.search && (
-              <Badge variant="secondary" className="gap-1">
-                Search: {filters.search}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => onFiltersChange({ ...filters, search: "" })}
-                />
-              </Badge>
-            )}
-            {filters.skill && (
-              <Badge variant="secondary" className="gap-1">
-                {filters.skill}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => onFiltersChange({ ...filters, skill: "" })}
-                />
-              </Badge>
-            )}
-            {filters.minRating > 0 && (
-              <Badge variant="secondary" className="gap-1">
-                {filters.minRating}+ Stars
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => onFiltersChange({ ...filters, minRating: 0 })}
-                />
-              </Badge>
-            )}
-          </div>
+          {searchQuery && (
+            <Badge variant="secondary" className="gap-1">
+              Tìm kiếm: {searchQuery}
+            </Badge>
+          )}
+          {selectedSkill !== 'all' && (
+            <Badge variant="secondary" className="gap-1">
+              Kỹ năng: {selectedSkill}
+            </Badge>
+          )}
           <Button
             variant="ghost"
             size="sm"
-            onClick={onReset}
-            className="ml-auto text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              onSearchChange('');
+              onSkillChange('all');
+            }}
+            className="ml-auto text-xs"
           >
-            Reset All
+            Xóa tất cả
           </Button>
         </div>
       )}
+
+      <div className="mt-6">
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex items-center gap-3">
+            {categories.map((category) => {
+              const Icon = category.icon;
+              const isSelected = selectedCategory === category.id;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => onCategoryChange(category.id)}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-full border transition-colors min-w-fit",
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-transparent border-border hover:bg-muted"
+                  )}
+                >
+                  <div className="relative">
+                    <Icon className="w-4 h-4" />
+                    {category.hasNotification && (
+                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                    )}
+                  </div>
+                  <span className="text-sm font-medium">
+                    {category.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
+      </div>
     </div>
   );
 }
