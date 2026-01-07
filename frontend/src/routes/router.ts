@@ -7,6 +7,7 @@ import { userRouteTree } from "./user.router";
 import App from "@/App";
 import { adminRouteTree } from "./admin.router";
 import { publicRouteTree } from "./public.router";
+import { mentorRouteTree } from "./mentor.router";
 
 export const rootRoute = createRootRoute({
   component: App,
@@ -29,6 +30,7 @@ const routeTree = rootRoute.addChildren([
   publicRouteTree,
   loginRoute,
   registerRoute,
+  mentorRouteTree,
 ]);
 
 export const router = createRouter({
