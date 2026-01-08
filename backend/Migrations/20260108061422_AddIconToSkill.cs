@@ -11,7 +11,7 @@ namespace backend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "Icon",
+                name: "icon",
                 table: "skills",
                 type: "text",
                 nullable: true);
@@ -21,7 +21,7 @@ namespace backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Icon",
+                name: "icon",
                 table: "skills");
         }
     }
