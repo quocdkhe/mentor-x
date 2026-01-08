@@ -43,7 +43,17 @@ export interface MentorInfo {
   pricePerHour: number;
 }
 
+export interface MentorProfile {
+  biography: string;
+  pricePerHours: number;
+  skill: string[];
+  employer: string;
+  company: string;
+  yearsOfExperience: number;
+}
+
 export interface Skill {
   id: string;
   name: string;
+  icon: string;
 }
