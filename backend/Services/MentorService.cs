@@ -17,18 +17,23 @@ namespace backend.Services
         public async Task<MentorListResponseDTO> GetAllMentors()
         {
             var mentors = await _context.MentorProfiles
+            .Where(m => m.Status == "approved")
             .Include(m => m.User)
             .Include(m => m.MentorSkills)
             .Select(m => new MentorListItemDTO
             {
-                Id = m.Id,                
+                Id = m.Id,
                 Name = m.User.Name,
                 Avatar = m.User.Avatar,
                 Biography = m.Biography,
                 Skills = m.MentorSkills.Select(s => s.Name).ToList(),
                 AvgRating = m.AvgRating,
                 TotalRatings = m.TotalRatings,
-                PricePerHour = m.PricePerHour
+                PricePerHour = m.PricePerHour,
+
+                Position = m.Position,
+                Company = m.Company,
+                YearsOfExperience = m.YearsOfExperience
             })
             .ToListAsync();
             return new MentorListResponseDTO
@@ -43,7 +48,8 @@ namespace backend.Services
                 .Select(s => new SkillDTO
                 {
                     Id = s.Id,
-                    Name = s.Name
+                    Name = s.Name,
+                    Icon = s.Icon
                 })
                 .ToListAsync();
             return skills;
@@ -71,6 +77,9 @@ namespace backend.Services
                 AvgRating = mentor.AvgRating,
                 TotalRatings = mentor.TotalRatings,
                 PricePerHour = mentor.PricePerHour,
+                Position = mentor.Position,
+                Company = mentor.Company,
+                YearsOfExperience = mentor.YearsOfExperience,
                 Reviews = mentor.MentorReviews
                     .OrderByDescending(r => r.CreatedAt)
                     .Select(r => new MentorReviewDTO
@@ -94,11 +103,11 @@ namespace backend.Services
             var user = await _context.Users
                 .Include(u => u.MentorProfile)
                 .FirstOrDefaultAsync(u => u.Id == userId);
-            
-            if (user == null) 
+
+            if (user == null)
                 throw new Exception("User not found");
-            
-            if (user.MentorProfile != null) 
+
+            if (user.MentorProfile != null)
                 throw new Exception("User is already a mentor");
 
             // Role update
