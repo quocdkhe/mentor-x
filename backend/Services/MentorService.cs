@@ -3,6 +3,7 @@ using backend.Models.DTOs.Mentor;
 using backend.Services.Interfaces;
 using backend.Utils;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace backend.Services
 {
@@ -141,6 +142,77 @@ namespace backend.Services
 
             _context.MentorProfiles.Add(mentorProfile);
             await _context.SaveChangesAsync(); // Saves both user role update and new mentor profile
+            return true;
+        }
+
+        public async Task<bool> UpdateMentorProfile(Guid userId, MentorUpdateRequestDTO request)
+        {
+            var user = await _context.Users
+                .Include(u => u.MentorProfile)
+                .ThenInclude(m => m.MentorSkills)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            if (user.MentorProfile == null)
+                throw new Exception("User is not a mentor");
+
+            var mentorProfile = user.MentorProfile;
+
+            // Update User Information
+            if (request.User != null)
+            {
+                if (!string.IsNullOrWhiteSpace(request.User.Name))
+                    user.Name = request.User.Name;
+
+                if (!string.IsNullOrWhiteSpace(request.User.Phone))
+                    user.Phone = request.User.Phone;
+
+                if (!string.IsNullOrWhiteSpace(request.User.Avatar))
+                    user.Avatar = request.User.Avatar;
+
+                if (!string.IsNullOrWhiteSpace(request.User.Password))
+                    user.Password = PasswordHashing.HashPassword(request.User.Password);
+
+                user.UpdatedAt = DateTime.UtcNow;
+            }
+
+            // Update Mentor Profile Information
+            if (!string.IsNullOrWhiteSpace(request.Biography))
+                mentorProfile.Biography = request.Biography;
+
+            if (request.PricePerHour.HasValue)
+                mentorProfile.PricePerHour = request.PricePerHour.Value;
+
+            if (!string.IsNullOrWhiteSpace(request.Employer))
+                mentorProfile.Position = request.Employer;
+
+            if (!string.IsNullOrWhiteSpace(request.Company))
+                mentorProfile.Company = request.Company;
+
+            if (request.YearsOfExperience.HasValue)
+                mentorProfile.YearsOfExperience = request.YearsOfExperience.Value;
+
+            // Update Skills if provided
+            if (request.Skills != null && request.Skills.Count > 0)
+            {
+                // Remove old skills
+                mentorProfile.MentorSkills.Clear();
+
+                // Add new skills
+                var skills = new List<Skill>();
+                foreach (var skillName in request.Skills)
+                {
+                    var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id.ToString() == skillName);
+                    skills.Add(skill);
+                }
+                mentorProfile.MentorSkills = skills;
+            }
+
+            mentorProfile.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
             return true;
         }
     }

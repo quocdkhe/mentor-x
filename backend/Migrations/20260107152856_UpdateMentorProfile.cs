@@ -11,26 +11,26 @@ namespace backend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "Company",
+                name: "company",
                 table: "mentor_profiles",
                 type: "text",
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
-                name: "Position",
+                name: "position",
                 table: "mentor_profiles",
                 type: "text",
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
-                name: "Status",
+                name: "status",
                 table: "mentor_profiles",
                 type: "text",
                 nullable: false,
                 defaultValue: "pending");
 
             migrationBuilder.AddColumn<int>(
-                name: "YearOfExperience",
+                name: "years_of_experience",
                 table: "mentor_profiles",
                 type: "integer",
                 nullable: false,
@@ -41,19 +41,19 @@ namespace backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Company",
+                name: "company",
                 table: "mentor_profiles");
 
             migrationBuilder.DropColumn(
-                name: "Position",
+                name: "position",
                 table: "mentor_profiles");
 
             migrationBuilder.DropColumn(
-                name: "Status",
+                name: "status",
                 table: "mentor_profiles");
 
             migrationBuilder.DropColumn(
-                name: "YearOfExperience",
+                name: "years_of_experience",
                 table: "mentor_profiles");
         }
     }
