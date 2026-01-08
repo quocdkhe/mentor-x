@@ -27,7 +27,7 @@ namespace backend.Migrations
                 table: "mentor_profiles",
                 type: "text",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "pending");
 
             migrationBuilder.AddColumn<int>(
                 name: "YearOfExperience",
