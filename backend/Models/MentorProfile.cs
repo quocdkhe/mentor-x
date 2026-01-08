@@ -11,6 +11,11 @@ public partial class MentorProfile
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
+    public string? Company { get; set; }
+    public int YearsOfExperience  { get; set; }
+    public string? Position { get; set; }
+
+    public string Status { get; set; } = null;
     public virtual User User { get; set; } = null!;
     public virtual ICollection<Skill> MentorSkills { get; set; } = new List<Skill>();
     public virtual ICollection<MentorReview> MentorReviews { get; set; } = new List<MentorReview>();
