@@ -4,5 +4,6 @@ namespace backend.Models.DTOs.Mentor
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
+        public string? Icon { get; set; }
     }
 }

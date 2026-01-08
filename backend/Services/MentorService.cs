@@ -48,7 +48,8 @@ namespace backend.Services
                 .Select(s => new SkillDTO
                 {
                     Id = s.Id,
-                    Name = s.Name
+                    Name = s.Name,
+                    Icon = s.Icon
                 })
                 .ToListAsync();
             return skills;
