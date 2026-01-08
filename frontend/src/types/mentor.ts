@@ -44,6 +44,13 @@ export interface MentorInfo {
 }
 
 export interface MentorProfile {
+  user: {
+    name: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+    avatar: string;
+  },
   biography: string;
   pricePerHours: number;
   skill: string[];
