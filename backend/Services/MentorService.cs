@@ -76,6 +76,9 @@ namespace backend.Services
                 AvgRating = mentor.AvgRating,
                 TotalRatings = mentor.TotalRatings,
                 PricePerHour = mentor.PricePerHour,
+                Position = mentor.Position,
+                Company = mentor.Company,
+                YearsOfExperience = mentor.YearsOfExperience,
                 Reviews = mentor.MentorReviews
                     .OrderByDescending(r => r.CreatedAt)
                     .Select(r => new MentorReviewDTO
