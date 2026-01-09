@@ -1,102 +1,61 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { createLazyRoute } from "@tanstack/react-router";
 import { MentorCard } from "@/components/features/mentor-list/MentorCard";
-import {
-  FilterBar,
-} from "@/components/features/mentor-list/MentorFilters";
-import { Users } from "lucide-react";
+import { Users, Search, Sparkles } from "lucide-react";
 import { useGetMentorCard } from "@/api/mentor";
 import DefaultSkeleton from "@/components/skeletons/default.skeleton";
-
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { SkillTabs, MOCK_SKILLS } from "@/components/features/mentor-list/SkillTabs";
 
 const MentorListing = () => {
   const { data: mentors = [], isLoading } = useGetMentorCard();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSkill, setSelectedSkill] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedSkillId, setSelectedSkillId] = useState("all");
 
-  const availableSkills = useMemo(() => {
-    const skillsSet = new Set<string>();
-    mentors.forEach((mentor) => {
-      mentor.skills.forEach((skill) => skillsSet.add(skill));
-    });
-    return Array.from(skillsSet).sort();
-  }, [mentors]);
-
-  const filteredMentors = useMemo(() => {
-    return mentors.filter((mentor) => {
-      const matchesSearch =
-        searchQuery === '' ||
-        mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        mentor.biography.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        mentor.skills.some((skill) =>
-          skill.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-
-      const matchesSkill =
-        selectedSkill === 'all' || mentor.skills.includes(selectedSkill);
-
-      return matchesSearch && matchesSkill;
-    });
-  }, [mentors, searchQuery, selectedSkill]);
-
-  if (isLoading) { 
-    return <DefaultSkeleton/>
+  if (isLoading) {
+    return <DefaultSkeleton />
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5 border-b border-border">
-        <div className="container mx-auto px-4 py-12 md:py-16">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="w-8 h-8 text-600" />
-              <h1 className="text-4xl font-bold text-foreground">Tìm kiếm mentor</h1>
-            </div>
-            <p className="text-lg text-muted-foreground">
-            Kết nối với các chuyên gia có kinh nghiệm để thúc đẩy sự phát triển của bạn
-          </p>
-        </div>
-        </div>
-      </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-10">
-        {/* Filters */}
-
-        <FilterBar
-          searchQuery={searchQuery}
-          selectedSkill={selectedSkill}
-          selectedCategory={selectedCategory}
-          onSearchChange={setSearchQuery}
-          onSkillChange={setSelectedSkill}
-          onCategoryChange={setSelectedCategory}
-          availableSkills={availableSkills}
-        />
-
-        {/* Results Count */}
-        <div className="flex items-center gap-2 mb-6">
-          <Users className="h-5 w-5 text-muted-foreground" />
-          <p className="text-muted-foreground">
-            Hiển thị{" "}
-            <span className="font-semibold text-foreground">
-              {filteredMentors.length}
-            </span>{" "}
-            {filteredMentors.length === 1 ? "mentor" : "mentors"}
-          </p>
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Tìm kiếm theo tên, công ty, vai trò"
+                className="pl-10 h-12 text-base"
+              />
+            </div>
+            <Button variant="outline" className="h-12 gap-2">
+              <Sparkles className="h-4 w-4" />
+              Tìm kiếm bằng AI
+            </Button>
+          </div>
         </div>
 
+        {/* Skill Category Tabs */}
+        <SkillTabs
+          skills={MOCK_SKILLS}
+          selectedSkillId={selectedSkillId}
+          onSkillChange={setSelectedSkillId}
+        />
+
         {/* Mentor Grid */}
-        {filteredMentors.length > 0 ? (
+        {mentors.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredMentors.map((mentor, index) => (
+            {mentors.map((mentor, index) => (
               <div
                 key={mentor.id}
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                 <MentorCard mentor={mentor}/> 
+                <MentorCard mentor={mentor} />
               </div>
             ))}
           </div>

@@ -1,4 +1,4 @@
-import { Briefcase, Bell, Calendar, Award } from 'lucide-react';
+import { Briefcase, Star } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { MentorInfo } from '@/types/mentor';
@@ -10,61 +10,53 @@ interface MentorCardProps {
 
 export function MentorCard({ mentor }: MentorCardProps) {
   return (
-    <Link 
-      to="/mentors/$mentorId" 
-      params={{ mentorId: mentor.id }} 
+    <Link
+      to="/mentors/$mentorId"
+      params={{ mentorId: mentor.id }}
       className="block h-full"
     >
-      <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 group p-0">
+      <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 group p-0 rounded-2xl">
+        {/* Avatar Section */}
         <div className="relative">
           <img
             src={mentor.avatar}
             alt={mentor.name}
-            className="w-full h-80 object-cover block"
+            className="w-full h-64 object-cover"
           />
-
-          <Badge className="absolute top-4 left-4 bg-white text-slate-900 font-semibold px-4 py-1.5">
-            Đánh giá
-          </Badge>
-
-          <div className="absolute top-4 right-4 bg-amber-500/90 p-3 rounded-lg">
-            <Award className="w-6 h-6 text-white" />
-          </div>
-
-          <Badge className="absolute bottom-4 left-4 bg-amber-500 text-slate-900 font-semibold px-4 py-2 text-sm">
-            <Calendar className="w-4 h-4 mr-2" />
-            Mức độ
-          </Badge>
         </div>
 
-        <div className="p-5">
-          <h3 className="font-bold text-xl mb-1 group-hover:text-primary transition-colors">
-            {mentor.name} <span className="text-muted-foreground font-normal text-sm"> Quốc gia </span>
+        {/* Content Section */}
+        <div className="p-4 pt-3">
+          {/* Name */}
+          <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors flex items-center gap-2">
+            {mentor.name}
           </h3>
 
-          <div className="flex items-start gap-2 text-sm text-muted-foreground mb-3">
-            <Briefcase className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          {/* Position at Company */}
+          <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
+            <Briefcase className="w-4 h-4 mt-0.5 shrink-0" />
             <span className="line-clamp-2">
-              {/* {mentor.job_title} at {mentor.company} */}
-              Kỹ năng
+              <strong>{mentor.position}</strong> tại <strong>{mentor.company}</strong>
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
-            <Bell className="w-4 h-4 flex-shrink-0" />
+          {/* Rating Info */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+            <Star className="w-4 h-4 shrink-0 fill-amber-400 text-amber-400" />
             <span>
-              {mentor.totalRatings} sessions <span className="text-muted-foreground/70">({mentor.avgRating} reviews)</span>
+              {mentor.avgRating.toFixed(1)} ({mentor.totalRatings} {mentor.totalRatings === 1 ? 'đánh giá' : 'đánh giá'})
             </span>
           </div>
 
-          <div className="-mx-5 -mb-5 px-5 py-4 grid grid-cols-2 gap-4">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 pt-3 border-t">
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Kinh nghiệm</div>
-              <div className="font-bold text-lg">{mentor.pricePerHour} năm</div>
+              <div className="text-xs text-muted-foreground mb-1">Kinh nghiệm</div>
+              <div className="font-bold text-base">{mentor.yearsOfExperience} năm</div>
             </div>
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Avg. Attendance</div>
-              <div className="font-bold text-lg">{mentor.pricePerHour}%</div>
+              <div className="text-xs text-muted-foreground mb-1">Giá TB/ giờ</div>
+              <div className="font-bold text-base">{mentor.pricePerHour.toLocaleString('vi-VN')}đ</div>
             </div>
           </div>
         </div>

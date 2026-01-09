@@ -41,6 +41,9 @@ export interface MentorInfo {
   totalRatings: number;
   skills: string[];
   pricePerHour: number;
+  position: string;
+  company: string;
+  yearsOfExperience: number;
 }
 
 export interface MentorProfile {
@@ -50,7 +53,7 @@ export interface MentorProfile {
     password: string;
     confirmPassword: string;
     avatar: string;
-  },
+  };
   biography: string;
   pricePerHours: number;
   skill: string[];
