@@ -24,13 +24,18 @@ namespace backend.Services
                 .AsNoTracking();
             
             var totalItems = await query.CountAsync();
+            
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(m 
-                    => m.User.Name.Contains(searchTerm) 
-                     || m.Company.Contains(searchTerm) 
-                     || m.Position.Contains(searchTerm));
+                var keyword = $"%{searchTerm}%";
+
+                query = query.Where(m =>
+                    EF.Functions.ILike(m.User.Name, keyword) ||
+                    EF.Functions.ILike(m.Company, keyword) ||
+                    EF.Functions.ILike(m.Position, keyword)
+                );
             }
+
 
             if (skillId != default)
             {

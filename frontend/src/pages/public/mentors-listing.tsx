@@ -7,6 +7,7 @@ import { MentorListingSkeleton } from "@/components/skeletons/mentor-listing.ske
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SkillTabs } from "@/components/features/mentor-list/SkillTabs";
+import MentorCardsSkeleton from "@/components/skeletons/mentor-cards-skeleton";
 
 const MentorListing = () => {
   const [selectedSkillId, setSelectedSkillId] = useState("all");
@@ -108,7 +109,7 @@ const MentorListing = () => {
         />
 
         {/* Mentor Grid */}
-        {mentorsLoading ? <MentorListingSkeleton /> : mentors.length > 0 ? (
+        {mentorsLoading ? <MentorCardsSkeleton /> : mentors.length > 0 ? (
           <>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {mentors.map((mentor, index) => (
