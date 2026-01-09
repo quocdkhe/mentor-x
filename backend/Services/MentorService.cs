@@ -4,6 +4,7 @@ using backend.Services.Interfaces;
 using backend.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using backend.Models.DTOs;
 
 namespace backend.Services
 {
@@ -15,9 +16,18 @@ namespace backend.Services
             _context = context;
         }
 
-        public async Task<MentorListResponseDTO> GetAllMentors()
+        public async Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest)
         {
-            var mentors = await _context.MentorProfiles
+            var page = paginationRequest.Page < 1 ? 1 : paginationRequest.Page;
+            var pageSize = paginationRequest.PageSize < 1 ? 10 : paginationRequest.PageSize;
+            var query = _context.MentorProfiles
+                .AsNoTracking();
+            
+            var totalItems = await query.CountAsync();
+            
+            var items = await _context.MentorProfiles
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Where(m => m.Status == "approved")
             .Include(m => m.User)
             .Include(m => m.MentorSkills)
@@ -31,15 +41,19 @@ namespace backend.Services
                 AvgRating = m.AvgRating,
                 TotalRatings = m.TotalRatings,
                 PricePerHour = m.PricePerHour,
-
                 Position = m.Position,
                 Company = m.Company,
                 YearsOfExperience = m.YearsOfExperience
             })
             .ToListAsync();
-            return new MentorListResponseDTO
+            
+            return new PaginationDto<MentorListItemDTO>
             {
-                Mentors = mentors
+                Items = items,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
             };
         }
 

@@ -21,9 +21,9 @@ namespace backend.Controllers
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<MentorListResponseDTO>> GetAllMentors()
+        public async Task<ActionResult<MentorListResponseDTO>> GetAllMentors([FromQuery] PaginationRequest paginationRequest)
         {
-            var mentorList = await _mentorService.GetAllMentors();
+            var mentorList = await _mentorService.GetAllMentors(paginationRequest);
             return Ok(mentorList);
         }
 

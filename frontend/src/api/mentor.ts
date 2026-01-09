@@ -1,11 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "./api";
 import type { MentorInfo, Skill } from "@/types/mentor";
 import type { Message } from "@/types/common";
-interface MentorListResponse {
-  mentors: MentorInfo[];
-}
+import type { PaginationDto } from "@/types/pagination";
 
 export function useGetSkills() {
   return useQuery<Skill[], AxiosError<Message>>({
@@ -19,13 +22,33 @@ export function useGetSkills() {
 }
 
 export function useGetMentorCard() {
-  return useQuery<MentorInfo[], AxiosError<Message>>({
+  return useQuery<PaginationDto<MentorInfo>, AxiosError<Message>>({
     queryKey: ["mentors"],
-    queryFn: async (): Promise<MentorInfo[]> => {
-      const res = await api.get<MentorListResponse>("/mentors");
-      return res.data.mentors;
+    queryFn: async (): Promise<PaginationDto<MentorInfo>> => {
+      const res = await api.get<PaginationDto<MentorInfo>>("/mentors");
+      return res.data;
     },
-    staleTime: 1000 * 60 * 10, // optional: cache for 10 minutes
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+export function useInfiniteGetMentorCard(pageSize: number = 12) {
+  return useInfiniteQuery<PaginationDto<MentorInfo>, AxiosError<Message>>({
+    queryKey: ["mentors", "infinite"],
+    queryFn: async ({ pageParam = 1 }): Promise<PaginationDto<MentorInfo>> => {
+      const res = await api.get<PaginationDto<MentorInfo>>("/mentors", {
+        params: {
+          page: pageParam,
+          pageSize,
+        },
+      });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => {
+      return lastPage.hasNext ? lastPage.currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
+    staleTime: 1000 * 60 * 10,
   });
 }
 

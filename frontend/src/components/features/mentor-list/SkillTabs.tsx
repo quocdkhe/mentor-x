@@ -1,30 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import * as Icons from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export interface Skill {
-  skillId: string;
-  name: string;
-  iconName: string; // Store icon name as string for database compatibility
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const MOCK_SKILLS: Skill[] = [
-  { skillId: "all", name: "Tất cả", iconName: "Users" },
-  { skillId: "new", name: "Mới", iconName: "Zap" },
-  { skillId: "available-asap", name: "Sẵn sàng ngay", iconName: "TrendingUp" },
-  { skillId: "notable", name: "Nổi bật", iconName: "Star" },
-  { skillId: "ai", name: "AI", iconName: "Bot" },
-  { skillId: "soft-skills", name: "Kỹ năng mềm", iconName: "Briefcase" },
-  { skillId: "design", name: "Thiết kế", iconName: "Palette" },
-  { skillId: "product", name: "Sản phẩm", iconName: "Package" },
-  { skillId: "engineering", name: "Kỹ thuật", iconName: "Code" },
-  { skillId: "marketing", name: "Marketing", iconName: "TrendingUp" },
-  { skillId: "data-science", name: "Khoa học dữ liệu", iconName: "BarChart" },
-  { skillId: "content-writing", name: "Viết nội dung", iconName: "FileText" },
-  { skillId: "no-low-code", name: "No/Low Code", iconName: "MonitorSmartphone" },
-
-];
+import type { Skill } from "@/types/mentor";
 
 interface SkillTabsProps {
   skills: Skill[];
@@ -90,13 +67,13 @@ export function SkillTabs({ skills, selectedSkillId, onSkillChange }: SkillTabsP
         onScroll={checkScroll}
       >
         {skills.map((skill) => {
-          const Icon = getIcon(skill.iconName);
-          const isSelected = skill.skillId === selectedSkillId;
+          const Icon = getIcon(skill.icon);
+          const isSelected = skill.id === selectedSkillId;
 
           return (
             <button
-              key={skill.skillId}
-              onClick={() => onSkillChange(skill.skillId)}
+              key={skill.id}
+              onClick={() => onSkillChange(skill.id)}
               className={`flex flex-col items-center gap-2 px-4 py-3 hover:bg-accent transition-colors whitespace-nowrap shrink-0 relative ${isSelected ? "border-b-3 border-primary" : ""
                 }`}
             >
