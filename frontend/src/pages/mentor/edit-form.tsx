@@ -37,30 +37,8 @@ import { toast } from 'sonner';
 import { useUpdateFile, useUploadFile } from "@/api/file";
 import { Spinner } from "@/components/ui/spinner";
 import ProfileTextEditor, { type ProfileTextEditorHandle } from '@/components/features/edit-profile/text-editor';
+import { useGetSkills, usePathUpdateMentorProfile } from "@/api/mentor";
 
-
-const availableSkills: Skill[] = [
-  { id: 'skill-1', name: 'React', icon: 'react'  },
-  { id: 'skill-2', name: 'TypeScript', icon: 'typescript'  },
-  { id: 'skill-3', name: 'JavaScript', icon: 'javascript'  },
-  { id: 'skill-4', name: 'Node.js', icon: 'nodejs'  },
-  { id: 'skill-5', name: 'Python', icon: 'python'  },
-  { id: 'skill-6', name: 'Java', icon: 'java'},
-  { id: 'skill-7', name: 'Go', icon: 'go'  },
-  { id: 'skill-8', name: 'Docker', icon: 'docker'  },
-  { id: 'skill-9', name: 'Kubernetes', icon: 'kubernetes'  },
-  { id: 'skill-10', name: 'AWS', icon: 'aws'  },
-  { id: 'skill-11', name: 'Azure', icon: 'azure'  },
-  { id: 'skill-12', name: 'PostgreSQL', icon: 'postgresql'  },
-  { id: 'skill-13', name: 'MongoDB', icon: 'mongodb'  },
-  { id: 'skill-14', name: 'GraphQL', icon: 'graphql' },
-  { id: 'skill-15', name: 'REST API', icon: 'rest-api' },
-  { id: 'skill-16', name: 'Vue.js', icon: 'vuejs' },
-  { id: 'skill-17', name: 'Angular', icon: 'angular' },
-  { id: 'skill-18', name: 'Tailwind CSS', icon: 'tailwindcss' },
-  { id: 'skill-19', name: 'Machine Learning', icon: 'machine-learning' },
-  { id: 'skill-20', name: 'Data Science', icon: 'data-science' },
-];
 
 const mockUserProfile: MentorProfile = {
   user: {
@@ -73,7 +51,7 @@ const mockUserProfile: MentorProfile = {
   biography: 'Experienced full-stack developer with a passion for building scalable web applications. Specialized in React ecosystem and cloud-native solutions. Love solving complex problems and mentoring junior developers.',
   pricePerHours: 85,
   skill: ['skill-1', 'skill-2', 'skill-4', 'skill-8', 'skill-10'],
-  employer: 'NTT Data',
+  position: 'NTT Data',
   company: 'Tech Solutions Inc.',
   yearsOfExperience: 7,
 };
@@ -97,7 +75,7 @@ const formSchema = z.object({
   biography: z.string().min(10, 'Biography must be at least 10 characters'),
   pricePerHours: z.coerce.number().min(1, 'Price must be at least $1').max(1000, 'Price must be less than $1000'),
   skill: z.array(z.string()).min(1, 'Select at least one skill'),
-  employer: z.string().min(2, 'Employer name is required'),
+  position: z.string().min(2, 'Position is required'),
   company: z.string().min(2, 'Company name is required'),
   yearsOfExperience: z.coerce.number().min(0, 'Years of experience must be 0 or more').max(50, 'Years of experience must be less than 50'),
 });
@@ -108,6 +86,8 @@ function ProfileEdit() {
   const updateFileMutation = useUpdateFile();
   const uploadFileMutation = useUploadFile();
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
+  const { data: availableSkills = [], isLoading } = useGetSkills();
+  const updateProfileMutation = usePathUpdateMentorProfile();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -121,11 +101,21 @@ function ProfileEdit() {
   });
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    setUserProfile(values as MentorProfile);
-    toast.success('Profile updated successfully!', {
-      description: 'Your changes have been saved.',
+    updateProfileMutation.mutate(values as MentorProfile, {
+      onSuccess: () => {
+        setUserProfile(values as MentorProfile);
+        toast.success('Profile updated successfully!', {
+          description: 'Your changes have been saved.',
+        });
+        console.log('Updated profile:', values);
+      },
+      onError: (error) => {
+        toast.error('Failed to update profile', {
+          description: error.response?.data?.message || error.message,
+        });
+        console.error('Update failed:', error);
+      }
     });
-    console.log('Updated profile:', values);
   };
 
   const selectedSkills = form.watch('skill');
@@ -198,7 +188,7 @@ function ProfileEdit() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-3">
                 <div className="flex flex-col items-center gap-6">
-                  <Avatar className="h-52 w-52 border-4 border-border shadow-xl rounded-full">
+                  <Avatar className="h-50 w-50 border-4 border-border shadow-xl rounded-full">
                     <AvatarImage src={avatarUrl || undefined} />
                     <AvatarFallback className="text-5xl bg-muted">
                       <User className="h-24 w-24" />
@@ -409,14 +399,14 @@ function ProfileEdit() {
 
                       <FormField
                         control={form.control}
-                        name="employer"
+                        name="position"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base">Employer</FormLabel>
+                            <FormLabel className="text-base">Position</FormLabel>
                             <FormControl>
                               <Input placeholder="NTT Data" className="text-base h-11" {...field} />
                             </FormControl>
-                            <FormDescription>Current employer</FormDescription>
+                            <FormDescription>Current position</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}

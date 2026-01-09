@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "./api";
-import type { MentorInfo, Skill } from "@/types/mentor";
+import type { MentorInfo, MentorProfile, Skill } from "@/types/mentor";
 import type { Message } from "@/types/common";
 import type { PaginationDto } from "@/types/pagination";
 
@@ -75,16 +75,14 @@ export interface MentorRegistrationRequest {
   skills: string[];
 }
 
-export function useRegisterMentor() {
-  const queryClient = useQueryClient();
-  return useMutation<void, AxiosError<Message>, MentorRegistrationRequest>({
-    mutationFn: async (data) => {
-      await api.post("/mentors/register", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-      // Also maybe invalidate mentors list
-      queryClient.invalidateQueries({ queryKey: ["mentors"] });
-    },
-  });
+
+export function usePathUpdateMentorProfile() {
+  return useMutation<Message, AxiosError<Message>, MentorProfile>(
+    {
+      mutationFn: async (data): Promise<Message> => {
+        const res = await api.patch<Message>(`/mentors/profile`, data);
+        return res.data;
+      },
+    }
+  )
 }
