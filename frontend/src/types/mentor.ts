@@ -13,25 +13,6 @@ export interface Availability {
   slots: string[];
 }
 
-export interface Mentor {
-  id: string;
-  name: string;
-  avatar: string;
-  biography: string;
-  avgRating: number;
-  totalRatings: number;
-  skills: string[];
-  pricePerHour: number;
-  currency: string;
-  experience: string;
-  languages: string[];
-  timezone: string;
-  responseTime: string;
-  completedSessions: number;
-  availability: Availability[];
-  reviews: Review[];
-}
-
 export interface MentorInfo {
   id: string;
   name: string;
@@ -57,7 +38,7 @@ export interface MentorProfile {
   biography: string;
   pricePerHours: number;
   skill: string[];
-  employer: string;
+  position: string;
   company: string;
   yearsOfExperience: number;
 }

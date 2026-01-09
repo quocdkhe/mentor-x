@@ -1,29 +1,44 @@
 import { createLazyRoute, getRouteApi } from "@tanstack/react-router";
 import { useGetMentorProfile } from "@/api/mentor";
-import { Star, Globe, Clock, Calendar, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import DefaultSkeleton from "@/components/skeletons/default.skeleton";
-// import { Separator } from "@/components/ui/separator"; // Unused
+import { useState } from "react";
 
 const route = getRouteApi('/public/mentors/$mentorId');
+
+// Fake data for available sessions
+const FAKE_DATES = [
+  { day: "SAT", date: "10 Jan", slots: 36 },
+  { day: "SUN", date: "11 Jan", slots: 94 },
+  { day: "MON", date: "12 Jan", slots: 94 },
+  { day: "TUE", date: "13 Jan", slots: 94 },
+  { day: "WED", date: "14 Jan", slots: 94 },
+];
+
+const FAKE_TIME_SLOTS = [
+  "3:00 PM", "3:15 PM", "3:30 PM", "3:45 PM",
+  "4:00 PM", "4:15 PM", "4:30 PM", "4:45 PM",
+  "5:00 PM", "5:15 PM", "5:30 PM"
+];
 
 const MentorProfilePage = () => {
   const { mentorId } = route.useParams();
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
+  const [activeTab, setActiveTab] = useState("overview");
 
   if (isLoading) {
-    return <DefaultSkeleton/>
+    return <DefaultSkeleton />
   }
 
   if (error || !mentor) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <p className="text-destructive font-medium">Failed to load mentor profile</p>
+        <p className="text-destructive font-medium">Không thể tải hồ sơ mentor</p>
         <Button onClick={() => window.location.reload()} variant="outline">
-          Retry
+          Thử lại
         </Button>
       </div>
     );
@@ -34,169 +49,129 @@ const MentorProfilePage = () => {
     .map((n) => n[0])
     .join("");
 
+  const tabs = [
+    { id: "overview", label: "Tổng quan" },
+    { id: "reviews", label: "Đánh giá", badge: mentor.totalRatings },
+  ];
+
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Hero / Header Section */}
-      <div className="bg-gradient-to-b from-primary/5 to-background border-b">
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* Avatar & Key Stats */}
-            <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center md:items-start gap-4">
-              <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
-                <AvatarImage src={mentor.avatar} alt={mentor.name} />
-                <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
-              </Avatar>
-              <div className="text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                  <span className="text-2xl font-bold">${mentor.pricePerHour}</span>
-                  <span className="text-muted-foreground">/ hour</span>
-                </div>
-                <Button size="lg" className="w-full md:w-auto shadow-lg hover:shadow-xl transition-all">
-                  Book Session
-                </Button>
-              </div>
+    <div className="min-h-screen bg-background">
+      {/* Teal Header with Decorative Circles */}
+      <div className="relative bg-linear-to-r from-teal-600 to-teal-700 overflow-hidden h-32">
+        {/* Decorative circles */}
+        <div className="absolute w-64 h-64 bg-green-500/30 rounded-full -top-20 -left-20"></div>
+        <div className="absolute w-96 h-96 bg-teal-500/20 rounded-full top-10 right-20"></div>
+        <div className="absolute w-48 h-48 bg-emerald-400/25 rounded-full -bottom-10 right-40"></div>
+      </div>
+
+      {/* Profile Header */}
+      <div className="bg-background border-b">
+        <div className="container mx-auto px-4 -mt-16">
+          <div className="flex items-start gap-6 pb-6">
+            {/* Larger Avatar with White Background */}
+            <Avatar className="h-40 w-40 border-4 border-white shadow-xl shrink-0 bg-white">
+              <AvatarImage src={mentor.avatar} alt={mentor.name} />
+              <AvatarFallback className="text-4xl bg-white text-foreground">{initials}</AvatarFallback>
+            </Avatar>
+
+            {/* Name and Position */}
+            <div className="grow pt-20">
+              <h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
+                {mentor.name}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                <strong>{mentor.position}</strong> tại <strong>{mentor.company}</strong>
+              </p>
             </div>
+          </div>
 
-            {/* Basic Info */}
-            <div className="flex-grow space-y-4 text-center md:text-left">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                  {mentor.name}
-                </h1>
-                <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                  {mentor.biography}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-4 items-center justify-center md:justify-start text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                  <span className="font-medium text-foreground">{mentor.avgRating.toFixed(1)}</span>
-                  <span>({mentor.totalRatings} reviews)</span>
-                </div>
-                {/* Simulated location/language data if not in current simple interface, 
-                    but Mentor interface has languages/timezone */}
-                {mentor.languages && (
-                  <div className="flex items-center gap-1">
-                    <Globe className="h-4 w-4" />
-                    <span>{mentor.languages.join(", ")}</span>
-                  </div>
-                )}
-                {mentor.timezone && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{mentor.timezone}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start pt-2">
-                {mentor.skills.map((skill) => (
-                  <Badge key={skill} variant="secondary" className="px-3 py-1 text-sm">
-                    {skill}
+          {/* Tab Navigation */}
+          <div className="flex gap-6 border-b">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-3 px-2 text-sm font-medium transition-colors relative ${activeTab === tab.id
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
+              >
+                {tab.label}
+                {tab.badge !== undefined && (
+                  <Badge className="ml-2 bg-muted text-foreground hover:bg-muted/80 text-xs px-2">
+                    {tab.badge}
                   </Badge>
-                ))}
-              </div>
-            </div>
+                )}
+                {activeTab === tab.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+                )}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content - About & Reviews */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* About Section */}
-            <Card className="border-none shadow-sm bg-card/50">
-               <CardHeader>
-                  <CardTitle>About Me</CardTitle>
-               </CardHeader>
-               <CardContent>
-                  <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                    {mentor.biography}
-                  </p>
-                  
-                  {mentor.experience && (
-                    <div className="mt-6">
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                        Experience
-                      </h4>
-                      <p className="text-muted-foreground">{mentor.experience}</p>
-                    </div>
-                  )}
-               </CardContent>
-            </Card>
-
-            {/* Reviews Section */}
+          {/* Left Column - Biography & Insights */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Background Section */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">Client Reviews</h2>
-              <div className="space-y-4">
-                {mentor.reviews && mentor.reviews.length > 0 ? (
-                  mentor.reviews.map((review) => (
-                    <Card key={review.id} className="border-none shadow-sm bg-card/50">
-                      <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={review.userAvatar} alt={review.userName} />
-                            <AvatarFallback>{review.userName.substring(0,2).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-grow">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold text-foreground">{review.userName}</h4>
-                              <span className="text-sm text-muted-foreground">
-                                {new Date(review.date).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1 mb-2">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-3 w-3 ${
-                                    i < review.rating
-                                      ? "text-yellow-500 fill-yellow-500"
-                                      : "text-muted"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <p className="text-muted-foreground">{review.comment}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                   <p className="text-muted-foreground">No reviews yet.</p>
-                )}
-              </div>
+              <h2 className="text-xl font-bold mb-4">Lý lịch</h2>
+              <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {mentor.biography}
+              </p>
             </div>
           </div>
 
-          {/* Sidebar - Availability / Additional Info */}
+          {/* Right Sidebar - Availability */}
           <div className="space-y-6">
-            <Card className="shadow-lg border-primary/10">
-              <CardHeader className="bg-primary/5 pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Availability
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                 {/* This would be the booking calendar widget in a real app */}
-                 <p className="text-sm text-muted-foreground mb-4">
-                   Check available slots and book a session directly.
-                 </p>
-                 <Button className="w-full font-semibold">
-                   Check Availability
-                 </Button>
-                 
-                 {mentor.responseTime && (
-                   <div className="mt-4 pt-4 border-t text-sm text-center text-muted-foreground">
-                     Responds within {mentor.responseTime}
-                   </div>
-                 )}
+            {/* Available Sessions */}
+            <Card className="border shadow-sm">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-bold mb-2">Đặt lịch tại đây</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Đặt các buổi 1:1 từ các tùy chọn dựa trên nhu cầu của bạn
+                </p>
+
+                {/* Date Selector */}
+                <div className="grid grid-cols-5 gap-2 mb-6">
+                  {FAKE_DATES.map((date, idx) => (
+                    <button
+                      key={idx}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${idx === 0
+                        ? "border-foreground bg-background"
+                        : "border-border hover:border-foreground/50"
+                        }`}
+                    >
+                      <div className="text-xs text-muted-foreground mb-1">{date.day}</div>
+                      <div className="font-semibold text-sm mb-1">{date.date}</div>
+                      <div className="text-xs text-green-600 font-medium">{date.slots} chỗ</div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Available Time Slots */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">Khung giờ có sẵn</h4>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {FAKE_TIME_SLOTS.slice(0, 6).map((time, idx) => (
+                      <button
+                        key={idx}
+                        className={`px-3 py-2 rounded-lg border text-sm transition-all ${idx === 0
+                          ? "border-foreground bg-background font-medium"
+                          : "border-border text-muted-foreground hover:border-foreground/50"
+                          }`}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

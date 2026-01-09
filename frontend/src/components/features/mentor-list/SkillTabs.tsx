@@ -23,14 +23,7 @@ export const MOCK_SKILLS: Skill[] = [
   { skillId: "data-science", name: "Khoa học dữ liệu", iconName: "BarChart" },
   { skillId: "content-writing", name: "Viết nội dung", iconName: "FileText" },
   { skillId: "no-low-code", name: "No/Low Code", iconName: "MonitorSmartphone" },
-  { skillId: "soft-skills", name: "Kỹ năng mềm", iconName: "Briefcase" },
-  { skillId: "design", name: "Thiết kế", iconName: "Palette" },
-  { skillId: "product", name: "Sản phẩm", iconName: "Package" },
-  { skillId: "engineering", name: "Kỹ thuật", iconName: "Code" },
-  { skillId: "marketing", name: "Marketing", iconName: "TrendingUp" },
-  { skillId: "data-science", name: "Khoa học dữ liệu", iconName: "BarChart" },
-  { skillId: "content-writing", name: "Viết nội dung", iconName: "FileText" },
-  { skillId: "no-low-code", name: "No/Low Code", iconName: "MonitorSmartphone" },
+
 ];
 
 interface SkillTabsProps {
