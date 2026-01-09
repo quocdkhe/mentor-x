@@ -69,8 +69,8 @@ const MentorProfilePage = () => {
         <div className="container mx-auto px-4 -mt-16">
           <div className="flex items-start gap-6 pb-6">
             {/* Larger Avatar with White Background */}
-            <Avatar className="h-40 w-40 border-4 border-white shadow-xl shrink-0 bg-white">
-              <AvatarImage src={mentor.avatar} alt={mentor.name} />
+            <Avatar className="h-45 w-45 border-4 border-white shadow-xl shrink-0 bg-white">
+              <AvatarImage src={mentor.avatar} alt={mentor.name} className="object-cover" />
               <AvatarFallback className="text-4xl bg-white text-foreground">{initials}</AvatarFallback>
             </Avatar>
 
