@@ -283,7 +283,8 @@ namespace backend.Migrations
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<string>("Icon")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("icon");
 
                     b.Property<string>("Name")
                         .IsRequired()

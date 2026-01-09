@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using backend.Models;
+using backend.Utils;
 
 namespace backend.Controllers
 {
@@ -68,6 +69,22 @@ namespace backend.Controllers
             catch (Exception ex) 
             {
                 // In production, probably shouldn't return exact exception message
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPatch("profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateMentorProfile([FromBody] MentorUpdateRequestDTO request)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                await _mentorService.UpdateMentorProfile(userId, request);
+                return Ok(new { message = "Mentor profile updated successfully" });
+            }
+            catch (Exception ex)
+            {
                 return BadRequest(new { message = ex.Message });
             }
         }

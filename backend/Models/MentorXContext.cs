@@ -83,18 +83,24 @@ public partial class MentorXContext : DbContext
                 .HasDefaultValueSql("now()")
                 .HasColumnName("updated_at");
         });
+
         modelBuilder.Entity<Skill>(entity =>
-{
-    entity.HasKey(e => e.Id).HasName("skills_pkey");
-    entity.ToTable("skills");
-    entity.HasIndex(e => e.Name, "skills_name_key").IsUnique();
+        {
+            entity.HasKey(e => e.Id).HasName("skills_pkey");
+            entity.ToTable("skills");
+            entity.HasIndex(e => e.Name, "skills_name_key").IsUnique();
 
-    entity.Property(e => e.Id)
-        .HasDefaultValueSql("gen_random_uuid()")
-        .HasColumnName("id");
+            entity.Property(e => e.Id)
+            .HasDefaultValueSql("gen_random_uuid()")
+            .HasColumnName("id");
 
-    entity.Property(e => e.Name).HasColumnName("name");
-});
+            entity.Property(e => e.Name)
+            .HasColumnName("name"); 
+            entity.Property(e => e.Icon)
+            .HasColumnName("icon");
+        });
+
+
 
         modelBuilder.Entity<MentorProfile>(entity =>
         {
@@ -117,7 +123,7 @@ public partial class MentorXContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("updated_at");
-                
+
             entity.Property(e => e.Position)
               .HasColumnName("position");
 
