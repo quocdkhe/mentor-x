@@ -42,6 +42,7 @@ export function SkillTabs({ skills, selectedSkillId, onSkillChange }: SkillTabsP
 
   // Helper function to get icon component from string name
   const getIcon = (iconName: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const IconComponent = (Icons as any)[iconName];
     return IconComponent || Icons.HelpCircle; // Fallback to HelpCircle if icon not found
   };

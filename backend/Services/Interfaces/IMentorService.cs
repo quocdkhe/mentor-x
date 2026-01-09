@@ -5,7 +5,7 @@ namespace backend.Services.Interfaces
 {
     public interface IMentorService
     {
-        Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest);
+        Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest, String searchTerm = "", Guid skillId = default);
         Task<List<SkillDTO>> GetMentorSkills();
         Task<MentorDetailResponseDTO?> GetMentorById(Guid mentorId);
         Task<bool> RegisterMentor(Guid userId, MentorRegistrationRequestDTO request);

@@ -3,24 +3,39 @@ import { createLazyRoute } from "@tanstack/react-router";
 import { MentorCard } from "@/components/features/mentor-list/MentorCard";
 import { Users, Search, Sparkles, Loader2 } from "lucide-react";
 import { useGetSkills, useInfiniteGetMentorCard } from "@/api/mentor";
-import DefaultSkeleton from "@/components/skeletons/default.skeleton";
+import { MentorListingSkeleton } from "@/components/skeletons/mentor-listing.skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SkillTabs } from "@/components/features/mentor-list/SkillTabs";
 
 const MentorListing = () => {
+  const [selectedSkillId, setSelectedSkillId] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Use debounced search and selected skill for filtering
+  const skillFilter = selectedSkillId === "all" ? undefined : selectedSkillId;
+  const searchFilter = debouncedSearchTerm.trim() || undefined;
+
   const {
     data,
-    isLoading,
+    isLoading: mentorsLoading,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteGetMentorCard(10);
+  } = useInfiniteGetMentorCard(10, searchFilter, skillFilter);
 
-  const { data: skills, isLoading: skillsLoading, } = useGetSkills();
-
-  const [selectedSkillId, setSelectedSkillId] = useState("all");
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const { data: skills, isLoading: skillsLoading } = useGetSkills();
 
   // Infinite scroll observer
   useEffect(() => {
@@ -48,8 +63,16 @@ const MentorListing = () => {
   // Flatten all pages into a single mentors array
   const mentors = data?.pages.flatMap((page) => page.items) ?? [];
 
-  if (isLoading || skillsLoading) {
-    return <DefaultSkeleton />
+  // Prepend "Tất cả" (All) option to skills
+  const allSkillsOption = {
+    id: "all",
+    name: "Tất cả",
+    icon: "Users"
+  };
+  const skillsWithAll = skills ? [allSkillsOption, ...skills] : [allSkillsOption];
+
+  if (skillsLoading) {
+    return <MentorListingSkeleton />
   }
 
   return (
@@ -66,6 +89,8 @@ const MentorListing = () => {
                 type="text"
                 placeholder="Tìm kiếm theo tên, công ty, vai trò"
                 className="pl-10 h-12 text-base"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <Button variant="outline" className="h-12 gap-2">
@@ -77,13 +102,13 @@ const MentorListing = () => {
 
         {/* Skill Category Tabs */}
         <SkillTabs
-          skills={skills ?? []}
+          skills={skillsWithAll}
           selectedSkillId={selectedSkillId}
           onSkillChange={setSelectedSkillId}
         />
 
         {/* Mentor Grid */}
-        {mentors.length > 0 ? (
+        {mentorsLoading ? <MentorListingSkeleton /> : mentors.length > 0 ? (
           <>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {mentors.map((mentor, index) => (

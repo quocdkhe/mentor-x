@@ -16,7 +16,7 @@ namespace backend.Services
             _context = context;
         }
 
-        public async Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest)
+        public async Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest, String searchTerm = "", Guid skillId = default)
         {
             var page = paginationRequest.Page < 1 ? 1 : paginationRequest.Page;
             var pageSize = paginationRequest.PageSize < 1 ? 10 : paginationRequest.PageSize;
@@ -24,8 +24,20 @@ namespace backend.Services
                 .AsNoTracking();
             
             var totalItems = await query.CountAsync();
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(m 
+                    => m.User.Name.Contains(searchTerm) 
+                     || m.Company.Contains(searchTerm) 
+                     || m.Position.Contains(searchTerm));
+            }
+
+            if (skillId != default)
+            {
+                query = query.Where(m => m.MentorSkills.Any(s => s.Id == skillId));
+            }
             
-            var items = await _context.MentorProfiles
+            var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Where(m => m.Status == "approved")

@@ -32,14 +32,20 @@ export function useGetMentorCard() {
   });
 }
 
-export function useInfiniteGetMentorCard(pageSize: number = 12) {
+export function useInfiniteGetMentorCard(
+  pageSize: number = 12,
+  searchTerm?: string,
+  skillId?: string
+) {
   return useInfiniteQuery<PaginationDto<MentorInfo>, AxiosError<Message>>({
-    queryKey: ["mentors", "infinite"],
+    queryKey: ["mentors", "infinite", searchTerm, skillId],
     queryFn: async ({ pageParam = 1 }): Promise<PaginationDto<MentorInfo>> => {
       const res = await api.get<PaginationDto<MentorInfo>>("/mentors", {
         params: {
           page: pageParam,
           pageSize,
+          searchTerm,
+          skillId,
         },
       });
       return res.data;
