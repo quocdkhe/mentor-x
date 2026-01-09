@@ -36,6 +36,8 @@ import { type Skill, type MentorProfile } from '@/types/mentor';
 import { toast } from 'sonner';
 import { useUpdateFile, useUploadFile } from "@/api/file";
 import { Spinner } from "@/components/ui/spinner";
+import ProfileTextEditor, { type ProfileTextEditorHandle } from '@/components/features/edit-profile/text-editor';
+
 
 const availableSkills: Skill[] = [
   { id: 'skill-1', name: 'React', icon: 'react'  },
@@ -110,6 +112,8 @@ function ProfileEdit() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const textEditorRef = useRef<ProfileTextEditorHandle>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as Resolver<z.infer<typeof formSchema>>,
@@ -194,10 +198,10 @@ function ProfileEdit() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-3">
                 <div className="flex flex-col items-center gap-6">
-                  <Avatar className="h-40 w-40 border-4 border-border shadow-xl">
+                  <Avatar className="h-52 w-52 border-4 border-border shadow-xl rounded-full">
                     <AvatarImage src={avatarUrl || undefined} />
-                    <AvatarFallback className="text-4xl bg-muted">
-                      <User className="h-20 w-20" />
+                    <AvatarFallback className="text-5xl bg-muted">
+                      <User className="h-24 w-24" />
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-center gap-3 w-full">
@@ -340,11 +344,11 @@ function ProfileEdit() {
                         <FormItem>
                           <FormLabel className="text-base">Biography</FormLabel>
                           <FormControl>
-                            {/* <Textarea
-                              placeholder="Tell us about yourself, your expertise, and what makes you unique..."
-                              className="min-h-[140px] resize-none text-base"
-                              {...field}
-                            /> */}
+                            <ProfileTextEditor
+                              ref={textEditorRef}
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
                           </FormControl>
                           <FormDescription>
                             Write a compelling description of your professional background
@@ -576,4 +580,4 @@ function ProfileEdit() {
 
 export const Route = createLazyRoute('/mentor/edit-form')({
   component: ProfileEdit,
-})  
+})
