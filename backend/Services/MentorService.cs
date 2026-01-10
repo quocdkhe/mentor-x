@@ -5,6 +5,7 @@ using backend.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using backend.Models.DTOs;
+using backend.Models.DTOs.User;
 
 namespace backend.Services
 {
@@ -128,6 +129,34 @@ namespace backend.Services
             };
             return mentorDetail;
 
+        }
+
+        public async Task<MentorProfileResponseDTO?> GetMentorProfileByUserId(Guid userId)
+        {
+            var mentor = await _context.MentorProfiles
+                .Include(m => m.User)
+                .Include(m => m.MentorSkills)
+                .FirstOrDefaultAsync(m => m.UserId == userId);
+
+            if (mentor == null)
+                return null;
+
+            var profileResponse = new MentorProfileResponseDTO
+            {
+                User = new UserInfoResponseDTO
+                {
+                    Name = mentor.User.Name,
+                    Phone = mentor.User.Phone,
+                    Avatar = mentor.User.Avatar
+                },
+                Biography = mentor.Biography,
+                PricePerHour = mentor.PricePerHour,
+                Skills = mentor.MentorSkills.Select(s => s.Id).ToList(),
+                Company = mentor.Company,
+                YearsOfExperience = mentor.YearsOfExperience
+            };
+
+            return profileResponse;
         }
 
         public async Task<bool> RegisterMentor(Guid userId, MentorRegistrationRequestDTO request)

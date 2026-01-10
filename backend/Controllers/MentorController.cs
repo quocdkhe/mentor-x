@@ -42,7 +42,20 @@ namespace backend.Controllers
                 return NotFound(new { message = "Không tìm thấy mentor." });
 
             return Ok(mentor);
-        }   
+        }
+
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<ActionResult<MentorProfileResponseDTO>> GetMyMentorProfile()
+        {
+            var userId = User.GetUserId();
+            var profile = await _mentorService.GetMentorProfileByUserId(userId);
+            
+            if (profile == null)
+                return NotFound(new { message = "Mentor profile not found." });
+
+            return Ok(profile);
+        }
             
 
 

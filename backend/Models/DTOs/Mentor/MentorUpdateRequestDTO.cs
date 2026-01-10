@@ -1,8 +1,10 @@
+using backend.Models.DTOs.User;
+
 namespace backend.Models.DTOs.Mentor;
 
 public class MentorUpdateRequestDTO
 {
-    public UserUpdateDTO? User { get; set; }
+    public UserUpdateProfileDTO? User { get; set; }
     public string? Biography { get; set; }
     public decimal? PricePerHour { get; set; }
     public List<string>? Skills { get; set; }
@@ -11,10 +13,3 @@ public class MentorUpdateRequestDTO
     public int? YearsOfExperience { get; set; }
 }
 
-public class UserUpdateDTO
-{
-    public string? Name { get; set; }
-    public string? Phone { get; set; }
-    public string? Password { get; set; }
-    public string? Avatar { get; set; }
-}
