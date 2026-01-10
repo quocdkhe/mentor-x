@@ -40,6 +40,29 @@ export function MentorCard({ mentor }: MentorCardProps) {
             </span>
           </div>
 
+          {/* Skills */}
+          {mentor.skills && mentor.skills.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {mentor.skills.slice(0, 3).map((skill, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="text-xs px-2 py-0.5 bg-primary/10 text-primary hover:bg-primary/20"
+                >
+                  {skill}
+                </Badge>
+              ))}
+              {mentor.skills.length > 3 && (
+                <Badge
+                  variant="secondary"
+                  className="text-xs px-2 py-0.5 bg-muted text-muted-foreground"
+                >
+                  +{mentor.skills.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
+
           {/* Rating Info */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <Star className="w-4 h-4 shrink-0 fill-amber-400 text-amber-400" />
