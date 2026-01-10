@@ -1,64 +1,71 @@
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { ThemeToggle } from './theme-toggle';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+} from "@/components/ui/popover";
+import { ThemeToggle } from "./theme-toggle";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useLogout } from '@/api/auth';
-import { toast } from 'sonner';
-import { setUser } from '@/store/auth.slice';
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLogout } from "@/api/auth";
+import { toast } from "sonner";
+import { setUser } from "@/store/auth.slice";
 import { useQueryClient } from "@tanstack/react-query";
+import { USER_ROLES } from "@/types/user";
 
 // Simple logo component
 const Logo = () => (
-  <svg width='32' height='32' viewBox='0 0 324 323' fill='currentColor'>
+  <svg width="32" height="32" viewBox="0 0 324 323" fill="currentColor">
     <rect
-      x='88.1023'
-      y='144.792'
-      width='151.802'
-      height='36.5788'
-      rx='18.2894'
-      transform='rotate(-38.5799 88.1023 144.792)'
+      x="88.1023"
+      y="144.792"
+      width="151.802"
+      height="36.5788"
+      rx="18.2894"
+      transform="rotate(-38.5799 88.1023 144.792)"
     />
     <rect
-      x='85.3459'
-      y='244.537'
-      width='151.802'
-      height='36.5788'
-      rx='18.2894'
-      transform='rotate(-38.5799 85.3459 244.537)'
+      x="85.3459"
+      y="244.537"
+      width="151.802"
+      height="36.5788"
+      rx="18.2894"
+      transform="rotate(-38.5799 85.3459 244.537)"
     />
   </svg>
 );
 
 // Hamburger icon
 const HamburgerIcon = () => (
-  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg
+    width={20}
+    height={20}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
     <path d="M4 6h16M4 12h16M4 18h16" />
   </svg>
 );
 
 const getInitials = (name: string) => {
   return name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 };
-
 
 export default function SimpleNavbar() {
   const { user, isLoading } = useAppSelector((state) => state.auth);
@@ -69,20 +76,28 @@ export default function SimpleNavbar() {
   const queryClient = useQueryClient();
 
   const handleLogout = () => {
-    logoutMutation.mutate(undefined,
-      {
-        onSuccess: (data) => {
-          navigate({ to: '/login' });
-          toast.success(data.message);
-          dispatch(setUser(null));
-          queryClient.removeQueries({ queryKey: ["current-user"] })
-        },
-        onError: (err) => {
-          toast.error(`Đăng xuất thất bại: ${err.response?.data.message || err.message}`);
-        }
-      }
-    );
-  }
+    logoutMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        navigate({ to: "/login" });
+        toast.success(data.message);
+        dispatch(setUser(null));
+        queryClient.removeQueries({ queryKey: ["current-user"] });
+      },
+      onError: (err) => {
+        toast.error(
+          `Đăng xuất thất bại: ${err.response?.data.message || err.message}`
+        );
+      },
+    });
+  };
+
+  const handleProfileNavigation = () => {
+    if (user?.role === USER_ROLES.MENTOR) {
+      navigate({ to: "/mentor/edit-form" });
+    } else {
+      navigate({ to: "/user/profile" });
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
@@ -148,63 +163,61 @@ export default function SimpleNavbar() {
         {/* Right: Action Buttons */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          {isLoading ?
+          {isLoading ? (
             <div className="flex items-center gap-3">
               <Skeleton className="h-10 w-10 rounded-full" />
               <Skeleton className="h-4 w-24" />
             </div>
-            :
-            (user == null ?
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                >
-                  <Link to="/login">Đăng nhập</Link>
-
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => console.log('Get Started clicked')}
-                >
-                  Bắt đầu
-                </Button>
-              </>
-              :
-              <div className="flex items-center gap-3">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2 h-10 px-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">{user.name}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <div className="flex items-center gap-2 p-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <p className="text-sm font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      </div>
+          ) : user == null ? (
+            <>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/login">Đăng nhập</Link>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => console.log("Get Started clicked")}
+              >
+                Bắt đầu
+              </Button>
+            </>
+          ) : (
+            <div className="flex items-center gap-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center gap-2 h-10 px-3"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium">{user.name}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="flex items-center gap-2 p-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <p className="text-sm font-medium">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
                     </div>
-                    <DropdownMenuItem onClick={() => navigate({ to: '/user/profile' })}>
-                      Tài khoản của tôi
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout}>
-                      Đăng xuất
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )
-          }
+                  </div>
+                  <DropdownMenuItem onClick={handleProfileNavigation}>
+                    Tài khoản của tôi
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       </div>
     </header>

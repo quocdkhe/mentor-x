@@ -205,6 +205,7 @@ function ProfileEdit() {
       uploadFileMutation.mutate(file, {
         onSuccess: (data) => {
           toast.success("Tải lên thành công!");
+          form.setValue("user.avatar", data.message);
           setUploadedAvatar(data.message);
         },
         onError: (err) => {
