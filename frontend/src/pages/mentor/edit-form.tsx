@@ -51,20 +51,19 @@ import { useGetSkills, usePathUpdateMentorProfile } from "@/api/mentor";
 
 const mockUserProfile: MentorProfile = {
   user: {
-    name: "John Doe",
-    phone: "+1 (555) 123-4567",
+    name: "Vu Quang Minh k18",
+    phone: "0357604680",
     password: "",
     confirmPassword: "",
     avatar:
-      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "https://lh3.googleusercontent.com/a/ACg8ocL4Xxe0cG3s1eN0lLIgTi6sA_RSK7YmWMjnGKzIzUO3d_eF=s96-c",
   },
-  biography:
-    "Experienced full-stack developer with a passion for building scalable web applications. Specialized in React ecosystem and cloud-native solutions. Love solving complex problems and mentoring junior developers.",
-  pricePerHours: 85,
-  skill: ["skill-1", "skill-2", "skill-4", "skill-8", "skill-10"],
-  position: "NTT Data",
-  company: "Tech Solutions Inc.",
-  yearsOfExperience: 7,
+  biography: "i'm newbie so do not come here",
+  pricePerHours: 30,
+  skill: ["React", "JavaScript"],
+  position: "student",
+  company: "FPT",
+  yearsOfExperience: 1,
 };
 
 const formSchema = z.object({
@@ -183,26 +182,26 @@ function ProfileEdit() {
     }
   };
 
-  const toggleSkill = (skillId: string) => {
+  const toggleSkill = (skillName: string) => {
     const currentSkills = form.getValues("skill");
-    if (currentSkills.includes(skillId)) {
+    if (currentSkills.includes(skillName)) {
       form.setValue(
         "skill",
-        currentSkills.filter((id) => id !== skillId),
+        currentSkills.filter((name) => name !== skillName),
         { shouldValidate: true }
       );
     } else {
-      form.setValue("skill", [...currentSkills, skillId], {
+      form.setValue("skill", [...currentSkills, skillName], {
         shouldValidate: true,
       });
     }
   };
 
-  const removeSkill = (skillId: string) => {
+  const removeSkill = (skillName: string) => {
     const currentSkills = form.getValues("skill");
     form.setValue(
       "skill",
-      currentSkills.filter((id) => id !== skillId),
+      currentSkills.filter((name) => name !== skillName),
       { shouldValidate: true }
     );
   };
@@ -224,7 +223,10 @@ function ProfileEdit() {
                   <div className="lg:col-span-4">
                     <div className="flex flex-col items-center gap-6">
                       <Avatar className="h-50 w-50 border-4 border-border shadow-xl rounded-full">
-                        <AvatarImage src={avatarUrl || undefined} className="object-cover" />
+                        <AvatarImage
+                          src={avatarUrl || undefined}
+                          className="object-cover"
+                        />
                         <AvatarFallback className="text-5xl bg-muted">
                           <User className="h-24 w-24" />
                         </AvatarFallback>
@@ -242,7 +244,7 @@ function ProfileEdit() {
                           className="flex items-center justify-center gap-2 px-6 py-3 bg-card border-2 border-border rounded-lg hover:bg-accent transition-all shadow-sm w-full"
                         >
                           {updateFileMutation.isPending ||
-                            uploadFileMutation.isPending ? (
+                          uploadFileMutation.isPending ? (
                             <Spinner className="h-5 w-5" />
                           ) : (
                             <Upload className="h-5 w-5" />
@@ -379,9 +381,7 @@ function ProfileEdit() {
                     name="position"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base">
-                          Vị Trí
-                        </FormLabel>
+                        <FormLabel className="text-base">Vị Trí</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Senior Developer"
@@ -389,7 +389,9 @@ function ProfileEdit() {
                             {...field}
                           />
                         </FormControl>
-                        <FormDescription>Vị trí hiện tại của bạn</FormDescription>
+                        <FormDescription>
+                          Vị trí hiện tại của bạn
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -408,9 +410,7 @@ function ProfileEdit() {
                             {...field}
                           />
                         </FormControl>
-                        <FormDescription>
-                          Công ty hoặc tổ chức
-                        </FormDescription>
+                        <FormDescription>Công ty hoặc tổ chức</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -484,21 +484,23 @@ function ProfileEdit() {
                                 className="h-12"
                               />
                               <CommandList>
-                                <CommandEmpty>Không tìm thấy kỹ năng.</CommandEmpty>
+                                <CommandEmpty>
+                                  Không tìm thấy kỹ năng.
+                                </CommandEmpty>
                                 <CommandGroup>
                                   {availableSkills.map((skill) => (
                                     <CommandItem
                                       key={skill.id}
                                       value={skill.name}
                                       onSelect={() => {
-                                        toggleSkill(skill.id);
+                                        toggleSkill(skill.name);
                                       }}
                                       className="flex items-center gap-3 py-3"
                                     >
                                       <div
                                         className={cn(
                                           "flex items-center justify-center h-5 w-5 rounded border-2 transition-all",
-                                          selectedSkills.includes(skill.id)
+                                          selectedSkills.includes(skill.name)
                                             ? "bg-primary border-primary"
                                             : "border-input"
                                         )}
@@ -506,9 +508,7 @@ function ProfileEdit() {
                                         <Check
                                           className={cn(
                                             "h-3.5 w-3.5 text-primary-foreground",
-                                            selectedSkills.includes(
-                                              skill.id
-                                            )
+                                            selectedSkills.includes(skill.name)
                                               ? "opacity-100"
                                               : "opacity-0"
                                           )}
@@ -548,21 +548,17 @@ function ProfileEdit() {
                               )}
                             </div>
                             <div className="flex gap-2 flex-wrap">
-                              {selectedSkills.map((skillId) => {
-                                const skill = availableSkills.find(
-                                  (s) => s.id === skillId
-                                );
-                                if (!skill) return null;
+                              {selectedSkills.map((skillName) => {
                                 return (
                                   <Badge
-                                    key={skillId}
+                                    key={skillName}
                                     className="px-3 py-1.5 text-sm font-medium border bg-primary/10 text-primary border-primary/20"
                                   >
-                                    {skill.name}
+                                    {skillName}
                                     <button
                                       type="button"
                                       className="ml-2 hover:opacity-70 transition-opacity"
-                                      onClick={() => removeSkill(skillId)}
+                                      onClick={() => removeSkill(skillName)}
                                     >
                                       <X className="h-3.5 w-3.5" />
                                     </button>
@@ -633,9 +629,7 @@ function ProfileEdit() {
                         <FormControl>
                           <div className="relative">
                             <Input
-                              type={
-                                showConfirmPassword ? "text" : "password"
-                              }
+                              type={showConfirmPassword ? "text" : "password"}
                               placeholder="Xác nhận mật khẩu mới của bạn"
                               className="h-11"
                               {...field}
