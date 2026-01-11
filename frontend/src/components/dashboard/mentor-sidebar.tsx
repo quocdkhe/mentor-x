@@ -43,7 +43,7 @@ const data = {
   ],
   navMain: [
     {
-      title: "EditProfile",
+      title: "Chỉnh sửa thông tin",
       url: "/mentor/edit-form" as const,
       icon: User,
     },

@@ -1,5 +1,5 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -47,24 +47,11 @@ import { Spinner } from "@/components/ui/spinner";
 import ProfileTextEditor, {
   type ProfileTextEditorHandle,
 } from "@/components/features/edit-profile/text-editor";
-import { useGetSkills, usePathUpdateMentorProfile } from "@/api/mentor";
-
-const mockUserProfile: MentorProfile = {
-  user: {
-    name: "Vu Quang Minh k18",
-    phone: "0357604680",
-    password: "",
-    confirmPassword: "",
-    avatar:
-      "https://lh3.googleusercontent.com/a/ACg8ocL4Xxe0cG3s1eN0lLIgTi6sA_RSK7YmWMjnGKzIzUO3d_eF=s96-c",
-  },
-  biography: "i'm newbie so do not come here",
-  pricePerHours: 30,
-  skill: ["React", "JavaScript"],
-  position: "student",
-  company: "FPT",
-  yearsOfExperience: 1,
-};
+import {
+  useGetSkills,
+  usePathUpdateMentorProfile,
+  useGetCurrentMentorProfile,
+} from "@/api/mentor";
 
 const formSchema = z.object({
   user: z
@@ -88,7 +75,7 @@ const formSchema = z.object({
       }
     ),
   biography: z.string().min(10, "Tiểu sử phải có ít nhất 10 ký tự"),
-  pricePerHours: z.coerce
+  pricePerHour: z.coerce
     .number()
     .min(1, "Giá phải ít nhất $1")
     .max(1000, "Giá phải nhỏ hơn $1000"),
@@ -102,14 +89,18 @@ const formSchema = z.object({
 });
 
 function ProfileEdit() {
-  const [userProfile, setUserProfile] =
-    useState<MentorProfile>(mockUserProfile);
   const [open, setOpen] = useState(false);
   const updateFileMutation = useUpdateFile();
   const uploadFileMutation = useUploadFile();
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const { data: availableSkills = [] } = useGetSkills();
   const updateProfileMutation = usePathUpdateMentorProfile();
+
+  const {
+    data: profileData,
+    isLoading: isLoadingProfile,
+    isError,
+  } = useGetCurrentMentorProfile();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -118,8 +109,41 @@ function ProfileEdit() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as Resolver<z.infer<typeof formSchema>>,
-    defaultValues: userProfile,
+    defaultValues: {
+      user: {
+        name: "",
+        phone: "",
+        avatar: "",
+        password: "",
+        confirmPassword: "",
+      },
+      biography: "",
+      pricePerHour: 0,
+      skill: [],
+      position: "",
+      company: "",
+      yearsOfExperience: 0,
+    },
   });
+
+  useEffect(() => {
+    if (profileData) {
+      console.log("Fetched profileData:", profileData);
+      form.reset({
+        ...profileData,
+        // API returns IDs, form uses IDs. Check both 'skill' (singular) and 'skills' (plural)
+        skill: profileData.skill || (profileData as any).skills || [],
+        user: {
+          ...profileData.user,
+          password: "",
+          confirmPassword: "",
+        },
+      });
+      if (profileData.user?.avatar) {
+        setUploadedAvatar(profileData.user.avatar);
+      }
+    }
+  }, [profileData, form]);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     // Use uploaded avatar if available, otherwise use form value
@@ -131,9 +155,9 @@ function ProfileEdit() {
       },
     };
 
+    console.log("Submitting values:", submitValues);
     updateProfileMutation.mutate(submitValues as MentorProfile, {
       onSuccess: () => {
-        setUserProfile(submitValues as MentorProfile);
         toast.success("Cập nhật hồ sơ thành công!", {
           description: "Các thay đổi của bạn đã được lưu.",
         });
@@ -148,6 +172,27 @@ function ProfileEdit() {
     });
   };
 
+  if (isLoadingProfile) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Spinner className="h-10 w-10" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center flex-col gap-4">
+        <p className="text-destructive font-semibold">
+          Không thể tải thông tin hồ sơ mentor.
+        </p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Thử lại
+        </Button>
+      </div>
+    );
+  }
+
   const selectedSkills = form.watch("skill");
   const formAvatarUrl = form.watch("user.avatar");
   // Show uploaded avatar or fall back to form value
@@ -160,6 +205,7 @@ function ProfileEdit() {
       uploadFileMutation.mutate(file, {
         onSuccess: (data) => {
           toast.success("Tải lên thành công!");
+          form.setValue("user.avatar", data.message);
           setUploadedAvatar(data.message);
         },
         onError: (err) => {
@@ -182,26 +228,26 @@ function ProfileEdit() {
     }
   };
 
-  const toggleSkill = (skillName: string) => {
+  const toggleSkill = (skillId: string) => {
     const currentSkills = form.getValues("skill");
-    if (currentSkills.includes(skillName)) {
+    if (currentSkills.includes(skillId)) {
       form.setValue(
         "skill",
-        currentSkills.filter((name) => name !== skillName),
+        currentSkills.filter((id) => id !== skillId),
         { shouldValidate: true }
       );
     } else {
-      form.setValue("skill", [...currentSkills, skillName], {
+      form.setValue("skill", [...currentSkills, skillId], {
         shouldValidate: true,
       });
     }
   };
 
-  const removeSkill = (skillName: string) => {
+  const removeSkill = (skillId: string) => {
     const currentSkills = form.getValues("skill");
     form.setValue(
       "skill",
-      currentSkills.filter((name) => name !== skillName),
+      currentSkills.filter((id) => id !== skillId),
       { shouldValidate: true }
     );
   };
@@ -312,7 +358,7 @@ function ProfileEdit() {
 
                       <FormField
                         control={form.control}
-                        name="pricePerHours"
+                        name="pricePerHour"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-base">
@@ -493,14 +539,14 @@ function ProfileEdit() {
                                       key={skill.id}
                                       value={skill.name}
                                       onSelect={() => {
-                                        toggleSkill(skill.name);
+                                        toggleSkill(skill.id);
                                       }}
                                       className="flex items-center gap-3 py-3"
                                     >
                                       <div
                                         className={cn(
                                           "flex items-center justify-center h-5 w-5 rounded border-2 transition-all",
-                                          selectedSkills.includes(skill.name)
+                                          selectedSkills.includes(skill.id)
                                             ? "bg-primary border-primary"
                                             : "border-input"
                                         )}
@@ -508,7 +554,7 @@ function ProfileEdit() {
                                         <Check
                                           className={cn(
                                             "h-3.5 w-3.5 text-primary-foreground",
-                                            selectedSkills.includes(skill.name)
+                                            selectedSkills.includes(skill.id)
                                               ? "opacity-100"
                                               : "opacity-0"
                                           )}
@@ -548,17 +594,22 @@ function ProfileEdit() {
                               )}
                             </div>
                             <div className="flex gap-2 flex-wrap">
-                              {selectedSkills.map((skillName) => {
+                              {/* selectedSkills contains IDs, we map to Names for display */}
+                              {selectedSkills.map((skillId) => {
+                                const skill = availableSkills.find(
+                                  (s) => s.id === skillId
+                                );
+                                if (!skill) return null;
                                 return (
                                   <Badge
-                                    key={skillName}
+                                    key={skillId}
                                     className="px-3 py-1.5 text-sm font-medium border bg-primary/10 text-primary border-primary/20"
                                   >
-                                    {skillName}
+                                    {skill.name}
                                     <button
                                       type="button"
                                       className="ml-2 hover:opacity-70 transition-opacity"
-                                      onClick={() => removeSkill(skillName)}
+                                      onClick={() => removeSkill(skillId)} // Remove by ID
                                     >
                                       <X className="h-3.5 w-3.5" />
                                     </button>
