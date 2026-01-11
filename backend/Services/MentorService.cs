@@ -153,6 +153,7 @@ namespace backend.Services
                 PricePerHour = mentor.PricePerHour,
                 Skills = mentor.MentorSkills.Select(s => s.Id).ToList(),
                 Company = mentor.Company,
+                Position = mentor.Position,
                 YearsOfExperience = mentor.YearsOfExperience
             };
 
@@ -253,6 +254,9 @@ namespace backend.Services
 
             if (request.YearsOfExperience.HasValue)
                 mentorProfile.YearsOfExperience = request.YearsOfExperience.Value;
+
+            if (!string.IsNullOrWhiteSpace(request.Position))
+                mentorProfile.Position = request.Position;
 
             // Update Skills if provided
             if (request.Skills != null && request.Skills.Count > 0)

@@ -10,6 +10,7 @@ namespace backend.Models.DTOs.Mentor
         public List<Guid> Skills { get; set; } = new();
         public string? Company { get; set; }
         public int YearsOfExperience { get; set; }
+        public string? Position { get; set; }
     }
 
 }

@@ -11,5 +11,6 @@ public class MentorUpdateRequestDTO
     public string? Employer { get; set; }
     public string? Company { get; set; }
     public int? YearsOfExperience { get; set; }
+    public string? Position { get; set; }
 }
 
