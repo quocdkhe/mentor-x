@@ -53,6 +53,8 @@ import {
   useGetCurrentMentorProfile,
 } from "@/api/mentor";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAppDispatch } from "@/store/hooks";
+import { fetchCurrentUser } from '@/store/auth.slice';
 
 const formSchema = z.object({
   user: z
@@ -97,6 +99,7 @@ function ProfileEdit() {
   const { data: availableSkills = [] } = useGetSkills();
   const updateProfileMutation = usePathUpdateMentorProfile();
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   const {
     data: profileData,
@@ -163,6 +166,7 @@ function ProfileEdit() {
         queryClient.invalidateQueries({
           queryKey: ["current-mentor-profile"],
         });
+        dispatch(fetchCurrentUser());
       },
       onError: (error) => {
         toast.error("Không thể cập nhật hồ sơ", {
