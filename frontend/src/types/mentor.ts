@@ -37,7 +37,7 @@ export interface MentorProfile {
   };
   biography: string;
   pricePerHour: number;
-  skill: string[];
+  skills: string[];
   position: string;
   company: string;
   yearsOfExperience: number;

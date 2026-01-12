@@ -1,9 +1,4 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "./api";
 import type { MentorInfo, MentorProfile, Skill } from "@/types/mentor";
@@ -86,14 +81,11 @@ export interface MentorRegistrationRequest {
   skills: string[];
 }
 
-
 export function usePathUpdateMentorProfile() {
-  return useMutation<Message, AxiosError<Message>, MentorProfile>(
-    {
-      mutationFn: async (data): Promise<Message> => {
-        const res = await api.patch<Message>(`/mentors/profile`, data);
-        return res.data;
-      },
-    }
-  )
+  return useMutation<Message, AxiosError<Message>, MentorProfile>({
+    mutationFn: async (data): Promise<Message> => {
+      const res = await api.patch<Message>(`/mentors/profile`, data);
+      return res.data;
+    },
+  });
 }

@@ -77,9 +77,9 @@ const formSchema = z.object({
   biography: z.string().min(10, "Tiểu sử phải có ít nhất 10 ký tự"),
   pricePerHour: z.coerce
     .number()
-    .min(1, "Giá phải ít nhất $1")
-    .max(1000, "Giá phải nhỏ hơn $1000"),
-  skill: z.array(z.string()).min(1, "Chọn ít nhất một kỹ năng"),
+    .min(1000, "Giá phải ít nhất 1.000₫")
+    .max(1000000, "Giá phải nhỏ hơn 1.000.000₫"),
+  skills: z.array(z.string()).min(1, "Chọn ít nhất một kỹ năng"),
   position: z.string().min(2, "Vị trí là bắt buộc"),
   company: z.string().min(2, "Tên công ty là bắt buộc"),
   yearsOfExperience: z.coerce
@@ -119,7 +119,7 @@ function ProfileEdit() {
       },
       biography: "",
       pricePerHour: 0,
-      skill: [],
+      skills: [],
       position: "",
       company: "",
       yearsOfExperience: 0,
@@ -132,7 +132,7 @@ function ProfileEdit() {
       form.reset({
         ...profileData,
         // API returns IDs, form uses IDs. Check both 'skill' (singular) and 'skills' (plural)
-        skill: profileData.skill || (profileData as any).skills || [],
+        skills: profileData.skills || [],
         user: {
           ...profileData.user,
           password: "",
@@ -193,7 +193,7 @@ function ProfileEdit() {
     );
   }
 
-  const selectedSkills = form.watch("skill");
+  const selectedSkills = form.watch("skills");
   const formAvatarUrl = form.watch("user.avatar");
   // Show uploaded avatar or fall back to form value
   const avatarUrl = uploadedAvatar || formAvatarUrl;
@@ -229,24 +229,24 @@ function ProfileEdit() {
   };
 
   const toggleSkill = (skillId: string) => {
-    const currentSkills = form.getValues("skill");
+    const currentSkills = form.getValues("skills");
     if (currentSkills.includes(skillId)) {
       form.setValue(
-        "skill",
+        "skills",
         currentSkills.filter((id) => id !== skillId),
         { shouldValidate: true }
       );
     } else {
-      form.setValue("skill", [...currentSkills, skillId], {
+      form.setValue("skills", [...currentSkills, skillId], {
         shouldValidate: true,
       });
     }
   };
 
   const removeSkill = (skillId: string) => {
-    const currentSkills = form.getValues("skill");
+    const currentSkills = form.getValues("skills");
     form.setValue(
-      "skill",
+      "skills",
       currentSkills.filter((id) => id !== skillId),
       { shouldValidate: true }
     );
@@ -261,8 +261,8 @@ function ProfileEdit() {
             <div className="bg-card rounded-2xl shadow-xl border border-border p-8 md:p-12 space-y-8">
               {/* Avatar and First 4 Inputs */}
               <div>
-                <h2 className="text-2xl font-semibold text-foreground mb-6">
-                  Thông Tin Cá Nhân
+                <h2 className="font-semibold text-foreground mb-6 text-xl">
+                  Thông tin cá nhân
                 </h2>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                   {/* Avatar Section */}
@@ -290,7 +290,7 @@ function ProfileEdit() {
                           className="flex items-center justify-center gap-2 px-6 py-3 bg-card border-2 border-border rounded-lg hover:bg-accent transition-all shadow-sm w-full"
                         >
                           {updateFileMutation.isPending ||
-                          uploadFileMutation.isPending ? (
+                            uploadFileMutation.isPending ? (
                             <Spinner className="h-5 w-5" />
                           ) : (
                             <Upload className="h-5 w-5" />
@@ -321,13 +321,12 @@ function ProfileEdit() {
                         name="user.name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base">
+                            <FormLabel>
                               Họ và Tên
                             </FormLabel>
                             <FormControl>
                               <Input
                                 placeholder="Nguyễn Văn A"
-                                className="h-11"
                                 {...field}
                               />
                             </FormControl>
@@ -341,13 +340,12 @@ function ProfileEdit() {
                         name="user.phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base">
+                            <FormLabel>
                               Số Điện Thoại
                             </FormLabel>
                             <FormControl>
                               <Input
                                 placeholder="+84 123 456 789"
-                                className="h-11"
                                 {...field}
                               />
                             </FormControl>
@@ -361,24 +359,28 @@ function ProfileEdit() {
                         name="pricePerHour"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base">
+                            <FormLabel>
                               Giá Theo Giờ
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                                  $
-                                </span>
                                 <Input
-                                  type="number"
-                                  placeholder="85"
-                                  className="pl-8 text-base h-11"
-                                  {...field}
+                                  type="text"
+                                  placeholder="100.000"
+                                  className="pr-8"
+                                  value={field.value ? new Intl.NumberFormat('vi-VN').format(field.value) : ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '');
+                                    field.onChange(value ? parseInt(value) : 0);
+                                  }}
                                 />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                                  ₫
+                                </span>
                               </div>
                             </FormControl>
                             <FormDescription>
-                              Mức giá của bạn tính bằng USD/giờ
+                              Mức giá của bạn tính bằng VND/giờ
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -390,14 +392,13 @@ function ProfileEdit() {
                         name="yearsOfExperience"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base">
+                            <FormLabel>
                               Kinh Nghiệm
                             </FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
                                 placeholder="7"
-                                className="text-base h-11"
                                 {...field}
                               />
                             </FormControl>
@@ -418,8 +419,8 @@ function ProfileEdit() {
 
               {/* Position and Company */}
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-4">
-                  Thông Tin Công Việc
+                <h2 className="font-semibold text-foreground mb-4 text-xl">
+                  Thông tin công việc
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -427,11 +428,10 @@ function ProfileEdit() {
                     name="position"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base">Vị Trí</FormLabel>
+                        <FormLabel>Vị Trí</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Senior Developer"
-                            className="text-base h-11"
                             {...field}
                           />
                         </FormControl>
@@ -448,11 +448,10 @@ function ProfileEdit() {
                     name="company"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base">Công Ty</FormLabel>
+                        <FormLabel>Công Ty</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Công ty công nghệ ABC"
-                            className="text-base h-11"
                             {...field}
                           />
                         </FormControl>
@@ -471,7 +470,7 @@ function ProfileEdit() {
                   name="biography"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base">Tiểu Sử</FormLabel>
+                      <FormLabel>Tiểu Sử</FormLabel>
                       <FormControl>
                         <ProfileTextEditor
                           ref={textEditorRef}
@@ -490,8 +489,8 @@ function ProfileEdit() {
 
               {/* Technical Skills */}
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2">
-                  Kỹ Năng Kỹ Thuật
+                <h2 className="font-semibold text-foreground mb-2 flex items-center gap-2 text-xl">
+                  Kĩ năng
                 </h2>
                 <p className="text-muted-foreground mb-6">
                   Chọn tất cả các kỹ năng và công nghệ mà bạn thành thạo
@@ -499,7 +498,7 @@ function ProfileEdit() {
 
                 <FormField
                   control={form.control}
-                  name="skill"
+                  name="skills"
                   render={() => (
                     <FormItem className="flex flex-col">
                       <div className="space-y-4">
@@ -510,13 +509,13 @@ function ProfileEdit() {
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={open}
-                                className="w-full justify-between h-12 text-base border-2 hover:border-primary hover:bg-primary/5 transition-colors"
+                                className="w-full justify-between"
                               >
                                 <span className="flex items-center gap-2 text-muted-foreground">
                                   <Search className="h-4 w-4" />
-                                  Tìm kiếm và thêm kỹ năng...
+                                  Tìm kiếm và thêm kĩ năng...
                                 </span>
-                                <ChevronsUpDown className="ml-2 h-5 w-5 shrink-0 opacity-50" />
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -527,11 +526,10 @@ function ProfileEdit() {
                             <Command>
                               <CommandInput
                                 placeholder="Tìm kiếm kỹ năng..."
-                                className="h-12"
                               />
                               <CommandList>
                                 <CommandEmpty>
-                                  Không tìm thấy kỹ năng.
+                                  Không tìm thấy kĩ năng.
                                 </CommandEmpty>
                                 <CommandGroup>
                                   {availableSkills.map((skill) => (
@@ -541,11 +539,11 @@ function ProfileEdit() {
                                       onSelect={() => {
                                         toggleSkill(skill.id);
                                       }}
-                                      className="flex items-center gap-3 py-3"
+                                      className="flex items-center gap-3"
                                     >
                                       <div
                                         className={cn(
-                                          "flex items-center justify-center h-5 w-5 rounded border-2 transition-all",
+                                          "flex items-center justify-center h-4 w-4 rounded border-2 transition-all",
                                           selectedSkills.includes(skill.id)
                                             ? "bg-primary border-primary"
                                             : "border-input"
@@ -553,14 +551,14 @@ function ProfileEdit() {
                                       >
                                         <Check
                                           className={cn(
-                                            "h-3.5 w-3.5 text-primary-foreground",
+                                            "h-3 w-3 text-primary-foreground",
                                             selectedSkills.includes(skill.id)
                                               ? "opacity-100"
                                               : "opacity-0"
                                           )}
                                         />
                                       </div>
-                                      <span className="font-medium">
+                                      <span>
                                         {skill.name}
                                       </span>
                                     </CommandItem>
@@ -575,7 +573,7 @@ function ProfileEdit() {
                           <div className="p-4 bg-muted/50 rounded-lg border border-border">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-medium text-foreground">
-                                Kỹ Năng Đã Chọn ({selectedSkills.length})
+                                Kĩ Năng Đã Chọn ({selectedSkills.length})
                               </span>
                               {selectedSkills.length > 0 && (
                                 <Button
@@ -583,7 +581,7 @@ function ProfileEdit() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() =>
-                                    form.setValue("skill", [], {
+                                    form.setValue("skills", [], {
                                       shouldValidate: true,
                                     })
                                   }
@@ -628,8 +626,8 @@ function ProfileEdit() {
 
               {/* Password Fields */}
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-4">
-                  Đổi Mật Khẩu
+                <h2 className="font-semibold text-foreground mb-4 text-xl">
+                  Đổi mật khẩu
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -637,7 +635,7 @@ function ProfileEdit() {
                     name="user.password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base">
+                        <FormLabel>
                           Mật Khẩu Mới
                         </FormLabel>
                         <FormControl>
@@ -645,7 +643,6 @@ function ProfileEdit() {
                             <Input
                               type={showPassword ? "text" : "password"}
                               placeholder="Để trống nếu không muốn đổi"
-                              className="h-11"
                               {...field}
                             />
                             <button
@@ -674,7 +671,7 @@ function ProfileEdit() {
                     name="user.confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base">
+                        <FormLabel>
                           Xác Nhận Mật Khẩu
                         </FormLabel>
                         <FormControl>
@@ -682,7 +679,6 @@ function ProfileEdit() {
                             <Input
                               type={showConfirmPassword ? "text" : "password"}
                               placeholder="Xác nhận mật khẩu mới của bạn"
-                              className="h-11"
                               {...field}
                             />
                             <button
@@ -712,15 +708,8 @@ function ProfileEdit() {
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-4 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="px-8"
-                >
-                  Hủy
-                </Button>
-                <Button type="submit" size="lg" className="px-8">
+                <Button disabled={updateProfileMutation.isPending} type="submit" >
+                  {updateProfileMutation.isPending && <Spinner />}
                   Lưu Thay Đổi
                 </Button>
               </div>
