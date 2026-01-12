@@ -13,6 +13,16 @@ const landingRoute = createRoute({
   path: "/",
 }).lazy(() => import("@/pages/public/landing").then((d) => d.Route));
 
+const mentorListingRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: "/mentors"
+}).lazy(() => import("@/pages/public/mentors-listing").then((d) => d.Route))
+
+const mentorProfileRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: "/mentors/$mentorId"
+}).lazy(() => import("@/pages/public/mentor-profile").then((d) => d.Route))
+
 const forumListingRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: "/forum",
@@ -26,6 +36,8 @@ export const topicDetailRoute = createRoute({
 const publicRouteTree = publicLayoutRoute.addChildren([
   landingRoute,
   forumListingRoute,
+  mentorListingRoute,
+  mentorProfileRoute,
   topicDetailRoute,
 ]);
 

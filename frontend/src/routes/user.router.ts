@@ -23,10 +23,16 @@ const profileRoute = createRoute({
   path: "/profile",
 }).lazy(() => import("@/pages/user/edit-profile").then((d) => d.Route));
 
+const becomeMentorRoute = createRoute({
+  getParentRoute: () => userLayoutRoute,
+  path: "/become-mentor",
+}).lazy(() => import("@/pages/user/become-mentor").then((d) => d.Route));
+
 const userRouteTree = userLayoutRoute.addChildren([
   indexRoute,
   aboutRoute,
   profileRoute,
+  becomeMentorRoute,
 ]);
 
 export { userRouteTree };

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Models;
@@ -11,9 +12,11 @@ using backend.Models;
 namespace backend.Migrations
 {
     [DbContext(typeof(MentorXContext))]
-    partial class MentorXContextModelSnapshot : ModelSnapshot
+    [Migration("20260107152856_UpdateMentorProfile")]
+    partial class UpdateMentorProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,8 +148,7 @@ namespace backend.Migrations
                         .HasColumnName("biography");
 
                     b.Property<string>("Company")
-                        .HasColumnType("text")
-                        .HasColumnName("company");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -155,8 +157,7 @@ namespace backend.Migrations
                         .HasDefaultValueSql("now()");
 
                     b.Property<string>("Position")
-                        .HasColumnType("text")
-                        .HasColumnName("position");
+                        .HasColumnType("text");
 
                     b.Property<decimal>("PricePerHour")
                         .HasColumnType("numeric")
@@ -164,8 +165,7 @@ namespace backend.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
+                        .HasColumnType("text");
 
                     b.Property<int>("TotalRatings")
                         .ValueGeneratedOnAdd()
@@ -183,9 +183,8 @@ namespace backend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
-                    b.Property<int>("YearsOfExperience")
-                        .HasColumnType("integer")
-                        .HasColumnName("years_of_experience");
+                    b.Property<int>("YearOfExperience")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id")
                         .HasName("mentor_profiles_pkey");
@@ -281,10 +280,6 @@ namespace backend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id")
                         .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("Icon")
-                        .HasColumnType("text")
-                        .HasColumnName("icon");
 
                     b.Property<string>("Name")
                         .IsRequired()

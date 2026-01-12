@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Models;
@@ -11,9 +12,11 @@ using backend.Models;
 namespace backend.Migrations
 {
     [DbContext(typeof(MentorXContext))]
-    partial class MentorXContextModelSnapshot : ModelSnapshot
+    [Migration("20251223181853_AddMentorCoreTables")]
+    partial class AddMentorCoreTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,91 +43,6 @@ namespace backend.Migrations
                     b.ToTable("mentor_skill", (string)null);
                 });
 
-            modelBuilder.Entity("backend.Models.ForumPost", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("content");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("ForumTopicId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("forum_topic_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("forum_posts_pkey");
-
-                    b.HasIndex("ForumTopicId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("forum_posts", (string)null);
-                });
-
-            modelBuilder.Entity("backend.Models.ForumTopic", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<string>("Topic")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("topic");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("type");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("forum_topics_pkey");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("forum_topics", (string)null);
-                });
-
             modelBuilder.Entity("backend.Models.MentorProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -144,28 +62,15 @@ namespace backend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("biography");
 
-                    b.Property<string>("Company")
-                        .HasColumnType("text")
-                        .HasColumnName("company");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("Position")
-                        .HasColumnType("text")
-                        .HasColumnName("position");
-
                     b.Property<decimal>("PricePerHour")
                         .HasColumnType("numeric")
                         .HasColumnName("price_per_hour");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
 
                     b.Property<int>("TotalRatings")
                         .ValueGeneratedOnAdd()
@@ -182,10 +87,6 @@ namespace backend.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
-
-                    b.Property<int>("YearsOfExperience")
-                        .HasColumnType("integer")
-                        .HasColumnName("years_of_experience");
 
                     b.HasKey("Id")
                         .HasName("mentor_profiles_pkey");
@@ -282,10 +183,6 @@ namespace backend.Migrations
                         .HasColumnName("id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<string>("Icon")
-                        .HasColumnType("text")
-                        .HasColumnName("icon");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
@@ -359,21 +256,6 @@ namespace backend.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("forum_post_likes", b =>
-                {
-                    b.Property<Guid>("forum_post_id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("user_id")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("forum_post_id", "user_id");
-
-                    b.HasIndex("user_id");
-
-                    b.ToTable("forum_post_likes", (string)null);
-                });
-
             modelBuilder.Entity("MentorSkill", b =>
                 {
                     b.HasOne("backend.Models.MentorProfile", null)
@@ -389,39 +271,6 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_mentor_skill_skill");
-                });
-
-            modelBuilder.Entity("backend.Models.ForumPost", b =>
-                {
-                    b.HasOne("backend.Models.ForumTopic", "ForumTopic")
-                        .WithMany("ForumPosts")
-                        .HasForeignKey("ForumTopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_forum_topic_id");
-
-                    b.HasOne("backend.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_forum_post_created_by");
-
-                    b.Navigation("ForumTopic");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("backend.Models.ForumTopic", b =>
-                {
-                    b.HasOne("backend.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_forum_topic_created_by");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("backend.Models.MentorProfile", b =>
@@ -467,28 +316,6 @@ namespace backend.Migrations
                         .HasConstraintName("fk_user");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("forum_post_likes", b =>
-                {
-                    b.HasOne("backend.Models.ForumPost", null)
-                        .WithMany()
-                        .HasForeignKey("forum_post_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_forum_post_likes_post");
-
-                    b.HasOne("backend.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_forum_post_likes_user");
-                });
-
-            modelBuilder.Entity("backend.Models.ForumTopic", b =>
-                {
-                    b.Navigation("ForumPosts");
                 });
 
             modelBuilder.Entity("backend.Models.MentorProfile", b =>
