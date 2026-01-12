@@ -128,10 +128,8 @@ function ProfileEdit() {
 
   useEffect(() => {
     if (profileData) {
-      console.log("Fetched profileData:", profileData);
       form.reset({
         ...profileData,
-        // API returns IDs, form uses IDs. Check both 'skill' (singular) and 'skills' (plural)
         skills: profileData.skills || [],
         user: {
           ...profileData.user,
@@ -155,19 +153,16 @@ function ProfileEdit() {
       },
     };
 
-    console.log("Submitting values:", submitValues);
     updateProfileMutation.mutate(submitValues as MentorProfile, {
       onSuccess: () => {
         toast.success("Cập nhật hồ sơ thành công!", {
           description: "Các thay đổi của bạn đã được lưu.",
         });
-        console.log("Updated profile:", submitValues);
       },
       onError: (error) => {
         toast.error("Không thể cập nhật hồ sơ", {
           description: error.response?.data?.message || error.message,
         });
-        console.error("Update failed:", error);
       },
     });
   };
