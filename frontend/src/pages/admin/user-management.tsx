@@ -102,7 +102,7 @@ export default function UserManagement() {
                   <TableRow key={user.id}>
                     <TableCell>
                       <Avatar>
-                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarImage src={user.avatar} alt={user.name} className="object-cover" />
                         <AvatarFallback>
                           {getInitials(user.name)}
                         </AvatarFallback>

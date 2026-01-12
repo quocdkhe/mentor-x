@@ -66,12 +66,12 @@ export function useGetMentorProfile(id: string) {
 
 export function useGetCurrentMentorProfile() {
   return useQuery<MentorProfile, AxiosError<Message>>({
-    queryKey: ["currentMentorProfile"],
+    queryKey: ["current-mentor-profile"],
     queryFn: async (): Promise<MentorProfile> => {
       const res = await api.get<MentorProfile>("/mentors/profile");
       return res.data;
     },
-    staleTime: 0, // Always fetch fresh data for edit form
+    staleTime: 1000 * 60 * 10,
   });
 }
 

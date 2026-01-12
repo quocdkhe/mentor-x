@@ -52,6 +52,7 @@ import {
   usePathUpdateMentorProfile,
   useGetCurrentMentorProfile,
 } from "@/api/mentor";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   user: z
@@ -95,6 +96,7 @@ function ProfileEdit() {
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const { data: availableSkills = [] } = useGetSkills();
   const updateProfileMutation = usePathUpdateMentorProfile();
+  const queryClient = useQueryClient();
 
   const {
     data: profileData,
@@ -157,6 +159,9 @@ function ProfileEdit() {
       onSuccess: () => {
         toast.success("Cập nhật hồ sơ thành công!", {
           description: "Các thay đổi của bạn đã được lưu.",
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["current-mentor-profile"],
         });
       },
       onError: (error) => {

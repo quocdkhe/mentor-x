@@ -190,7 +190,7 @@ export default function SimpleNavbar() {
                     className="flex items-center gap-2 h-10 px-3"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarImage src={user.avatar} alt={user.name} className="object-cover" />
                       <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">{user.name}</span>
@@ -199,7 +199,7 @@ export default function SimpleNavbar() {
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarImage src={user.avatar} alt={user.name} className="object-cover" />
                       <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">

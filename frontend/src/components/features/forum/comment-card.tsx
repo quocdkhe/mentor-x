@@ -150,7 +150,7 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
         {/* Left Side: User Info */}
         <div className="flex flex-col items-center gap-3 shrink-0 w-28">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={post.author.avatar} />
+            <AvatarImage src={post.author.avatar} className="object-cover" />
             <AvatarFallback className="text-xl">
               {getInitials(post.author.name)}
             </AvatarFallback>

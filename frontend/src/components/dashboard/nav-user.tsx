@@ -22,15 +22,15 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar.tsx"
-import {useAppDispatch, useAppSelector} from "@/store/hooks.ts";
-import {useLogout} from "@/api/auth.ts";
-import {useNavigate} from "@tanstack/react-router";
-import {toast} from "sonner";
-import {setUser} from "@/store/auth.slice.ts";
-import {useQueryClient} from "@tanstack/react-query";
+import { useAppDispatch, useAppSelector } from "@/store/hooks.ts";
+import { useLogout } from "@/api/auth.ts";
+import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { setUser } from "@/store/auth.slice.ts";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function NavUser() {
-  const {isMobile} = useSidebar()
+  const { isMobile } = useSidebar()
   const { user } = useAppSelector((state) => state.auth);
   const logoutMutation = useLogout();
   const navigate = useNavigate();
@@ -61,14 +61,14 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.avatar} alt={user?.name}/>
+                <AvatarImage src={user?.avatar} alt={user?.name} className="object-cover" />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user?.name}</span>
                 <span className="truncate text-xs">{user?.email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4"/>
+              <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -80,7 +80,7 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.avatar} alt={user?.name}/>
+                  <AvatarImage src={user?.avatar} alt={user?.name} className="object-cover" />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -89,7 +89,7 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator/>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut /> Log out
             </DropdownMenuItem>

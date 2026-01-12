@@ -102,7 +102,7 @@ export function ForumListing() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={topic.author.avatar} />
+                        <AvatarImage src={topic.author.avatar} className="object-cover" />
                         <AvatarFallback>
                           {getInitials(topic.author.name)}
                         </AvatarFallback>

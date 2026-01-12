@@ -137,7 +137,7 @@ export function ProfileEditPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12 items-start">
         <div className="flex flex-col items-center gap-6">
           <Avatar className="h-40 w-40 border-4 border-border shadow-xl">
-            <AvatarImage src={avatarUrl || undefined} />
+            <AvatarImage src={avatarUrl || undefined} className="object-cover" />
             <AvatarFallback className="text-4xl bg-muted">
               <User className="h-20 w-20" />
             </AvatarFallback>

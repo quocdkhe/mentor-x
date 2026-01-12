@@ -4,18 +4,18 @@ import { rootRoute } from "./router";
 
 // Pathless routes, used for layouts or grouping, in Route, use /user/*
 const mentorLayoutRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: "/mentor",
-    component: MentorLayout,
+  getParentRoute: () => rootRoute,
+  path: "/mentor",
+  component: MentorLayout,
 });
 
 const editProfileRoute = createRoute({
-    getParentRoute: () => mentorLayoutRoute,
-    path: "/edit-form",
-}).lazy(() => import("@/pages/mentor/edit-form").then((d) => d.Route));
+  getParentRoute: () => mentorLayoutRoute,
+  path: "/edit-form",
+}).lazy(() =>
+  import("@/pages/mentor/mentor-edit-profile").then((d) => d.Route)
+);
 
-const mentorRouteTree = mentorLayoutRoute.addChildren([
-    editProfileRoute,
-]);
+const mentorRouteTree = mentorLayoutRoute.addChildren([editProfileRoute]);
 
 export { mentorRouteTree };
