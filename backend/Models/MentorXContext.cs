@@ -286,6 +286,105 @@ public partial class MentorXContext : DbContext
                     }
                 );
         });
+        
+        modelBuilder.Entity<Availability>(entity =>
+        {
+            entity.HasKey(e => e.Id)
+                .HasName("availabilities_pkey");
+
+            entity.ToTable("availabilities");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+
+            entity.Property(e => e.MentorId)
+                .HasColumnName("mentor_id");
+
+            entity.Property(e => e.DayOfWeek)
+                .HasColumnName("day_of_week");
+
+            entity.Property(e => e.StartTime)
+                .HasColumnType("time")
+                .HasColumnName("start_time");
+
+            entity.Property(e => e.EndTime)
+                .HasColumnType("time")
+                .HasColumnName("end_time");
+
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+
+            entity.HasOne(e => e.Mentor)
+                .WithMany()
+                .HasForeignKey(e => e.MentorId)
+                .HasConstraintName("fk_availabilities_mentor");
+        });
+
+        modelBuilder.Entity<Appointment>(entity =>
+        {
+            entity.HasKey(e => e.Id)
+                .HasName("appointments_pkey");
+
+            entity.ToTable("appointments");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+
+            entity.Property(e => e.MentorId)
+                .HasColumnName("mentor_id");
+
+            entity.Property(e => e.MenteeId)
+                .HasColumnName("mentee_id");
+
+            entity.Property(e => e.StartAt)
+                .HasColumnType("timestamp")
+                .HasColumnName("start_at");
+
+            entity.Property(e => e.EndAt)
+                .HasColumnType("timestamp")
+                .HasColumnName("end_at");
+
+            entity.Property(e => e.Status)
+                .HasConversion<string>()
+                .HasDefaultValue(AppointmentStatusEnum.Pending)
+                .HasColumnName("status");
+
+            entity.Property(e => e.MeetingLink)
+                .HasColumnName("meeting_link");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+
+            entity.HasOne(e => e.Mentor)
+                .WithMany()
+                .HasForeignKey(e => e.MentorId)
+                .HasConstraintName("fk_appointments_mentor")
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Mentee)
+                .WithMany()
+                .HasForeignKey(e => e.MenteeId)
+                .HasConstraintName("fk_appointments_mentee")
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+
 
         OnModelCreatingPartial(modelBuilder);
     }
