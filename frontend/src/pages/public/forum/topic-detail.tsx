@@ -147,6 +147,7 @@ export function TopicDetail() {
               key={post.id}
               post={post}
               commentNumber={index + 1}
+              topicId={topicId}
               onReplyClick={handleReply}
               onEdit={handleEdit}
               onDelete={handleDelete}

@@ -17,6 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 interface CommentCardProps {
   post: Post;
   commentNumber: number;
+  topicId: string;
   onReplyClick?: (content: string) => void;
   onEdit?: (post: Post) => void;
   onDelete?: (postId: string) => void;
@@ -26,7 +27,7 @@ interface CommentCardProps {
 // Maximum height for collapsed content
 const MAX_HEIGHT = 160;
 
-export function CommentCard({ post, commentNumber, onReplyClick, onEdit, onDelete }: CommentCardProps) {
+export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit, onDelete }: CommentCardProps) {
   const { user } = useAppSelector((state) => state.auth);
   const [isExpanded, setIsExpanded] = useState(false); // Track if content is overflowing - defaults to true to show button initially
   const [showToggle, setShowToggle] = useState(true);
@@ -104,8 +105,8 @@ export function CommentCard({ post, commentNumber, onReplyClick, onEdit, onDelet
   function handeLikeOrDislikePost() {
     likeOrDislikePostMutation.mutate(undefined, {
       onSuccess: () => {
-        queryClient.removeQueries({
-          queryKey: ['forum-topic-posts', post.id],
+        queryClient.invalidateQueries({
+          queryKey: ['forum-topic-posts', topicId],
         });
         if (isLiked) {
           setLikers((prev) => prev.filter((liker) => liker.name !== user?.name));
