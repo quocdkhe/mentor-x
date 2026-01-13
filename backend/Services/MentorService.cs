@@ -279,5 +279,12 @@ namespace backend.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<Guid?> GetMentorIdByUserId(Guid userId)
+        {
+            var mentor = await _context.MentorProfiles
+                .FirstOrDefaultAsync(m => m.UserId == userId);
+            return mentor?.Id;
+        }
     }
 }

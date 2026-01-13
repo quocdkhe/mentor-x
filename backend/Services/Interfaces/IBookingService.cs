@@ -6,5 +6,6 @@ namespace backend.Services.Interfaces
     public interface IBookingService
     {
         Task<List<AvailabilityResponseDTO>> GetAvailabilities(Guid mentorId);
+        Task<bool> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities);
     }
 }

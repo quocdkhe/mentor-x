@@ -29,5 +29,26 @@ namespace backend.Services
                 .ToListAsync();
             return availabilities;
         }
+
+        public async Task<bool> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities)
+        {
+            var existing = await _context.Availabilities.Where(a => a.MentorId == mentorId).ToListAsync();
+            _context.Availabilities.RemoveRange(existing);
+
+            var newAvailabilities = availabilities.Select(a => new Availability
+            {
+                MentorId = mentorId,
+                DayOfWeek = a.DayOfWeek,
+                StartTime = a.StartTime,
+                EndTime = a.EndTime,
+                IsActive = a.IsActive,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }).ToList();
+
+            await _context.Availabilities.AddRangeAsync(newAvailabilities);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

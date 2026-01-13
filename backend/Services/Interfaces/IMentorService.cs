@@ -11,6 +11,7 @@ namespace backend.Services.Interfaces
         Task<MentorProfileResponseDTO?> GetMentorProfileByUserId(Guid userId);
         Task<bool> RegisterMentor(Guid userId, MentorRegistrationRequestDTO request);
         Task<bool> UpdateMentorProfile(Guid userId, MentorUpdateRequestDTO request);
+        Task<Guid?> GetMentorIdByUserId(Guid userId);
     }
 }
 
