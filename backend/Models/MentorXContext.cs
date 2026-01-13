@@ -29,6 +29,8 @@ public partial class MentorXContext : DbContext
 
     public virtual DbSet<MentorReview> MentorReviews { get; set; }
 
+    public virtual DbSet<Availability> Availabilities { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
