@@ -16,6 +16,13 @@ const editProfileRoute = createRoute({
   import("@/pages/mentor/mentor-edit-profile").then((d) => d.Route)
 );
 
-const mentorRouteTree = mentorLayoutRoute.addChildren([editProfileRoute]);
+const setAvailabilitiesRoute = createRoute({
+  getParentRoute: () => mentorLayoutRoute,
+  path: "/set-availabilities",
+}).lazy(() => import("@/pages/mentor/set-availabilities").then((d) => d.Route));
 
+const mentorRouteTree = mentorLayoutRoute.addChildren([
+  editProfileRoute,
+  setAvailabilitiesRoute,
+]);
 export { mentorRouteTree };
