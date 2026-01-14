@@ -29,16 +29,11 @@ namespace backend.Controllers
             {
                 var userId = User.GetUserId();
                 
-                var MentorId = await _mentorService.GetMentorIdByUserId(userId);
-                if(MentorId == null)
-                {
-                    return BadRequest(new { Message = "User is not a mentor" });
-                }
-                return await _bookingService.GetAvailabilities(MentorId.Value);
+                return await _bookingService.GetAvailabilities(userId);
             } 
             catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return StatusCode(500, new { Message = ex.Message });
             }
         }
 
@@ -49,19 +44,13 @@ namespace backend.Controllers
             try
             {
                 var userId = User.GetUserId();
-                var mentorId = await _mentorService.GetMentorIdByUserId(userId);
-                
-                if (mentorId == null)
-                {
-                    return BadRequest(new { Message = "User is not a mentor" });
-                }
 
-                await _bookingService.UpdateAvailabilities(mentorId.Value, availabilities);
+                await _bookingService.UpdateAvailabilities(userId, availabilities);
                 return Ok(new { Message = "Availabilities updated successfully" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return StatusCode(500, new { Message = ex.Message });
             }
         }
     }

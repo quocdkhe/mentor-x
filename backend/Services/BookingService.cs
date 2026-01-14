@@ -33,7 +33,10 @@ namespace backend.Services
         public async Task<bool> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities)
         {
             var existing = await _context.Availabilities.Where(a => a.MentorId == mentorId).ToListAsync();
-            _context.Availabilities.RemoveRange(existing);
+            if (existing != null)
+            {
+                _context.Availabilities.RemoveRange(existing);
+            }
 
             var newAvailabilities = availabilities.Select(a => new Availability
             {
