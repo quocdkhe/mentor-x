@@ -10,6 +10,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { BookingDialog } from "@/components/features/booking/booking-dialog";
 import DefaultSkeleton from "@/components/skeletons/default.skeleton";
 import {
   Calendar,
@@ -24,12 +25,14 @@ import {
   CalendarClock,
   ArrowLeft
 } from "lucide-react";
+import { useState } from "react";
 
 const route = getRouteApi('/public/mentors/$mentorId');
 
 const MentorProfilePage = () => {
   const { mentorId } = route.useParams();
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   if (isLoading) {
     return <DefaultSkeleton />
@@ -241,7 +244,7 @@ const MentorProfilePage = () => {
 
                   {/* Action Buttons - using primary color */}
                   <div className="space-y-3">
-                    <Button className="w-full gap-2">
+                    <Button className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
                       <Calendar className="w-5 h-5" />
                       Đặt lịch
                     </Button>
@@ -284,6 +287,13 @@ const MentorProfilePage = () => {
           </div>
         </div>
       </div>
+      {mentor && (
+        <BookingDialog
+          isOpen={isBookingOpen}
+          onClose={() => setIsBookingOpen(false)}
+          mentor={mentor}
+        />
+      )}
     </div>
   );
 };
