@@ -28,7 +28,6 @@ namespace backend.Controllers
             try
             {
                 var userId = User.GetUserId();
-                
                 return await _bookingService.GetAvailabilities(userId);
             } 
             catch (Exception ex)
