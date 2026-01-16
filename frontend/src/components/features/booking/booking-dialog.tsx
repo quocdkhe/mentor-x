@@ -6,20 +6,13 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { useGetAvailability } from "@/api/availability";
-import { useBooking } from "@/api/appointment";
+import { useBooking, useGetMentorSchedules } from "@/api/appointment";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import type { MentorInfo } from "@/types/mentor";
-
-// Types
-interface BookingBlock {
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  isActive: boolean;
-}
+import type { TimeBlockDto } from "@/types/appointment";
+import { BookingSlotsSkeleton } from "@/components/skeletons/booking-slots.skeleton";
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -30,15 +23,19 @@ interface BookingDialogProps {
 const SLOT_DURATION = 15; // minutes
 
 export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
-  // Fetch availability data
-  const { data: availabilityData = [] } = useGetAvailability(mentor.userId);
-  const bookingMutation = useBooking();
-  const queryClient = useQueryClient();
-
   // State
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [startRange, setStartRange] = useState<{ date: Date; time: string; blockIdx: number } | null>(null);
   const [endRange, setEndRange] = useState<{ date: Date; time: string } | null>(null);
+
+  // Fetch mentor schedules for the selected date
+  const { data: scheduleData, isLoading: isLoadingSchedules } = useGetMentorSchedules(selectedDate, mentor.userId);
+  const bookingMutation = useBooking();
+  const queryClient = useQueryClient();
+
+  // Extract blocks and booked slots from schedule data
+  const timeBlocks = useMemo(() => scheduleData?.blocks ?? [], [scheduleData]);
+  const bookedSlots = useMemo(() => scheduleData?.bookedSlots ?? [], [scheduleData]);
 
   // Generate calendar days based on selected month
   const calendarDays = useMemo(() => {
@@ -88,25 +85,41 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
     return days[day];
   }
 
-  const getDayOfWeek = (date: Date) => date.getDay();
-
-  // Get blocks for selected date
-  const dayBlocks = useMemo(() => {
-    const dayOfWeek = getDayOfWeek(selectedDate);
-    const blocks = availabilityData.filter((b) => b.dayOfWeek === dayOfWeek && b.isActive);
-    // Sort by startTime
-    return blocks.sort((a, b) => {
+  // Sort time blocks by start time
+  const sortedTimeBlocks = useMemo(() => {
+    return [...timeBlocks].sort((a, b) => {
       const [aHour, aMin] = a.startTime.split(':').map(Number);
       const [bHour, bMin] = b.startTime.split(':').map(Number);
       const aMinutes = aHour * 60 + aMin;
       const bMinutes = bHour * 60 + bMin;
       return aMinutes - bMinutes;
     });
-  }, [selectedDate, availabilityData]);
+  }, [timeBlocks]);
 
-  // Generate slots for a block
-  const generateSlots = (block: BookingBlock) => {
-    const slots: string[] = [];
+  // Check if a time slot is booked
+  const isSlotBooked = (time: string): boolean => {
+    const [h, m] = time.split(":").map(Number);
+
+    // Create a date object for the slot time on the selected date
+    const slotDate = new Date(selectedDate);
+    slotDate.setHours(h, m, 0, 0);
+    const slotTime = slotDate.getTime();
+    const slotEndTime = slotTime + SLOT_DURATION * 60 * 1000;
+
+    return bookedSlots.some((booked) => {
+      const bookedStart = new Date(booked.startAt).getTime();
+      const bookedEnd = new Date(booked.endAt).getTime();
+
+      // A slot is booked if it overlaps with any booked range
+      // Slot overlaps if: slotStart < bookedEnd AND slotEnd > bookedStart
+      // Use <= for bookedEnd to include slots that start exactly when a booking ends
+      return slotTime <= bookedEnd && slotEndTime > bookedStart;
+    });
+  };
+
+  // Generate slots for a block with 15-minute steps
+  const generateSlots = (block: TimeBlockDto): { time: string; isBooked: boolean }[] => {
+    const slots: { time: string; isBooked: boolean }[] = [];
     const [startH, startM] = block.startTime.split(":").map(Number);
     const [endH, endM] = block.endTime.split(":").map(Number);
 
@@ -116,7 +129,8 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
     while (currentInMinutes <= endInMinutes) {
       const h = Math.floor(currentInMinutes / 60).toString().padStart(2, "0");
       const m = (currentInMinutes % 60).toString().padStart(2, "0");
-      slots.push(`${h}:${m}`);
+      const time = `${h}:${m}`;
+      slots.push({ time, isBooked: isSlotBooked(time) });
       currentInMinutes += SLOT_DURATION;
     }
     return slots;
@@ -126,6 +140,30 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
   const timeToMinutes = (time: string) => {
     const [h, m] = time.split(":").map(Number);
     return h * 60 + m;
+  };
+
+  // Check if there's a booked slot between two times
+  const hasBookedSlotInRange = (startTime: string, endTime: string): boolean => {
+    const [startH, startM] = startTime.split(":").map(Number);
+    const [endH, endM] = endTime.split(":").map(Number);
+
+    const rangeStartDate = new Date(selectedDate);
+    rangeStartDate.setHours(startH, startM, 0, 0);
+    const rangeStart = rangeStartDate.getTime();
+
+    const rangeEndDate = new Date(selectedDate);
+    rangeEndDate.setHours(endH, endM, 0, 0);
+    const rangeEnd = rangeEndDate.getTime();
+
+    return bookedSlots.some((booked) => {
+      const bookedStart = new Date(booked.startAt).getTime();
+      const bookedEnd = new Date(booked.endAt).getTime();
+
+      // Check if the booked slot overlaps with our range
+      // A booked slot is "in between" if it starts after rangeStart and before rangeEnd
+      // OR if it ends after rangeStart and before rangeEnd
+      return bookedStart < rangeEnd && bookedEnd > rangeStart;
+    });
   };
 
   // Handle slot click
@@ -145,6 +183,13 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
       const currMins = timeToMinutes(time);
 
       if (currMins > startMins) {
+        // Check if there's a booked slot between start and end
+        if (hasBookedSlotInRange(startRange.time, time)) {
+          // Don't allow selection across booked slots - start new range
+          setStartRange({ date: selectedDate, time, blockIdx });
+          setEndRange(null);
+          return;
+        }
         setEndRange({ date: selectedDate, time });
       } else {
         // New Start (clicked before or on same)
@@ -209,6 +254,7 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
       onSuccess: (data) => {
         toast.success(data.message);
         queryClient.invalidateQueries({ queryKey: ["appointments"] });
+        queryClient.invalidateQueries({ queryKey: ["mentor-schedules"] });
         // Reset selection
         setStartRange(null);
         setEndRange(null);
@@ -321,25 +367,16 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
 
           {/* Time Slots - Scrollable Area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
-            {dayBlocks.length === 0 ? (
+            {isLoadingSchedules ? (
+              <BookingSlotsSkeleton />
+            ) : sortedTimeBlocks.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground h-full flex flex-col items-center justify-center">
                 <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-20" />
                 <p>Không có lịch trống vào ngày này.</p>
-                <Button variant="link" onClick={() => {
-                  // find next available day
-                  const next = calendarDays.find(d => {
-                    const dw = getDayOfWeek(d);
-                    return availabilityData.some(b => b.dayOfWeek === dw && b.isActive);
-                  });
-                  if (next) setSelectedDate(next);
-                }}>Xem ngày có lịch gần nhất</Button>
               </div>
             ) : (
-              dayBlocks.map((block, idx) => {
+              sortedTimeBlocks.map((block, idx) => {
                 const slots = generateSlots(block);
-
-                // Check if this block contains the selection start to highlight opacity maybe?
-                // For now just standard render
 
                 return (
                   <div key={idx}>
@@ -348,14 +385,29 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
                         <Clock className="w-5 h-5" />
                       </div>
                       <h3 className="font-semibold">
-                        Khung giờ {block.startTime.padStart(8, '0').slice(0, 5)} - {block.endTime.padStart(8, '0').slice(0, 5)}
+                        Khung giờ {block.startTime.split(':').slice(0, 2).join(':')} - {block.endTime.split(':').slice(0, 2).join(':')}
                       </h3>
                     </div>
 
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-3">
-                      {slots.map(slot => {
-                        const status = getSlotStatus(slot);
-                        let btnClass = "bg-secondary/50 text-foreground border-transparent"; // default - no hover
+                      {slots.map(({ time, isBooked }) => {
+                        const status = getSlotStatus(time);
+
+                        // Booked slots have disabled styling with strikethrough
+                        if (isBooked) {
+                          return (
+                            <Button
+                              key={time}
+                              variant="outline"
+                              disabled
+                              className="h-10 transition-all duration-200 border bg-muted/30 text-muted-foreground border-transparent cursor-not-allowed relative"
+                            >
+                              <span className="line-through decoration-2">{time}</span>
+                            </Button>
+                          );
+                        }
+
+                        let btnClass = "bg-secondary/50 text-foreground border-transparent"; // default - available
 
                         if (status === "selected-start" || status === "selected-end") {
                           btnClass = "bg-primary dark:bg-primary hover:bg-primary dark:hover:bg-primary text-primary-foreground hover:text-primary-foreground border-primary shadow-md ring-2 ring-primary ring-offset-2 ring-offset-background";
@@ -365,12 +417,12 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
 
                         return (
                           <Button
-                            key={slot}
+                            key={time}
                             variant="outline"
                             className={cn("h-10 transition-all duration-200 border", btnClass)}
-                            onClick={() => handleSlotClick(slot, idx)}
+                            onClick={() => handleSlotClick(time, idx)}
                           >
-                            {slot}
+                            {time}
                           </Button>
                         )
                       })}

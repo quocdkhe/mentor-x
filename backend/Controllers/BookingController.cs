@@ -48,5 +48,13 @@ public class BookingController : ControllerBase
         if (result.Success == false) return BadRequest(new Message(result.Message));
         return Ok(result.Data);
     }
-    
+
+    [HttpGet("/mentors/{mentorId}/schedules")]
+    public async Task<ActionResult<MentorScheduleDto>> GetMentorSchedules(Guid mentorId, [FromQuery] DateTime? date)
+    {
+        var result = await _bookingService.GetMentorSchedule(mentorId, date);
+        if (result.Success == false) return BadRequest(new Message(result.Message));
+        return Ok(result.Data);
+    }
+
 }

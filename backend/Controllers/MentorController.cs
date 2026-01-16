@@ -14,12 +14,10 @@ namespace backend.Controllers
     public class MentorController : ControllerBase
     {
         private readonly IMentorService _mentorService;
-        private readonly IBookingService _bookingService;
 
-        public MentorController(IMentorService mentorService, IBookingService bookingService)
+        public MentorController(IMentorService mentorService)
         {
             _mentorService = mentorService;
-            _bookingService = bookingService;
         }
 
         [HttpGet("")]
@@ -104,28 +102,6 @@ namespace backend.Controllers
             }
         }
 
-        [HttpGet("{mentorId}/availabilities")]
-        public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities(string mentorId)
-        {
-            if (Guid.TryParse(mentorId, out Guid mentorGuid) == false)
-            {
-                return BadRequest(new { message = "Id không đúng" });
-            }
-            var availabilities = await _bookingService.GetAvailabilities(mentorGuid);
-            return availabilities;
-        }
-
-        [HttpPatch("me/availabilities")]
-        [Authorize]
-        public async Task<ActionResult<Message>> UpdateAvailabilities([FromBody] List<AvailabilityResponseDTO> availabilities)
-        {
-            var userId = User.GetUserId();
-            var serviceResult = await _bookingService.UpdateAvailabilities(userId, availabilities);
-            if (!serviceResult.Success)
-            {
-                return BadRequest(new { message = serviceResult.Message });
-            }
-            return Ok(new { message = "Cập nhật lịch khả dụng thành công" });
-        }
+ 
     }
 }

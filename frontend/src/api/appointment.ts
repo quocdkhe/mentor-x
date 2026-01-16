@@ -2,6 +2,7 @@ import type {
   BookingRequest,
   MenteeAppointmentDto,
   MentorAppointmentDto,
+  MentorScheduleDto,
 } from "@/types/appointment";
 import type { Message } from "@/types/common";
 import type { AxiosError } from "axios";
@@ -50,6 +51,28 @@ export function useMenteeGetAppointments(date: Date) {
     queryFn: async () => {
       const res = await api.get<MenteeAppointmentDto[]>(
         `/mentees/me/appointments`,
+        {
+          params: {
+            date: dateISOString,
+          },
+        }
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useGetMentorSchedules(date: Date, mentorId: string) {
+  // Set time to noon to avoid timezone-related date shifts when converting to ISO
+  const dateAtNoon = new Date(date);
+  dateAtNoon.setHours(12, 0, 0, 0);
+  const dateISOString = dateAtNoon.toISOString();
+
+  return useQuery<MentorScheduleDto, AxiosError<Message>>({
+    queryKey: ["mentor-schedules", dateISOString, mentorId],
+    queryFn: async () => {
+      const res = await api.get<MentorScheduleDto>(
+        `/mentors/${mentorId}/schedules`,
         {
           params: {
             date: dateISOString,

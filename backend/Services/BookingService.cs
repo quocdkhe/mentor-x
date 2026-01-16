@@ -108,7 +108,12 @@ namespace backend.Services
 
         public async Task<ServiceResult<Message>> BookAnAppointment(Guid menteeId, BookingRequestDto dto)
         {
-            var isDuplicate = await _context.Appointments.AnyAsync(a => a.MentorId == dto.MentorId && a.EndAt >= dto.StartAt);
+            var isDuplicate = await _context.Appointments.AnyAsync(a =>
+                a.MentorId == dto.MentorId &&
+                a.StartAt < dto.EndAt &&
+                a.EndAt > dto.StartAt
+            );
+
             if (isDuplicate)
             {
                 return ServiceResult<Message>.Fail("Lịch đặt bị trùng với lịch khác, vui lòng thử lại");
@@ -191,6 +196,40 @@ namespace backend.Services
                 .ToListAsync();
 
             return ServiceResult<List<MenteeAppointmentDto>>.Ok(appointments);
+        }
+
+        public async Task<ServiceResult<MentorScheduleDto>> GetMentorSchedule(Guid mentorId, DateTime? date)
+        {
+            if (date == null)
+            {
+                return ServiceResult<MentorScheduleDto>.Fail("DateTime là bắt buộc");
+            }
+            WeekDayEnum day = (WeekDayEnum)date?.DayOfWeek;
+            List<TimeBlockDto> blocks = await _context.Availabilities
+                .Where(a => a.MentorId == mentorId && a.DayOfWeek == day)
+                .Select(a => new TimeBlockDto
+                {
+                    StartTime = a.StartTime,    
+                    EndTime = a.EndTime
+                })
+                .ToListAsync();
+            
+            var startOfDay = date?.Date;
+            var endOfDay = startOfDay?.AddDays(1);
+            
+            List<BookedSlotDto> bookedSlots = await _context.Appointments
+                .Where(a => a.MentorId == mentorId && a.StartAt >= startOfDay && a.StartAt < endOfDay)
+                .Select(a => new BookedSlotDto
+                {
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt
+                }).ToListAsync();
+
+            return ServiceResult<MentorScheduleDto>.Ok(new MentorScheduleDto
+            {
+                Blocks = blocks,
+                BookedSlots = bookedSlots
+            });
         }
 
     }
