@@ -6,61 +6,77 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import { useGetAvailability } from "@/api/availability";
+import { useBooking } from "@/api/appointment";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import type { MentorInfo } from "@/types/mentor";
 
 // Types
 interface BookingBlock {
-  dayOfWeek: number; // 0-6 (Sun-Sat) or 1-7. Let's assume 0=Sun, 1=Mon...
-  startTime: string; // "HH:mm"
-  endTime: string; // "HH:mm"
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
   isActive: boolean;
 }
 
 interface BookingDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  mentor: {
-    id: string;
-    name: string;
-    avatar: string;
-    position: string;
-    company: string;
-    pricePerHour: number;
-    avgRating: number;
-  };
+  mentor: MentorInfo;
 }
-
-// Fake Data
-const FAKE_AVAILABILITY: BookingBlock[] = [
-  { dayOfWeek: 1, startTime: "08:00", endTime: "12:00", isActive: true }, // Mon
-  { dayOfWeek: 1, startTime: "13:00", endTime: "17:00", isActive: true }, // Mon
-  { dayOfWeek: 2, startTime: "09:00", endTime: "11:00", isActive: true }, // Tue
-  { dayOfWeek: 2, startTime: "14:00", endTime: "16:00", isActive: true }, // Tue
-  { dayOfWeek: 3, startTime: "08:00", endTime: "12:00", isActive: true }, // Wed
-  { dayOfWeek: 3, startTime: "13:00", endTime: "17:00", isActive: true }, // Wed
-  { dayOfWeek: 4, startTime: "08:00", endTime: "12:00", isActive: true }, // Thu
-  { dayOfWeek: 4, startTime: "13:00", endTime: "17:00", isActive: true }, // Thu
-  { dayOfWeek: 5, startTime: "08:00", endTime: "11:30", isActive: true }, // Fri
-];
 
 const SLOT_DURATION = 15; // minutes
 
 export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
+  // Fetch availability data
+  const { data: availabilityData = [] } = useGetAvailability(mentor.userId);
+  const bookingMutation = useBooking();
+  const queryClient = useQueryClient();
+
   // State
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [startRange, setStartRange] = useState<{ date: Date; time: string; blockIdx: number } | null>(null);
   const [endRange, setEndRange] = useState<{ date: Date; time: string } | null>(null);
 
-  // Generate calendar days (next 14 days)
+  // Generate calendar days based on selected month
   const calendarDays = useMemo(() => {
     const days = [];
     const today = new Date();
-    for (let i = 0; i < 14; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      days.push(date);
+    today.setHours(0, 0, 0, 0);
+
+    const selectedMonth = selectedDate.getMonth();
+    const selectedYear = selectedDate.getFullYear();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // Determine start and end dates
+    let startDate: Date;
+
+    if (selectedYear === currentYear && selectedMonth === currentMonth) {
+      // Current month: from today to end of month
+      startDate = new Date(today);
+    } else if (selectedYear > currentYear || (selectedYear === currentYear && selectedMonth > currentMonth)) {
+      // Future month: from first day of the month
+      startDate = new Date(selectedYear, selectedMonth, 1);
+    } else {
+      // Past month: return empty array (shouldn't happen with navigation controls)
+      return [];
     }
+
+    // End date is the last day of the selected month
+    const endDate = new Date(selectedYear, selectedMonth + 1, 0);
+
+    // Generate all days from start to end
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      days.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
     return days;
-  }, []);
+  }, [selectedDate]);
 
   const formatMonthYear = (date: Date) => {
     return new Intl.DateTimeFormat("vi-VN", { month: "long", year: "numeric" }).format(date);
@@ -77,8 +93,16 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
   // Get blocks for selected date
   const dayBlocks = useMemo(() => {
     const dayOfWeek = getDayOfWeek(selectedDate);
-    return FAKE_AVAILABILITY.filter((b) => b.dayOfWeek === dayOfWeek && b.isActive);
-  }, [selectedDate]);
+    const blocks = availabilityData.filter((b) => b.dayOfWeek === dayOfWeek && b.isActive);
+    // Sort by startTime
+    return blocks.sort((a, b) => {
+      const [aHour, aMin] = a.startTime.split(':').map(Number);
+      const [bHour, bMin] = b.startTime.split(':').map(Number);
+      const aMinutes = aHour * 60 + aMin;
+      const bMinutes = bHour * 60 + bMin;
+      return aMinutes - bMinutes;
+    });
+  }, [selectedDate, availabilityData]);
 
   // Generate slots for a block
   const generateSlots = (block: BookingBlock) => {
@@ -89,7 +113,7 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
     let currentInMinutes = startH * 60 + startM;
     const endInMinutes = endH * 60 + endM;
 
-    while (currentInMinutes < endInMinutes) {
+    while (currentInMinutes <= endInMinutes) {
       const h = Math.floor(currentInMinutes / 60).toString().padStart(2, "0");
       const m = (currentInMinutes % 60).toString().padStart(2, "0");
       slots.push(`${h}:${m}`);
@@ -175,13 +199,26 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
     const [endHour, endMinute] = endRange.time.split(':').map(Number);
     endDateTime.setHours(endHour, endMinute, 0, 0);
 
-    const bookingData = {
-      mentorId: mentor.id,
+    const bookingRequest = {
+      mentorId: mentor.userId,
       startAt: startDateTime.toISOString(),
       endAt: endDateTime.toISOString(),
     };
 
-    console.log(bookingData);
+    bookingMutation.mutate(bookingRequest, {
+      onSuccess: (data) => {
+        toast.success(data.message);
+        queryClient.invalidateQueries({ queryKey: ["appointments"] });
+        // Reset selection
+        setStartRange(null);
+        setEndRange(null);
+        // Close dialog
+        onClose();
+      },
+      onError: (err) => {
+        toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
+      }
+    });
   };
 
   return (
@@ -223,16 +260,32 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4 mx-auto">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+
                   const newDate = new Date(selectedDate);
-                  newDate.setDate(selectedDate.getDate() - 1);
-                  if (newDate >= new Date()) setSelectedDate(newDate); // Prevent going to past
+                  newDate.setMonth(selectedDate.getMonth() - 1);
+
+                  // Allow going back to current month but not before
+                  const firstDayOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+                  if (newDate >= firstDayOfCurrentMonth) {
+                    // If navigating to current month, select today; otherwise, select first day
+                    if (newDate.getMonth() === today.getMonth() && newDate.getFullYear() === today.getFullYear()) {
+                      setSelectedDate(new Date(today));
+                    } else {
+                      newDate.setDate(1); // First day of the month
+                      setSelectedDate(newDate);
+                    }
+                  }
                 }}>
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <span className="font-semibold w-40 text-center capitalize">{formatMonthYear(selectedDate)}</span>
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
                   const newDate = new Date(selectedDate);
-                  newDate.setDate(selectedDate.getDate() + 1);
+                  newDate.setMonth(selectedDate.getMonth() + 1);
+                  newDate.setDate(1); // First day of next month
                   setSelectedDate(newDate);
                 }}>
                   <ChevronRight className="w-4 h-4" />
@@ -276,7 +329,7 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
                   // find next available day
                   const next = calendarDays.find(d => {
                     const dw = getDayOfWeek(d);
-                    return FAKE_AVAILABILITY.some(b => b.dayOfWeek === dw && b.isActive);
+                    return availabilityData.some(b => b.dayOfWeek === dw && b.isActive);
                   });
                   if (next) setSelectedDate(next);
                 }}>Xem ngày có lịch gần nhất</Button>
@@ -295,7 +348,7 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
                         <Clock className="w-5 h-5" />
                       </div>
                       <h3 className="font-semibold">
-                        Khung giờ {block.startTime} - {block.endTime}
+                        Khung giờ {block.startTime.padStart(8, '0').slice(0, 5)} - {block.endTime.padStart(8, '0').slice(0, 5)}
                       </h3>
                     </div>
 
@@ -355,7 +408,12 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">Hủy</Button>
-              <Button className="flex-1 sm:flex-none min-w-[140px]" disabled={!startRange || !endRange} onClick={handleConfirmBooking}>
+              <Button
+                className="flex-1 sm:flex-none min-w-[140px]"
+                disabled={!startRange || !endRange || bookingMutation.isPending}
+                onClick={handleConfirmBooking}
+              >
+                {bookingMutation.isPending && <Spinner />}
                 Xác nhận đặt lịch
               </Button>
             </div>

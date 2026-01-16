@@ -15,6 +15,7 @@ export interface Availability {
 
 export interface MentorInfo {
   id: string;
+  userId: string;
   name: string;
   avatar: string;
   biography: string;

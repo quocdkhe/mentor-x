@@ -1,5 +1,6 @@
 ﻿using backend.Models;
 using backend.Models.DTOs;
+using backend.Models.DTOs.Booking;
 using backend.Models.DTOs.Mentor;
 using backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -103,6 +104,59 @@ namespace backend.Services
             return ServiceResult<Message>.Ok( new Message(
                 "Cập nhật availability thành công")
             );
+        }
+
+        public async Task<ServiceResult<Message>> BookAnAppointment(Guid menteeId, BookingRequestDto dto)
+        {
+            var isDuplicate = await _context.Appointments.AnyAsync(a => a.MentorId == dto.MentorId && a.EndAt >= dto.StartAt);
+            if (isDuplicate)
+            {
+                return ServiceResult<Message>.Fail("Lịch đặt bị trùng với lịch khác, vui lòng thử lại");
+            }
+            
+            await _context.Appointments.AddAsync(
+                new Appointment
+                {
+                    MenteeId = menteeId,
+                    MentorId = dto.MentorId,
+                    StartAt = dto.StartAt,
+                    EndAt = dto.EndAt,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            await _context.SaveChangesAsync();
+            return ServiceResult<Message>.Ok(new Message("Ok"));
+        }
+
+        public async Task<ServiceResult<List<MentorAppointmentDto>>> GetMentorAppointments(Guid mentorId, DateTime? date)
+        {
+            if (date == null)
+            {
+                return ServiceResult<List<MentorAppointmentDto>>.Fail("DateTime là bắt buộc");
+            }
+            var startOfDay = date?.Date;
+            var endOfDay = startOfDay?.AddDays(1);
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Mentee)
+                .Where(a => a.MentorId == mentorId && a.StartAt >= startOfDay && a.StartAt < endOfDay)
+                .Select(a => new MentorAppointmentDto
+                {
+                    MentorId = a.MentorId,
+                    Mentee = new MenteeInfoDto
+                    {
+                        Name = a.Mentee.Name,
+                        Email = a.Mentee.Email,
+                        Avatar = a.Mentee.Avatar
+                    },
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt,
+                    Status = a.Status,
+                    MeetingLink = a.MeetingLink
+                })
+                .ToListAsync();
+
+            return ServiceResult<List<MentorAppointmentDto>>.Ok(appointments);
         }
 
     }

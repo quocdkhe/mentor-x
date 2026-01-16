@@ -37,6 +37,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useMentorGetAppointments } from "@/api/appointment";
+import type { AppointmentStatusEnum } from "@/types/appointment";
 
 // --- Types & Interfaces ---
 
@@ -60,75 +62,23 @@ interface ScheduleItem {
   meeting_link?: string;
 }
 
-// --- Mock Data ---
+// Helper to map API status to internal status
+const mapApiStatus = (apiStatus: AppointmentStatusEnum): BookingStatus => {
+  switch (apiStatus) {
+    case "Pending":
+      return "pending";
+    case "Confirmed":
+      return "confirmed";
+    case "Completed":
+      return "completed";
+    case "Cancelled":
+      return "cancelled";
+    default:
+      return "pending";
+  }
+};
 
-const mockSchedules: ScheduleItem[] = [
-  {
-    id: "apt-001",
-    mentorId: "m1",
-    mentor: { name: "Mentor A", phone: "0123", email: "mentor@test.com", avatar: "" },
-    mentee: { name: "Nguyen Van A", phone: "0901234567", email: "nguyenvana@example.com", avatar: "NV" },
-    startAt: "2023-10-20T14:00:00Z",
-    endAt: "2023-10-20T15:00:00Z",
-    status: "pending",
-  },
-  {
-    id: "apt-002",
-    mentorId: "m1",
-    mentor: { name: "Mentor A", phone: "0123", email: "mentor@test.com", avatar: "" },
-    mentee: { name: "Tran Thi B", phone: "0909876543", email: "tranthib@example.com", avatar: "TB" },
-    startAt: "2023-10-21T09:00:00Z",
-    endAt: "2023-10-21T10:00:00Z",
-    status: "confirmed",
-    meeting_link: "https://meet.google.com/abc-defg-hik",
-  },
-  {
-    id: "apt-003",
-    mentorId: "m1",
-    mentor: { name: "Mentor A", phone: "0123", email: "mentor@test.com", avatar: "" },
-    mentee: { name: "Le Van C", phone: "0912345678", email: "levanc@example.com", avatar: "LV" },
-    startAt: "2023-10-15T16:00:00Z",
-    endAt: "2023-10-15T17:00:00Z",
-    status: "completed",
-  },
-  {
-    id: "apt-004",
-    mentorId: "m1",
-    mentor: { name: "Mentor A", phone: "0123", email: "mentor@test.com", avatar: "" },
-    mentee: { name: "Pham Thi D", phone: "0987654321", email: "phamthid@example.com", avatar: "PD" },
-    startAt: "2023-10-22T10:00:00Z",
-    endAt: "2023-10-22T11:00:00Z",
-    status: "pending",
-  },
-  {
-    id: "apt-005",
-    mentorId: "m1",
-    mentor: { name: "Mentor A", phone: "0123", email: "mentor@test.com", avatar: "" },
-    mentee: { name: "Hoang Van E", phone: "0999888777", email: "hoangvane@example.com", avatar: "HE" },
-    startAt: "2023-10-18T13:00:00Z",
-    endAt: "2023-10-18T14:00:00Z",
-    status: "cancelled",
-  },
-  {
-    id: "apt-006",
-    mentorId: "m1",
-    mentor: { name: "Mentor A", phone: "0123", email: "mentor@test.com", avatar: "" },
-    mentee: { name: "Doan Khoa", phone: "0123456789", email: "doankhoa@example.com", avatar: "DK" },
-    startAt: "2023-10-23T15:00:00Z",
-    endAt: "2023-10-23T16:00:00Z",
-    status: "pending",
-  },
-  {
-    id: "apt-007",
-    mentorId: "m1",
-    mentor: { name: "Mentor A", phone: "0123", email: "mentor@test.com", avatar: "" },
-    mentee: { name: "Le Thi T", phone: "0987123456", email: "lethit@example.com", avatar: "LT" },
-    startAt: "2023-10-24T08:00:00Z",
-    endAt: "2023-10-24T09:00:00Z",
-    status: "confirmed",
-    meeting_link: "https://meet.google.com/xyz-abcd-mnp",
-  },
-];
+
 
 // --- Components ---
 
@@ -149,6 +99,11 @@ const StatusBadge = ({ status }: { status: BookingStatus }) => {
 
 const Schedules = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Fetch appointments from API for the selected date (or today)
+  const { data: appointmentsData = [], isLoading } = useMentorGetAppointments(date || new Date());
+
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -157,6 +112,23 @@ const Schedules = () => {
     title: string;
     description: string;
   }>({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+
+  // Map API data to component format
+  const schedules: ScheduleItem[] = appointmentsData.map((apt) => ({
+    id: apt.mentorId, // Using mentorId as id for now - adjust if backend provides appointment id
+    mentorId: apt.mentorId,
+    mentor: { name: "", phone: "", email: "", avatar: "" }, // Mentor is the current user
+    mentee: {
+      name: apt.mentee.name,
+      phone: "",
+      email: apt.mentee.email,
+      avatar: apt.mentee.avatar || "",
+    },
+    startAt: apt.startAt,
+    endAt: apt.endAt,
+    status: mapApiStatus(apt.status),
+    meeting_link: apt.meetingLink || undefined,
+  }));
 
   const handleConfirmAction = () => {
     if (confirmDialog.newStatus && confirmDialog.appointmentId) {
@@ -172,31 +144,26 @@ const Schedules = () => {
   };
 
   // Filter logic
-  const filteredSchedules = mockSchedules.filter((item) => {
+  const filteredSchedules = schedules.filter((item) => {
     const matchesStatus = statusFilter === "all" || item.status === statusFilter;
-    // In a real app, you might also filter by date here, but for now we primarily show the list
-    // If the user selects a date, we could filter. Let's assume the calendar is just for show/selection for now
-    // or effectively filtering.
-    // For accurate date filtering:
-    // const itemDate = new Date(item.startAt);
-    // const matchesDate = date ? isSameDay(itemDate, date) : true;
-
-    // Given the design shows a list of *various dates*, the "Today" / Date picker might be a quick jump or filter
-    // Let's implement actual date filtering if a date is picked? 
-    // The image shows "Today" but the list has "20/10", "21/10", "15/10"... which are seemingly all over.
-    // It implies "Today" might be a default view, or just a filter.
-    // However, standard intuitive UI:
-    // Left date picker = Filter by this date (or clear to see all).
-    // Right tabs = Filter by status.
-
     return matchesStatus;
   });
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Đang tải lịch hẹn...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         {/* Left: Date Picker */}
-        <Popover>
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
@@ -213,7 +180,10 @@ const Schedules = () => {
             <Calendar
               mode="single"
               selected={date}
-              onSelect={setDate}
+              onSelect={(newDate) => {
+                setDate(newDate);
+                setCalendarOpen(false); // Close calendar when date is selected
+              }}
               locale={vi}
             />
           </PopoverContent>

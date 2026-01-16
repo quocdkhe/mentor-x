@@ -37,9 +37,9 @@ namespace backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MentorDetailResponseDTO>> GetMentorById(Guid id)
+        public async Task<ActionResult<MentorDetailResponseDTO>> GetMentorByUserId(Guid id)
         {
-            var mentor = await _mentorService.GetMentorById(id);
+            var mentor = await _mentorService.GetMentorByUserId(id);
             if (mentor == null)
                 return NotFound(new { message = "Không tìm thấy mentor." });
 
