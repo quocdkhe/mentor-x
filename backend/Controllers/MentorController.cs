@@ -14,10 +14,12 @@ namespace backend.Controllers
     public class MentorController : ControllerBase
     {
         private readonly IMentorService _mentorService;
+        private readonly IBookingService _bookingService;
 
-        public MentorController(IMentorService mentorService)
+        public MentorController(IMentorService mentorService, IBookingService bookingService)
         {
             _mentorService = mentorService;
+            _bookingService = bookingService;
         }
 
         [HttpGet("")]
@@ -50,13 +52,13 @@ namespace backend.Controllers
         {
             var userId = User.GetUserId();
             var profile = await _mentorService.GetMentorProfileByUserId(userId);
-            
+
             if (profile == null)
                 return NotFound(new { message = "Mentor profile not found." });
 
             return Ok(profile);
         }
-            
+
 
 
         [HttpPost("register")]
@@ -71,15 +73,15 @@ namespace backend.Controllers
 
             if (!Guid.TryParse(userIdStr, out var userId))
             {
-                 return Unauthorized(new { message = "Invalid User ID format." });
+                return Unauthorized(new { message = "Invalid User ID format." });
             }
 
-            try 
+            try
             {
                 await _mentorService.RegisterMentor(userId, request);
                 return Ok(new { message = "Registered successfully" });
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 // In production, probably shouldn't return exact exception message
                 return BadRequest(new { message = ex.Message });
@@ -100,6 +102,30 @@ namespace backend.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [HttpGet("{mentorId}/availabilities")]
+        public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities(string mentorId)
+        {
+            if (Guid.TryParse(mentorId, out Guid mentorGuid) == false)
+            {
+                return BadRequest(new { message = "Id không đúng" });
+            }
+            var availabilities = await _bookingService.GetAvailabilities(mentorGuid);
+            return availabilities;
+        }
+
+        [HttpPatch("me/availabilities")]
+        [Authorize]
+        public async Task<ActionResult<Message>> UpdateAvailabilities([FromBody] List<AvailabilityResponseDTO> availabilities)
+        {
+            var userId = User.GetUserId();
+            var serviceResult = await _bookingService.UpdateAvailabilities(userId, availabilities);
+            if (!serviceResult.Success)
+            {
+                return BadRequest(new { message = serviceResult.Message });
+            }
+            return Ok(new { message = "Cập nhật lịch khả dụng thành công" });
         }
     }
 }

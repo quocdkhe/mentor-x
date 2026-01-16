@@ -1,4 +1,5 @@
 using backend.Models;
+using backend.Models.DTOs;
 using backend.Models.DTOs.Mentor;
 
 namespace backend.Services.Interfaces
@@ -6,6 +7,6 @@ namespace backend.Services.Interfaces
     public interface IBookingService
     {
         Task<List<AvailabilityResponseDTO>> GetAvailabilities(Guid mentorId);
-        Task<bool> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities);
+        Task<ServiceResult<Message>> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities);
     }
 }
