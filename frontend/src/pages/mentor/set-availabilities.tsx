@@ -1,18 +1,18 @@
 import { createLazyRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Copy, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-type AvailabilitySlot = {
-  dayOfWeek: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  startTime: string;
-  endTime: string;
-  isActive: boolean;
-};
+import { useGetAvailability, useUpdateAvailability } from '@/api/availability';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { useGetCurrentUser } from '@/api/user';
+import AvailabilitySkeleton from '@/components/skeletons/availability.skeleton';
+import { Spinner } from '@/components/ui/spinner';
+import type { Availability, WeekDayEnum } from '@/types/availability';
 
 const DAYS_OF_WEEK = [
   'Chủ nhật',
@@ -24,29 +24,33 @@ const DAYS_OF_WEEK = [
   'Thứ bảy',
 ];
 
-// Sample initial data from backend
-const INITIAL_SLOTS: AvailabilitySlot[] = [
-  { dayOfWeek: 1, startTime: '09:00', endTime: '12:00', isActive: true },
-  { dayOfWeek: 1, startTime: '13:00', endTime: '17:00', isActive: false },
-  { dayOfWeek: 2, startTime: '09:00', endTime: '17:00', isActive: true },
-  { dayOfWeek: 4, startTime: '09:00', endTime: '17:00', isActive: true },
-  { dayOfWeek: 5, startTime: '18:00', endTime: '09:00', isActive: true },
-];
-
 const SetAvailabilities = () => {
-  const [slots, setSlots] = useState<AvailabilitySlot[]>(INITIAL_SLOTS);
-  const [initialSlots] = useState<AvailabilitySlot[]>(INITIAL_SLOTS);
+  const { data: currentUser, isLoading: isLoadingUser } = useGetCurrentUser();
+  const { data: availabilityData, isLoading: isLoadingAvailability } = useGetAvailability(currentUser?.id || '');
+  const updateAvailabilityMutation = useUpdateAvailability();
+  const queryClient = useQueryClient();
 
-  const getSlotsByDay = (dayOfWeek: number) => {
+  const [slots, setSlots] = useState<Availability[]>([]);
+  const [initialSlots, setInitialSlots] = useState<Availability[]>([]);
+
+  // Load availability data from backend when it's available
+  useEffect(() => {
+    if (availabilityData) {
+      setSlots(availabilityData);
+      setInitialSlots(availabilityData);
+    }
+  }, [availabilityData]);
+
+  const getSlotsByDay = (dayOfWeek: WeekDayEnum) => {
     return slots.filter((slot) => slot.dayOfWeek === dayOfWeek);
   };
 
-  const isDayEnabled = (dayOfWeek: number) => {
+  const isDayEnabled = (dayOfWeek: WeekDayEnum) => {
     const daySlots = getSlotsByDay(dayOfWeek);
     return daySlots.length > 0 && daySlots.some((slot) => slot.isActive);
   };
 
-  const toggleDay = (dayOfWeek: number) => {
+  const toggleDay = (dayOfWeek: WeekDayEnum) => {
     const daySlots = getSlotsByDay(dayOfWeek);
     const hasActiveSlots = daySlots.some((slot) => slot.isActive);
 
@@ -59,7 +63,7 @@ const SetAvailabilities = () => {
     );
   };
 
-  const toggleSlot = (dayOfWeek: number, index: number) => {
+  const toggleSlot = (dayOfWeek: WeekDayEnum, index: number) => {
     setSlots((prev) => {
       const daySlots = prev.filter((s) => s.dayOfWeek === dayOfWeek);
       const slotToToggle = daySlots[index];
@@ -70,7 +74,7 @@ const SetAvailabilities = () => {
   };
 
   const updateSlotTime = (
-    dayOfWeek: number,
+    dayOfWeek: WeekDayEnum,
     index: number,
     field: 'startTime' | 'endTime',
     value: string
@@ -84,8 +88,8 @@ const SetAvailabilities = () => {
     });
   };
 
-  const addSlot = (dayOfWeek: number) => {
-    const newSlot: AvailabilitySlot = {
+  const addSlot = (dayOfWeek: WeekDayEnum) => {
+    const newSlot: Availability = {
       dayOfWeek,
       startTime: '09:00',
       endTime: '17:00',
@@ -94,7 +98,7 @@ const SetAvailabilities = () => {
     setSlots((prev) => [...prev, newSlot]);
   };
 
-  const deleteSlot = (dayOfWeek: number, index: number) => {
+  const deleteSlot = (dayOfWeek: WeekDayEnum, index: number) => {
     setSlots((prev) => {
       const daySlots = prev.filter((s) => s.dayOfWeek === dayOfWeek);
       const slotToDelete = daySlots[index];
@@ -102,9 +106,9 @@ const SetAvailabilities = () => {
     });
   };
 
-  const copySchedule = (sourceDayOfWeek: number) => {
+  const copySchedule = (sourceDayOfWeek: WeekDayEnum) => {
     const sourceSlots = getSlotsByDay(sourceDayOfWeek);
-    const slotsToAdd: AvailabilitySlot[] = [];
+    const slotsToAdd: Availability[] = [];
 
     // Remove all slots from other days and add copies from source day
     setSlots((prev) => {
@@ -118,7 +122,7 @@ const SetAvailabilities = () => {
           sourceSlots.forEach((slot) => {
             slotsToAdd.push({
               ...slot,
-              dayOfWeek: day,
+              dayOfWeek: day as WeekDayEnum,
             });
           });
         }
@@ -136,15 +140,26 @@ const SetAvailabilities = () => {
   };
 
   const handleSave = () => {
-    // Send slots array to backend
-    console.log('Saving slots:', slots);
-    // TODO: API call to save slots
+    updateAvailabilityMutation.mutate(slots, {
+      onSuccess: (data) => {
+        toast.success(data.message);
+        queryClient.invalidateQueries({ queryKey: ["availability", currentUser?.id] });
+        setInitialSlots([...slots]);
+      },
+      onError: (err) => {
+        toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
+      }
+    });
   };
 
   const handleCancel = () => {
     // Rollback to initial state
     setSlots([...initialSlots]);
   };
+
+  if (isLoadingUser || isLoadingAvailability) {
+    return <AvailabilitySkeleton />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -166,7 +181,8 @@ const SetAvailabilities = () => {
 
           {/* Day Cards */}
           <div className="flex flex-col gap-4">
-            {DAYS_OF_WEEK.map((dayName, dayOfWeek) => {
+            {DAYS_OF_WEEK.map((dayName, index) => {
+              const dayOfWeek = index as WeekDayEnum;
               const daySlots = getSlotsByDay(dayOfWeek);
               const dayEnabled = isDayEnabled(dayOfWeek);
               const hasInvalidSlots = daySlots.some(
@@ -389,7 +405,12 @@ const SetAvailabilities = () => {
             >
               Hủy
             </Button>
-            <Button className="px-6 py-2.5 shadow-lg" onClick={handleSave}>
+            <Button
+              className="px-6 py-2.5 shadow-lg"
+              onClick={handleSave}
+              disabled={updateAvailabilityMutation.isPending}
+            >
+              {updateAvailabilityMutation.isPending && <Spinner />}
               Lưu lịch làm việc
             </Button>
           </div>
