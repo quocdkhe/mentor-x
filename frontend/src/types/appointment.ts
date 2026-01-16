@@ -26,3 +26,20 @@ export interface MentorAppointmentDto {
   status: AppointmentStatusEnum;
   meetingLink?: string | null;
 }
+
+export interface MentorInfoDto {
+  name: string;
+  email: string;
+  avatar?: string | null;
+  company?: string | null;
+  position?: string | null;
+}
+
+export interface MenteeAppointmentDto {
+  mentorId: string; // Guid → string
+  mentor: MentorInfoDto;
+  startAt: string; // DateTime → ISO-8601 UTC string
+  endAt: string;
+  status: AppointmentStatusEnum;
+  meetingLink?: string | null;
+}

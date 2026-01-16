@@ -11,5 +11,6 @@ namespace backend.Services.Interfaces
         Task<ServiceResult<Message>> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities);
         Task<ServiceResult<Message>> BookAnAppointment(Guid menteeId, BookingRequestDto dto);
         Task<ServiceResult<List<MentorAppointmentDto>>> GetMentorAppointments(Guid mentorId, DateTime? date);
+        Task<ServiceResult<List<MenteeAppointmentDto>>> GetMenteeAppointments(Guid menteeId, DateTime? date);
     }
 }

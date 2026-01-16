@@ -39,10 +39,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useMentorGetAppointments } from "@/api/appointment";
 import type { AppointmentStatusEnum } from "@/types/appointment";
+import SchedulesTableSkeleton from "@/components/skeletons/schedules-table.skeleton";
 
 // --- Types & Interfaces ---
-
-type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
 interface UserProfile {
   name: string;
@@ -58,39 +57,21 @@ interface ScheduleItem {
   mentee: UserProfile;
   startAt: string; // ISO string
   endAt: string;   // ISO string
-  status: BookingStatus;
+  status: AppointmentStatusEnum;
   meeting_link?: string;
 }
 
-// Helper to map API status to internal status
-const mapApiStatus = (apiStatus: AppointmentStatusEnum): BookingStatus => {
-  switch (apiStatus) {
-    case "Pending":
-      return "pending";
-    case "Confirmed":
-      return "confirmed";
-    case "Completed":
-      return "completed";
-    case "Cancelled":
-      return "cancelled";
-    default:
-      return "pending";
-  }
-};
-
-
-
 // --- Components ---
 
-const StatusBadge = ({ status }: { status: BookingStatus }) => {
+const StatusBadge = ({ status }: { status: AppointmentStatusEnum }) => {
   switch (status) {
-    case "pending":
+    case "Pending":
       return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80 dark:bg-yellow-900/30 dark:text-yellow-500">Chờ xác nhận</Badge>;
-    case "confirmed":
+    case "Confirmed":
       return <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-500">Đã xác nhận</Badge>;
-    case "completed":
+    case "Completed":
       return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-500">Hoàn thành</Badge>;
-    case "cancelled":
+    case "Cancelled":
       return <Badge variant="secondary" className="bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-500">Đã hủy</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
@@ -108,7 +89,7 @@ const Schedules = () => {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     appointmentId: string;
-    newStatus: BookingStatus | null;
+    newStatus: AppointmentStatusEnum | null;
     title: string;
     description: string;
   }>({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
@@ -126,7 +107,7 @@ const Schedules = () => {
     },
     startAt: apt.startAt,
     endAt: apt.endAt,
-    status: mapApiStatus(apt.status),
+    status: apt.status, // Use API status directly
     meeting_link: apt.meetingLink || undefined,
   }));
 
@@ -139,7 +120,7 @@ const Schedules = () => {
     setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
   };
 
-  const openConfirmDialog = (appointmentId: string, newStatus: BookingStatus, title: string, description: string) => {
+  const openConfirmDialog = (appointmentId: string, newStatus: AppointmentStatusEnum, title: string, description: string) => {
     setConfirmDialog({ open: true, appointmentId, newStatus, title, description });
   };
 
@@ -151,10 +132,49 @@ const Schedules = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Đang tải lịch hẹn...</p>
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          {/* Left: Date Picker */}
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-[200px] justify-start text-left font-normal",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PP", { locale: vi }) : <span>Chọn ngày</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(newDate) => {
+                  setDate(newDate);
+                  setCalendarOpen(false);
+                }}
+                locale={vi}
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Right: Status Tabs */}
+          <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setStatusFilter}>
+            <TabsList className="grid w-full md:w-auto grid-cols-5">
+              <TabsTrigger value="all">Tất cả</TabsTrigger>
+              <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
+              <TabsTrigger value="Confirmed">Đã xác nhận</TabsTrigger>
+              <TabsTrigger value="Completed">Hoàn thành</TabsTrigger>
+              <TabsTrigger value="Cancelled">Đã hủy</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
+
+        {/* Skeleton Table */}
+        <SchedulesTableSkeleton />
       </div>
     );
   }
@@ -191,11 +211,12 @@ const Schedules = () => {
 
         {/* Right: Status Tabs */}
         <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setStatusFilter}>
-          <TabsList className="grid w-full md:w-auto grid-cols-4">
+          <TabsList className="grid w-full md:w-auto grid-cols-5">
             <TabsTrigger value="all">Tất cả</TabsTrigger>
-            <TabsTrigger value="pending">Chờ xác nhận</TabsTrigger>
-            <TabsTrigger value="confirmed">Đã xác nhận</TabsTrigger>
-            <TabsTrigger value="completed">Hoàn thành</TabsTrigger>
+            <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
+            <TabsTrigger value="Confirmed">Đã xác nhận</TabsTrigger>
+            <TabsTrigger value="Completed">Hoàn thành</TabsTrigger>
+            <TabsTrigger value="Cancelled">Đã hủy</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -249,13 +270,13 @@ const Schedules = () => {
                     </div>
                   </TableCell>
                   <TableCell className="text-center py-4">
-                    {schedule.status === "pending" && (
+                    {schedule.status === "Pending" && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           onClick={() => openConfirmDialog(
                             schedule.id,
-                            "confirmed",
+                            "Confirmed",
                             "Xác nhận lịch hẹn",
                             "Bạn có chắc chắn muốn xác nhận lịch hẹn này không?"
                           )}
@@ -267,7 +288,7 @@ const Schedules = () => {
                           variant="destructive"
                           onClick={() => openConfirmDialog(
                             schedule.id,
-                            "cancelled",
+                            "Cancelled",
                             "Từ chối lịch hẹn",
                             "Bạn có chắc chắn muốn từ chối lịch hẹn này không?"
                           )}
@@ -276,7 +297,7 @@ const Schedules = () => {
                         </Button>
                       </div>
                     )}
-                    {schedule.status === "confirmed" && (
+                    {schedule.status === "Confirmed" && (
                       <div className="flex gap-2 flex-wrap">
                         <Button variant="outline" size="sm" className="gap-2" asChild>
                           <a href={schedule.meeting_link} target="_blank" rel="noopener noreferrer">
@@ -290,7 +311,7 @@ const Schedules = () => {
                           className="gap-2 border-green-500 text-green-600 hover:bg-green-50 dark:border-green-600 dark:text-green-500 dark:hover:bg-green-950/20"
                           onClick={() => openConfirmDialog(
                             schedule.id,
-                            "completed",
+                            "Completed",
                             "Đánh dấu hoàn thành",
                             "Bạn có chắc chắn muốn đánh dấu lịch hẹn này là đã hoàn thành không?"
                           )}
@@ -304,12 +325,12 @@ const Schedules = () => {
                         </Button>
                       </div>
                     )}
-                    {schedule.status === "completed" && (
+                    {schedule.status === "Completed" && (
                       <div className="flex gap-2">
                         {/* No standard action for completed, maybe view detail */}
                       </div>
                     )}
-                    {schedule.status === "cancelled" && (
+                    {schedule.status === "Cancelled" && (
                       <div className="flex gap-2">
                         {/* Cancelled state usually no action */}
                       </div>

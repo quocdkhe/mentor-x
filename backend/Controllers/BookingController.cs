@@ -38,5 +38,15 @@ public class BookingController : ControllerBase
         if (result.Success == false) return BadRequest(new Message(result.Message));
         return Ok(result.Data);
     }
+
+    [HttpGet("/mentees/me/appointments")]
+    [Authorize]
+    public async Task<ActionResult<List<MenteeAppointmentDto>>> GetMenteeAppointments([FromQuery] DateTime? date)
+    {
+        var menteeId = User.GetUserId();
+        var result = await _bookingService.GetMenteeAppointments(menteeId, date);
+        if (result.Success == false) return BadRequest(new Message(result.Message));
+        return Ok(result.Data);
+    }
     
 }

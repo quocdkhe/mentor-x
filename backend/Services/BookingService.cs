@@ -159,5 +159,39 @@ namespace backend.Services
             return ServiceResult<List<MentorAppointmentDto>>.Ok(appointments);
         }
 
+        public async Task<ServiceResult<List<MenteeAppointmentDto>>> GetMenteeAppointments(Guid menteeId, DateTime? date)
+        {
+            if (date == null)
+            {
+                return ServiceResult<List<MenteeAppointmentDto>>.Fail("DateTime là bắt buộc");
+            }
+            var startOfDay = date?.Date;
+            var endOfDay = startOfDay?.AddDays(1);
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Mentor)
+                .ThenInclude(m => m.MentorProfile)
+                .Where(a => a.MenteeId == menteeId && a.StartAt >= startOfDay && a.StartAt < endOfDay)
+                .Select(a => new MenteeAppointmentDto
+                {
+                    MentorId = a.MentorId,
+                    Mentor = new MentorInfoDto
+                    {
+                        Name = a.Mentor.Name,
+                        Email = a.Mentor.Email,
+                        Avatar = a.Mentor.Avatar,
+                        Company = a.Mentor.MentorProfile != null ? a.Mentor.MentorProfile.Company : null,
+                        Position = a.Mentor.MentorProfile != null ? a.Mentor.MentorProfile.Position : null
+                    },
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt,
+                    Status = a.Status,
+                    MeetingLink = a.MeetingLink
+                })
+                .ToListAsync();
+
+            return ServiceResult<List<MenteeAppointmentDto>>.Ok(appointments);
+        }
+
     }
 }

@@ -1,4 +1,8 @@
-import type { BookingRequest, MentorAppointmentDto } from "@/types/appointment";
+import type {
+  BookingRequest,
+  MenteeAppointmentDto,
+  MentorAppointmentDto,
+} from "@/types/appointment";
 import type { Message } from "@/types/common";
 import type { AxiosError } from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -24,6 +28,28 @@ export function useMentorGetAppointments(date: Date) {
     queryFn: async () => {
       const res = await api.get<MentorAppointmentDto[]>(
         `/mentors/me/appointments`,
+        {
+          params: {
+            date: dateISOString,
+          },
+        }
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useMenteeGetAppointments(date: Date) {
+  // Set time to noon to avoid timezone-related date shifts when converting to ISO
+  const dateAtNoon = new Date(date);
+  dateAtNoon.setHours(12, 0, 0, 0);
+  const dateISOString = dateAtNoon.toISOString();
+
+  return useQuery<MenteeAppointmentDto[], AxiosError<Message>>({
+    queryKey: ["mentee-appointments", dateISOString],
+    queryFn: async () => {
+      const res = await api.get<MenteeAppointmentDto[]>(
+        `/mentees/me/appointments`,
         {
           params: {
             date: dateISOString,
