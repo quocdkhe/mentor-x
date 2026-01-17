@@ -1,4 +1,3 @@
-using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Mentor;
 using backend.Services.Interfaces;
@@ -6,40 +5,41 @@ using backend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("/availabilities")]
-    public class AvailabilityController: ControllerBase
+    public class AvailabilityController : ControllerBase
     {
+        
         private readonly IBookingService _bookingService;
-        private readonly IMentorService _mentorService;
-        public AvailabilityController(IBookingService bookingService, IMentorService mentorService)
+        
+        public AvailabilityController(IBookingService bookingService)
         {
             _bookingService = bookingService;
-            _mentorService = mentorService;
         }
-
-        [HttpGet]
-        [Authorize]
-        public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities()
+        
+        [HttpGet("/mentors/{mentorId}/availabilities")]
+        public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities(string mentorId)
         {
-            var userId = User.GetUserId();
-            return Ok(await _bookingService.GetAvailabilities(userId));
-        }
-
-        [HttpPatch]
-        [Authorize]
-        public async Task<IActionResult> UpdateAvailabilities([FromBody] List<AvailabilityResponseDTO> availabilities)
-        {
-            var userId = User.GetUserId();
-            var result = await _bookingService.UpdateAvailabilities(userId, availabilities);
-            if (!result.Success)
+            if (Guid.TryParse(mentorId, out Guid mentorGuid) == false)
             {
-                return BadRequest(new Message(result.Message));
+                return BadRequest(new { message = "Id không đúng" });
             }
-            return Ok(result.Data);
+            var availabilities = await _bookingService.GetAvailabilities(mentorGuid);
+            return availabilities;
+        }
+
+        [HttpPatch("/mentors/me/availabilities")]
+        [Authorize]
+        public async Task<ActionResult<Message>> UpdateAvailabilities([FromBody] List<AvailabilityResponseDTO> availabilities)
+        {
+            var userId = User.GetUserId();
+            var serviceResult = await _bookingService.UpdateAvailabilities(userId, availabilities);
+            if (!serviceResult.Success)
+            {
+                return BadRequest(new { message = serviceResult.Message });
+            }
+            return Ok(new { message = "Cập nhật lịch khả dụng thành công" });
         }
     }
 }

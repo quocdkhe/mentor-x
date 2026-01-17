@@ -30,6 +30,8 @@ public partial class MentorXContext : DbContext
     public virtual DbSet<MentorReview> MentorReviews { get; set; }
 
     public virtual DbSet<Availability> Availabilities { get; set; }
+    
+    public virtual DbSet<Appointment> Appointments { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -350,11 +352,11 @@ public partial class MentorXContext : DbContext
                 .HasColumnName("mentee_id");
 
             entity.Property(e => e.StartAt)
-                .HasColumnType("timestamp")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("start_at");
 
             entity.Property(e => e.EndAt)
-                .HasColumnType("timestamp")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("end_at");
 
             entity.Property(e => e.Status)

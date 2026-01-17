@@ -8,31 +8,25 @@ const userLayoutRoute = createRoute({
   component: UserLayout,
 });
 
-const indexRoute = createRoute({
-  getParentRoute: () => userLayoutRoute,
-  path: "/",
-}).lazy(() => import("@/pages/user/home").then((d) => d.Route));
-
 const aboutRoute = createRoute({
   getParentRoute: () => userLayoutRoute,
   path: "/about",
 }).lazy(() => import("@/pages/user/about").then((d) => d.Route));
+
+const schedulesRoute = createRoute({
+  getParentRoute: () => userLayoutRoute,
+  path: "/schedules",
+}).lazy(() => import("@/pages/user/shedules").then((d) => d.Route));
 
 const profileRoute = createRoute({
   getParentRoute: () => userLayoutRoute,
   path: "/profile",
 }).lazy(() => import("@/pages/user/edit-profile").then((d) => d.Route));
 
-const becomeMentorRoute = createRoute({
-  getParentRoute: () => userLayoutRoute,
-  path: "/become-mentor",
-}).lazy(() => import("@/pages/user/become-mentor").then((d) => d.Route));
-
 const userRouteTree = userLayoutRoute.addChildren([
-  indexRoute,
+  schedulesRoute,
   aboutRoute,
   profileRoute,
-  becomeMentorRoute,
 ]);
 
 export { userRouteTree };

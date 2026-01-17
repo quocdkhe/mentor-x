@@ -3,6 +3,7 @@ namespace backend.Models.DTOs.Mentor
     public class MentorListItemDTO
     {
         public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         public string Name { get; set; } = null!;
         public string? Avatar { get; set; }
         public string Biography { get; set; } = null!;

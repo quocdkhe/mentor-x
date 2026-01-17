@@ -35,9 +35,9 @@ namespace backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MentorDetailResponseDTO>> GetMentorById(Guid id)
+        public async Task<ActionResult<MentorDetailResponseDTO>> GetMentorByUserId(Guid id)
         {
-            var mentor = await _mentorService.GetMentorById(id);
+            var mentor = await _mentorService.GetMentorByUserId(id);
             if (mentor == null)
                 return NotFound(new { message = "Không tìm thấy mentor." });
 
@@ -50,13 +50,13 @@ namespace backend.Controllers
         {
             var userId = User.GetUserId();
             var profile = await _mentorService.GetMentorProfileByUserId(userId);
-            
+
             if (profile == null)
                 return NotFound(new { message = "Mentor profile not found." });
 
             return Ok(profile);
         }
-            
+
 
 
         [HttpPost("register")]
@@ -71,15 +71,15 @@ namespace backend.Controllers
 
             if (!Guid.TryParse(userIdStr, out var userId))
             {
-                 return Unauthorized(new { message = "Invalid User ID format." });
+                return Unauthorized(new { message = "Invalid User ID format." });
             }
 
-            try 
+            try
             {
                 await _mentorService.RegisterMentor(userId, request);
                 return Ok(new { message = "Registered successfully" });
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 // In production, probably shouldn't return exact exception message
                 return BadRequest(new { message = ex.Message });
@@ -101,5 +101,7 @@ namespace backend.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+ 
     }
 }

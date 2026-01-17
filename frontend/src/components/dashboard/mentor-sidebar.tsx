@@ -18,6 +18,11 @@ import { AppTitle } from "@/components/dashboard/app-title.tsx";
 // This is sample data.
 const navMain = [
   {
+    title: "Quản lý lịch",
+    url: "/mentor/schedules" as const,
+    icon: Calendar,
+  },
+  {
     title: "Lên lịch khả dụng",
     url: "/mentor/set-availabilities" as const,
     icon: Calendar,
