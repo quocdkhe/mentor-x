@@ -25,33 +25,21 @@ namespace backend.Controllers
         [Authorize]
         public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities()
         {
-            try
-            {
-                var userId = User.GetUserId();
-                
-                return await _bookingService.GetAvailabilities(userId);
-            } 
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = ex.Message });
-            }
+            var userId = User.GetUserId();
+            return Ok(await _bookingService.GetAvailabilities(userId));
         }
 
         [HttpPatch]
         [Authorize]
         public async Task<IActionResult> UpdateAvailabilities([FromBody] List<AvailabilityResponseDTO> availabilities)
         {
-            try
+            var userId = User.GetUserId();
+            var result = await _bookingService.UpdateAvailabilities(userId, availabilities);
+            if (!result.Success)
             {
-                var userId = User.GetUserId();
-
-                await _bookingService.UpdateAvailabilities(userId, availabilities);
-                return Ok(new { Message = "Availabilities updated successfully" });
+                return BadRequest(new Message(result.Message));
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = ex.Message });
-            }
+            return Ok(result.Data);
         }
     }
 }

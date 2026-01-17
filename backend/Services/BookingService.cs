@@ -30,8 +30,27 @@ namespace backend.Services
             return availabilities;
         }
 
-        public async Task<bool> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities)
+        public async Task<ServiceResult<Message>> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities)
         {
+            if (availabilities == null || !availabilities.Any())
+            {
+                return new ServiceResult<Message>(false, new Message("Không tìm thấy thông tin"));
+            }
+            if (availabilities.Any(a => a.StartTime >= a.EndTime))
+            {
+                return new ServiceResult<Message>(false, new Message("Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc"));
+            }
+
+            if (availabilities.Any(a => a.DayOfWeek < 0 || a.DayOfWeek > 6))
+            {
+                return new ServiceResult<Message>(false, new Message("Ngày trong tuần phải từ 0 đến 6"));
+            }
+
+            if (availabilities.Any(a => a.StartTime.Minute % 15 != 0 || a.EndTime.Minute % 15 != 0))
+            {
+                return new ServiceResult<Message>(false, new Message("Phút bắt đầu và kết thúc phải là bội của 15"));
+            }
+
             var existing = await _context.Availabilities.Where(a => a.MentorId == mentorId).ToListAsync();
             if (existing != null)
             {
@@ -51,7 +70,7 @@ namespace backend.Services
 
             await _context.Availabilities.AddRangeAsync(newAvailabilities);
             await _context.SaveChangesAsync();
-            return true;
+            return new ServiceResult<Message>(true, new Message("Cập nhật thông tin thành công"));
         }
     }
 }
