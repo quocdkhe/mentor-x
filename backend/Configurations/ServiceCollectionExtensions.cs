@@ -1,4 +1,4 @@
-﻿using backend.Services; 
+﻿using backend.Services;
 using backend.Services.Interfaces;
 
 namespace backend.Configurations

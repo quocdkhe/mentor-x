@@ -40,7 +40,7 @@ export interface UpdateRole {
 }
 
 export interface GoogleLoginRequest {
-  token: string | undefined;
+  code: string | undefined;
 }
 
 // 1. Define the constant object
@@ -51,4 +51,4 @@ export const USER_ROLES = {
 } as const; // 'as const' makes the values read-only
 
 // 2. Derive the type from the object (No need to write the strings twice!)
-export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];

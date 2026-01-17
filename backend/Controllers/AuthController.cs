@@ -2,6 +2,7 @@
 using backend.Models.DTOs.Auth;
 using backend.Models.DTOs.User;
 using backend.Services.Interfaces;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -32,7 +33,7 @@ namespace backend.Controllers
             Expires = DateTime.UtcNow.AddDays(7)
         };
 
-        public AuthController(IAuthService authService, IUserService userService, 
+        public AuthController(IAuthService authService, IUserService userService,
             ITokenService tokenService, IRefreshTokenService refreshTokenService,
             IGoogleOAuthService googleOAuthService
             )
@@ -166,32 +167,39 @@ namespace backend.Controllers
         }
 
         [HttpPost("google")]
-        public async Task<ActionResult<UserResponseDTO>> GoogleLogin([FromBody] GoogleLoginDTO googleLoginDto)
+        public async Task<ActionResult<UserResponseDTO>> GoogleLogin([FromBody] GoogleLoginDTO dto)
         {
-            var googleUser = await _googleOAuthService.GetUserInfo(googleLoginDto.Token);
-            if (googleUser == null)
-                return BadRequest(new Message("Đăng nhập bằng Google thất bại, có lỗi xảy ra"));
-            // Check if user exists
-            var currentUser = await _userService.GetUserByEmail(googleUser.Email);
-            if(currentUser == null)
+            // 1. Exchange code -> token
+            var token = await _googleOAuthService.ExchangeCode(dto.Code);
+
+            // 2. Validate ID token
+            var payload = await _googleOAuthService.ValidateIdToken(token.IdToken);
+
+            // 3. Get or create user
+            var currentUser = await _userService.GetUserByEmail(payload.Email);
+            if (currentUser == null)
             {
-                // Register new user
-                var registerDto = new RegisterDTO
+                currentUser = await _authService.Register(new RegisterDTO
                 {
-                    Name = googleUser.Name,
-                    Email = googleUser.Email,
-                    Password = Guid.NewGuid().ToString(), // Random password
-                    Avatar = googleUser.Picture
-                };
-                currentUser = await _authService.Register(registerDto);
+                    Name = payload.Name,
+                    Email = payload.Email,
+                    Password = Guid.NewGuid().ToString(),
+                    Avatar = payload.Picture
+                });
             }
 
-            // Generate tokens
+            // 4. Save Google refresh token
+            await _googleOAuthService.Upsert(
+                currentUser.Id,
+                payload.Subject,
+                token
+            );
+
+            // 5. App JWT (GIỮ NGUYÊN)
             var accessToken = _tokenService.GenerateAccessToken(currentUser);
             var refreshToken = _tokenService.GenerateRefreshToken();
-            // Save refresh token to database
+
             await _refreshTokenService.SaveRefreshToken(currentUser.Id, refreshToken);
-            // Set HTTP-only cookies
             SetTokenCookies(accessToken, refreshToken);
 
             return Ok(new UserResponseDTO
@@ -204,6 +212,7 @@ namespace backend.Controllers
                 Role = currentUser.Role
             });
         }
+
 
 
 

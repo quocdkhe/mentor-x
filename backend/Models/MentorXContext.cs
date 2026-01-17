@@ -30,8 +30,10 @@ public partial class MentorXContext : DbContext
     public virtual DbSet<MentorReview> MentorReviews { get; set; }
 
     public virtual DbSet<Availability> Availabilities { get; set; }
-    
+
     public virtual DbSet<Appointment> Appointments { get; set; }
+
+    public virtual DbSet<GoogleAccount> GoogleAccounts { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,7 +101,7 @@ public partial class MentorXContext : DbContext
             .HasColumnName("id");
 
             entity.Property(e => e.Name)
-            .HasColumnName("name"); 
+            .HasColumnName("name");
             entity.Property(e => e.Icon)
             .HasColumnName("icon");
         });
@@ -290,7 +292,7 @@ public partial class MentorXContext : DbContext
                     }
                 );
         });
-        
+
         modelBuilder.Entity<Availability>(entity =>
         {
             entity.HasKey(e => e.Id)
@@ -386,6 +388,45 @@ public partial class MentorXContext : DbContext
                 .HasForeignKey(e => e.MenteeId)
                 .HasConstraintName("fk_appointments_mentee")
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<GoogleAccount>(entity =>
+        {
+            entity.ToTable("google_accounts");
+
+            entity.HasKey(e => e.UserId)
+                .HasName("google_accounts_pkey");
+
+            entity.Property(e => e.UserId)
+                .HasColumnName("user_id");
+
+            entity.Property(e => e.GoogleUserId)
+                .HasColumnName("google_user_id");
+
+            entity.Property(e => e.RefreshToken)
+                .HasColumnName("refresh_token");
+
+            entity.Property(e => e.Scope)
+                .HasColumnName("scope");
+
+            entity.Property(e => e.TokenType)
+                .HasColumnName("token_type");
+
+            entity.Property(e => e.RefreshTokenRevoked)
+                .HasColumnName("refresh_token_revoked");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+
+            entity.HasOne(d => d.User)
+                .WithOne()
+                .HasForeignKey<GoogleAccount>(d => d.UserId)
+                .HasConstraintName("fk_google_accounts_user");
         });
 
 

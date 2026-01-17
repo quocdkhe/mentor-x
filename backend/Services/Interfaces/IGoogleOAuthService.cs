@@ -4,6 +4,11 @@ namespace backend.Services.Interfaces
 {
     public interface IGoogleOAuthService
     {
-        Task<GoogleJsonWebSignature.Payload?> GetUserInfo(string token);
+        Task<GoogleJsonWebSignature.Payload?> ValidateIdToken(string idToken);
+
+        Task<GoogleTokenResponse> ExchangeCode(string code);
+
+        Task Upsert(Guid userId, string googleUserId, GoogleTokenResponse token);
     }
+
 }

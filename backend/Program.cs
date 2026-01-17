@@ -13,10 +13,11 @@ builder.Services.AddDbContext<MentorXContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
 builder.Services.AddSwaggerGen(); // Swagger configuration
-builder.Services.AddStorageConfig(builder.Configuration); // Storage configuration
+builder.Services.AddStorageConfig(builder.Configuration); // Storage configuration  
+builder.Services.AddHttpClient(); // HttpClient for external API calls
 
 // Add services to the container.
-builder.Services.AddProjectServices(); 
+builder.Services.AddProjectServices();
 builder.Services.AddJwtConfig(builder.Configuration); // JWT and CORS configuration
 
 

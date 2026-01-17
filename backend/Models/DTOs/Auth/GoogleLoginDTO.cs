@@ -2,6 +2,6 @@
 {
     public class GoogleLoginDTO
     {
-        public string? Token { get; set; }
+        public string? Code { get; set; }
     }
 }
