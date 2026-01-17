@@ -10,11 +10,15 @@ namespace backend.Services
     public class BookingService : IBookingService
     {
         private readonly MentorXContext _context;
+        private readonly IGoogleCalendarService _googleCalendarService;
+        private readonly IGoogleOAuthService _googleOAuthService;
 
-
-        public BookingService(MentorXContext context)
+        public BookingService(MentorXContext context, IGoogleCalendarService googleCalendarService
+        , IGoogleOAuthService googleOAuthService)
         {
             _context = context;
+            _googleCalendarService = googleCalendarService;
+            _googleOAuthService = googleOAuthService;
         }
 
         public async Task<List<AvailabilityResponseDTO>> GetAvailabilities(Guid mentorId)
@@ -101,7 +105,7 @@ namespace backend.Services
             await _context.Availabilities.AddRangeAsync(newAvailabilities);
             await _context.SaveChangesAsync();
 
-            return ServiceResult<Message>.Ok( new Message(
+            return ServiceResult<Message>.Ok(new Message(
                 "Cập nhật availability thành công")
             );
         }
@@ -118,7 +122,7 @@ namespace backend.Services
             {
                 return ServiceResult<Message>.Fail("Lịch đặt bị trùng với lịch khác, vui lòng thử lại");
             }
-            
+
             await _context.Appointments.AddAsync(
                 new Appointment
                 {
@@ -147,6 +151,7 @@ namespace backend.Services
                 .Where(a => a.MentorId == mentorId && a.StartAt >= startOfDay && a.StartAt < endOfDay)
                 .Select(a => new MentorAppointmentDto
                 {
+                    AppointmentId = a.Id,
                     MentorId = a.MentorId,
                     Mentee = new MenteeInfoDto
                     {
@@ -157,7 +162,8 @@ namespace backend.Services
                     StartAt = a.StartAt,
                     EndAt = a.EndAt,
                     Status = a.Status,
-                    MeetingLink = a.MeetingLink
+                    MeetingLink = a.MeetingLink,
+                    GoogleCalendarLink = a.GoogleCalendarLink
                 })
                 .ToListAsync();
 
@@ -179,6 +185,7 @@ namespace backend.Services
                 .Where(a => a.MenteeId == menteeId && a.StartAt >= startOfDay && a.StartAt < endOfDay)
                 .Select(a => new MenteeAppointmentDto
                 {
+                    AppointmentId = a.Id,
                     MentorId = a.MentorId,
                     Mentor = new MentorInfoDto
                     {
@@ -191,7 +198,8 @@ namespace backend.Services
                     StartAt = a.StartAt,
                     EndAt = a.EndAt,
                     Status = a.Status,
-                    MeetingLink = a.MeetingLink
+                    MeetingLink = a.MeetingLink,
+                    GoogleCalendarLink = a.GoogleCalendarLink
                 })
                 .ToListAsync();
 
@@ -209,14 +217,14 @@ namespace backend.Services
                 .Where(a => a.MentorId == mentorId && a.DayOfWeek == day)
                 .Select(a => new TimeBlockDto
                 {
-                    StartTime = a.StartTime,    
+                    StartTime = a.StartTime,
                     EndTime = a.EndTime
                 })
                 .ToListAsync();
-            
+
             var startOfDay = date?.Date;
             var endOfDay = startOfDay?.AddDays(1);
-            
+
             List<BookedSlotDto> bookedSlots = await _context.Appointments
                 .Where(a => a.MentorId == mentorId && a.StartAt >= startOfDay && a.StartAt < endOfDay)
                 .Select(a => new BookedSlotDto
@@ -232,5 +240,66 @@ namespace backend.Services
             });
         }
 
+        public async Task<ServiceResult<Message>> AcceptAppointment(Guid mentorId, Guid appointmentId)
+        {
+            var appointment = _context.Appointments
+                .Include(a => a.Mentor)
+                .Include(a => a.Mentee)
+                .FirstOrDefault(a =>
+                a.Id == appointmentId && a.MentorId == mentorId);
+            if (appointment == null)
+            {
+                return (ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn"));
+            }
+
+            try
+            {
+                // Create meeting link and google calendar event
+                string accessToken = await _googleOAuthService.GetGoogleAccessToken(mentorId);
+                GoogleMeetingResult googleMeetingResult = await
+                    _googleCalendarService.CreateMeetingAsync(accessToken, appointment.StartAt,
+                        appointment.EndAt, appointment.Mentor.Email, appointment.Mentee.Email);
+                appointment.MeetingLink = googleMeetingResult.MeetLink;
+                appointment.GoogleCalendarLink = googleMeetingResult.CalendarLink;
+                appointment.Status = AppointmentStatusEnum.Confirmed;
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<Message>.Fail(ex.Message);
+            }
+            
+            _context.Appointments.Update(appointment);
+            _context.SaveChangesAsync();
+            
+            return ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã được chấp nhận"));
+        }
+
+        public Task<ServiceResult<Message>> CompleteAppointment(Guid mentorId, Guid appointmentId)
+        {
+            var appointment = _context.Appointments.FirstOrDefault(a =>
+                a.Id == appointmentId && a.MentorId == mentorId);
+            if (appointment == null)
+            {
+                return Task.FromResult(ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn"));
+            }
+            appointment.Status = AppointmentStatusEnum.Completed;
+            _context.Appointments.Update(appointment);
+            _context.SaveChanges();
+            return Task.FromResult(ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã bị từ chối")));
+        }
+
+        public Task<ServiceResult<Message>> CancelAppointment(Guid mentorId, Guid menteeId, Guid appointmentId)
+        {
+            var appointment = _context.Appointments.FirstOrDefault(a =>
+                a.Id == appointmentId && a.MenteeId == menteeId && a.MentorId == mentorId);
+            if (appointment == null)
+            {
+                return Task.FromResult(ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn"));
+            }
+            appointment.Status = AppointmentStatusEnum.Cancelled;
+            _context.Appointments.Update(appointment);
+            _context.SaveChanges();
+            return Task.FromResult(ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã bị hủy")));
+        }
     }
 }

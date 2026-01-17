@@ -12,6 +12,7 @@ public class MenteeInfoDto
 
 public class MentorAppointmentDto
 {
+    public Guid AppointmentId { get; set; }
     public Guid MentorId { get; set; }
 
     public MenteeInfoDto Mentee { get; set; } = null!;
@@ -23,4 +24,6 @@ public class MentorAppointmentDto
     public AppointmentStatusEnum Status { get; set; }
 
     public string? MeetingLink { get; set; }
+    
+    public string? GoogleCalendarLink { get; set; }
 }

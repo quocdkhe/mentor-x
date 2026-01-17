@@ -368,6 +368,9 @@ public partial class MentorXContext : DbContext
 
             entity.Property(e => e.MeetingLink)
                 .HasColumnName("meeting_link");
+            
+            entity.Property(e=> e.GoogleCalendarLink)
+                .HasColumnName("google_calendar_link");
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")

@@ -15,6 +15,7 @@ builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
 builder.Services.AddSwaggerGen(); // Swagger configuration
 builder.Services.AddStorageConfig(builder.Configuration); // Storage configuration  
 builder.Services.AddHttpClient(); // HttpClient for external API calls
+builder.Services.AddMemoryCache(); // Memory cache store Google access token
 
 // Add services to the container.
 builder.Services.AddProjectServices();

@@ -33,7 +33,7 @@ export function useMentorGetAppointments(date: Date) {
           params: {
             date: dateISOString,
           },
-        }
+        },
       );
       return res.data;
     },
@@ -55,7 +55,7 @@ export function useMenteeGetAppointments(date: Date) {
           params: {
             date: dateISOString,
           },
-        }
+        },
       );
       return res.data;
     },
@@ -77,7 +77,19 @@ export function useGetMentorSchedules(date: Date, mentorId: string) {
           params: {
             date: dateISOString,
           },
-        }
+        },
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useAcceptAppointments() {
+  return useMutation<Message, AxiosError<Message>, string>({
+    mutationFn: async (appointmentId: string): Promise<Message> => {
+      const res = await api.post<Message>(
+        `/appointments/${appointmentId}/accept`,
+        {},
       );
       return res.data;
     },

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon, Video, CalendarDays, CheckCircle } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,28 +38,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useMentorGetAppointments } from "@/api/appointment";
+import { useMentorGetAppointments, useAcceptAppointments } from "@/api/appointment";
 import type { AppointmentStatusEnum } from "@/types/appointment";
 import SchedulesTableSkeleton from "@/components/skeletons/schedules-table.skeleton";
+import { toast } from "sonner";
 
 // --- Types & Interfaces ---
-
-interface UserProfile {
-  name: string;
-  phone: string;
-  email: string;
-  avatar: string;
-}
-
 interface ScheduleItem {
-  id: string;
+  appointmentId: string;
   mentorId: string;
-  mentor: UserProfile;
-  mentee: UserProfile;
+  mentee: {
+    name: string;
+    email: string;
+    avatar: string;
+  };
   startAt: string; // ISO string
   endAt: string;   // ISO string
   status: AppointmentStatusEnum;
-  meeting_link?: string;
+  meetingLink?: string;
+  googleCalendarLink?: string;
 }
 
 // --- Components ---
@@ -81,6 +79,7 @@ const StatusBadge = ({ status }: { status: AppointmentStatusEnum }) => {
 const Schedules = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch appointments from API for the selected date (or today)
   const { data: appointmentsData = [], isLoading } = useMentorGetAppointments(date || new Date());
@@ -94,30 +93,48 @@ const Schedules = () => {
     description: string;
   }>({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
 
+  // Initialize the accept appointments mutation
+  const { mutate: acceptAppointment, isPending: isAccepting } = useAcceptAppointments();
+
   // Map API data to component format
   const schedules: ScheduleItem[] = appointmentsData.map((apt) => ({
-    id: apt.mentorId, // Using mentorId as id for now - adjust if backend provides appointment id
+    appointmentId: apt.appointmentId,
     mentorId: apt.mentorId,
-    mentor: { name: "", phone: "", email: "", avatar: "" }, // Mentor is the current user
     mentee: {
       name: apt.mentee.name,
-      phone: "",
       email: apt.mentee.email,
       avatar: apt.mentee.avatar || "",
     },
     startAt: apt.startAt,
     endAt: apt.endAt,
     status: apt.status, // Use API status directly
-    meeting_link: apt.meetingLink || undefined,
+    meetingLink: apt.meetingLink || undefined,
+    googleCalendarLink: apt.googleCalendarLink || undefined,
   }));
 
   const handleConfirmAction = () => {
+    console.log(`${confirmDialog.newStatus} ${confirmDialog.appointmentId}`)
     if (confirmDialog.newStatus && confirmDialog.appointmentId) {
-      console.log("Appointment ID:", confirmDialog.appointmentId);
-      console.log("New Status:", confirmDialog.newStatus);
-      // Here you would typically call an API to update the status
+      // Only use the API for accepting appointments (Confirmed status)
+      if (confirmDialog.newStatus === "Confirmed") {
+        acceptAppointment(confirmDialog.appointmentId, {
+          onSuccess: (data) => {
+            // Invalidate queries to refresh the data
+            queryClient.invalidateQueries({ queryKey: ["mentor-appointments", date?.toISOString()] });
+            setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+            toast.success(data.message);
+          },
+          onError: (error) => {
+            toast.error(error.response?.data.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+          },
+        });
+      } else {
+        // For other statuses, just log for now (implement other APIs as needed)
+        console.log("Appointment ID:", confirmDialog.appointmentId);
+        console.log("New Status:", confirmDialog.newStatus);
+        setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+      }
     }
-    setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
   };
 
   const openConfirmDialog = (appointmentId: string, newStatus: AppointmentStatusEnum, title: string, description: string) => {
@@ -275,7 +292,7 @@ const Schedules = () => {
                         <Button
                           size="sm"
                           onClick={() => openConfirmDialog(
-                            schedule.id,
+                            schedule.appointmentId,
                             "Confirmed",
                             "Xác nhận lịch hẹn",
                             "Bạn có chắc chắn muốn xác nhận lịch hẹn này không?"
@@ -287,7 +304,7 @@ const Schedules = () => {
                           size="sm"
                           variant="destructive"
                           onClick={() => openConfirmDialog(
-                            schedule.id,
+                            schedule.appointmentId,
                             "Cancelled",
                             "Từ chối lịch hẹn",
                             "Bạn có chắc chắn muốn từ chối lịch hẹn này không?"
@@ -300,7 +317,7 @@ const Schedules = () => {
                     {schedule.status === "Confirmed" && (
                       <div className="flex gap-2 flex-wrap">
                         <Button variant="outline" size="sm" className="gap-2" asChild>
-                          <a href={schedule.meeting_link} target="_blank" rel="noopener noreferrer">
+                          <a href={schedule.meetingLink} target="_blank" rel="noopener noreferrer">
                             <Video className="h-4 w-4" />
                             Tham gia Meet
                           </a>
@@ -310,7 +327,7 @@ const Schedules = () => {
                           variant="outline"
                           className="gap-2 border-green-500 text-green-600 hover:bg-green-50 dark:border-green-600 dark:text-green-500 dark:hover:bg-green-950/20"
                           onClick={() => openConfirmDialog(
-                            schedule.id,
+                            schedule.appointmentId,
                             "Completed",
                             "Đánh dấu hoàn thành",
                             "Bạn có chắc chắn muốn đánh dấu lịch hẹn này là đã hoàn thành không?"
@@ -351,11 +368,13 @@ const Schedules = () => {
             <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>
+            <AlertDialogCancel disabled={isAccepting}>
               Hủy
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmAction}>
-              Xác nhận
+            <AlertDialogAction asChild>
+              <Button onClick={handleConfirmAction} disabled={isAccepting}>
+                {isAccepting ? "Đang xử lý..." : "Xác nhận"}
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

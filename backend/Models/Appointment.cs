@@ -19,11 +19,13 @@ public class Appointment
     public DateTime EndAt { get; set; }
 
     /// <summary>
-    /// PENDING | CONFIRMED | CANCELLED | COMPLETED
+    /// Pending | Confirmed | Cancelled | Completed
     /// </summary>
     public AppointmentStatusEnum Status { get; set; }
 
     public string? MeetingLink { get; set; }
+    
+    public string? GoogleCalendarLink { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

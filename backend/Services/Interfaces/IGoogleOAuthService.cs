@@ -9,6 +9,8 @@ namespace backend.Services.Interfaces
         Task<GoogleTokenResponse> ExchangeCode(string code);
 
         Task Upsert(Guid userId, string googleUserId, GoogleTokenResponse token);
+        
+        Task<string> GetGoogleAccessToken(Guid userId);
     }
 
 }

@@ -169,11 +169,20 @@ namespace backend.Controllers
         [HttpPost("google")]
         public async Task<ActionResult<UserResponseDTO>> GoogleLogin([FromBody] GoogleLoginDTO dto)
         {
+            if (dto == null || string.IsNullOrEmpty(dto.Code))
+            {
+                return BadRequest(new Message("Thông tin đăng nhập Google không hợp lệ"));
+            }
             // 1. Exchange code -> token
             var token = await _googleOAuthService.ExchangeCode(dto.Code);
 
             // 2. Validate ID token
             var payload = await _googleOAuthService.ValidateIdToken(token.IdToken);
+
+            if (payload == null)
+            {
+                return BadRequest(new Message("Xác thực Google thất bại"));
+            }
 
             // 3. Get or create user
             var currentUser = await _userService.GetUserByEmail(payload.Email);

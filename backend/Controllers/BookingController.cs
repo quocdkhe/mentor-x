@@ -9,7 +9,7 @@ namespace backend.Controllers;
 
 public class BookingController : ControllerBase
 {
-    
+
     private readonly IBookingService _bookingService;
     public BookingController(IBookingService bookingService)
     {
@@ -28,7 +28,7 @@ public class BookingController : ControllerBase
         }
         return Ok(result.Data);
     }
-    
+
     [HttpGet("/mentors/me/appointments")]
     [Authorize]
     public async Task<ActionResult<List<MentorAppointmentDto>>> GetMentorAppointments([FromQuery] DateTime? date)
@@ -57,4 +57,30 @@ public class BookingController : ControllerBase
         return Ok(result.Data);
     }
 
+    [HttpPost("appointments/{appointmentId}/accept")]
+    [Authorize]
+    public async Task<ActionResult<Message>> AcceptAppointment(Guid appointmentId)
+    {
+        var mentorId = User.GetUserId();
+        var result = await _bookingService.AcceptAppointment(mentorId, appointmentId);
+        if (!result.Success)
+        {
+            return BadRequest(new Message(result.Message));
+        }
+        return Ok(result.Data);
+    }
+
+    [HttpPost("appointments/{mentorId}/reject")]
+    [Authorize]
+    public async Task<ActionResult<Message>> RejectAppointment(Guid mentorId)
+    {
+        return null;
+    }
+
+    [HttpPost("appointments/{mentorId}/complete")]
+    [Authorize]
+    public async Task<ActionResult<Message>> CompleteAppointment(Guid mentorId)
+    {
+        return null;
+    }
 }

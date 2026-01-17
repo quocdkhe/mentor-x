@@ -19,12 +19,14 @@ export interface MenteeInfoDto {
 }
 
 export interface MentorAppointmentDto {
+  appointmentId: string;
   mentorId: string; // Guid
   mentee: MenteeInfoDto;
   startAt: string; // ISO-8601 UTC string
   endAt: string; // ISO-8601 UTC string
   status: AppointmentStatusEnum;
   meetingLink?: string | null;
+  googleCalendarLink?: string | null;
 }
 
 export interface MentorInfoDto {
@@ -36,12 +38,14 @@ export interface MentorInfoDto {
 }
 
 export interface MenteeAppointmentDto {
+  appointmentId: string;
   mentorId: string; // Guid → string
   mentor: MentorInfoDto;
   startAt: string; // DateTime → ISO-8601 UTC string
   endAt: string;
   status: AppointmentStatusEnum;
   meetingLink?: string | null;
+  googleCalendarLink?: string | null;
 }
 
 export interface TimeBlockDto {
