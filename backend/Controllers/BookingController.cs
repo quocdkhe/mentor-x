@@ -17,7 +17,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("appointments")]
-    [Authorize]
+    [Authorize(Roles = Roles.User)]
     public async Task<ActionResult<Message>> BookAnAppointment([FromBody] BookingRequestDto dto)
     {
         var userId = User.GetUserId();
@@ -30,7 +30,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpGet("/mentors/me/appointments")]
-    [Authorize]
+    [Authorize(Roles = Roles.Mentor)]
     public async Task<ActionResult<List<MentorAppointmentDto>>> GetMentorAppointments([FromQuery] DateTime? date)
     {
         var mentorId = User.GetUserId();
@@ -40,7 +40,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpGet("/mentees/me/appointments")]
-    [Authorize]
+    [Authorize(Roles = Roles.User)]
     public async Task<ActionResult<List<MenteeAppointmentDto>>> GetMenteeAppointments([FromQuery] DateTime? date)
     {
         var menteeId = User.GetUserId();
@@ -58,7 +58,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("appointments/{appointmentId}/accept")]
-    [Authorize]
+    [Authorize(Roles = Roles.Mentor)]
     public async Task<ActionResult<Message>> AcceptAppointment(Guid appointmentId)
     {
         var mentorId = User.GetUserId();
@@ -84,7 +84,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("appointments/{appointmentId}/complete")]
-    [Authorize]
+    [Authorize(Roles = Roles.Mentor)]
     public async Task<ActionResult<Message>> CompleteAppointment(Guid appointmentId)
     {
         var mentorId = User.GetUserId();

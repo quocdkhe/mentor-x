@@ -214,7 +214,7 @@ namespace backend.Services
             }
             WeekDayEnum day = (WeekDayEnum)date?.DayOfWeek;
             List<TimeBlockDto> blocks = await _context.Availabilities
-                .Where(a => a.MentorId == mentorId && a.DayOfWeek == day)
+                .Where(a => a.MentorId == mentorId && a.DayOfWeek == day && a.IsActive)
                 .Select(a => new TimeBlockDto
                 {
                     StartTime = a.StartTime,

@@ -1,3 +1,4 @@
+using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Mentor;
 using backend.Services.Interfaces;
@@ -10,27 +11,25 @@ namespace backend.Controllers
     [ApiController]
     public class AvailabilityController : ControllerBase
     {
-        
+
         private readonly IBookingService _bookingService;
-        
+
         public AvailabilityController(IBookingService bookingService)
         {
             _bookingService = bookingService;
         }
-        
-        [HttpGet("/mentors/{mentorId}/availabilities")]
-        public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities(string mentorId)
+
+        [HttpGet("/mentors/me/availabilities")]
+        [Authorize(Roles = Roles.Mentor)]
+        public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities()
         {
-            if (Guid.TryParse(mentorId, out Guid mentorGuid) == false)
-            {
-                return BadRequest(new { message = "Id không đúng" });
-            }
+            var mentorGuid = User.GetUserId();
             var availabilities = await _bookingService.GetAvailabilities(mentorGuid);
             return availabilities;
         }
 
         [HttpPatch("/mentors/me/availabilities")]
-        [Authorize]
+        [Authorize(Roles = Roles.Mentor)]
         public async Task<ActionResult<Message>> UpdateAvailabilities([FromBody] List<AvailabilityResponseDTO> availabilities)
         {
             var userId = User.GetUserId();

@@ -45,7 +45,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("profile")]
-        [Authorize]
+        [Authorize(Roles = Roles.Mentor)]
         public async Task<ActionResult<MentorProfileResponseDTO>> GetMyMentorProfile()
         {
             var userId = User.GetUserId();
@@ -87,7 +87,7 @@ namespace backend.Controllers
         }
 
         [HttpPatch("profile")]
-        [Authorize]
+        [Authorize(Roles = Roles.Mentor)]
         public async Task<IActionResult> UpdateMentorProfile([FromBody] MentorUpdateRequestDTO request)
         {
             try
@@ -102,6 +102,6 @@ namespace backend.Controllers
             }
         }
 
- 
+
     }
 }

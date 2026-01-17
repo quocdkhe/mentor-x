@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 import { useGetAvailability, useUpdateAvailability } from '@/api/availability';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { useGetCurrentUser } from '@/api/user';
 import AvailabilitySkeleton from '@/components/skeletons/availability.skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import type { Availability, WeekDayEnum } from '@/types/availability';
@@ -25,8 +24,7 @@ const DAYS_OF_WEEK = [
 ];
 
 const SetAvailabilities = () => {
-  const { data: currentUser, isLoading: isLoadingUser } = useGetCurrentUser();
-  const { data: availabilityData, isLoading: isLoadingAvailability } = useGetAvailability(currentUser?.id || '');
+  const { data: availabilityData, isLoading: isLoadingAvailability } = useGetAvailability();
   const updateAvailabilityMutation = useUpdateAvailability();
   const queryClient = useQueryClient();
 
@@ -143,7 +141,7 @@ const SetAvailabilities = () => {
     updateAvailabilityMutation.mutate(slots, {
       onSuccess: (data) => {
         toast.success(data.message);
-        queryClient.invalidateQueries({ queryKey: ["availability", currentUser?.id] });
+        queryClient.invalidateQueries({ queryKey: ["availabilities"] });
         setInitialSlots([...slots]);
       },
       onError: (err) => {
@@ -157,7 +155,7 @@ const SetAvailabilities = () => {
     setSlots([...initialSlots]);
   };
 
-  if (isLoadingUser || isLoadingAvailability) {
+  if (isLoadingAvailability) {
     return <AvailabilitySkeleton />;
   }
 

@@ -4,10 +4,6 @@ using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using backend.Models;
-using System.Security.Cryptography.X509Certificates;
-using System.Diagnostics.Contracts;
-using System.Net.Mail;  
 
 namespace backend.Controllers
 {
@@ -47,8 +43,8 @@ namespace backend.Controllers
             };
         }
 
-        [Authorize]
         [HttpPut("profile")]
+        [Authorize(Roles = Roles.User)]
         public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateProfileDTO dto)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -62,6 +58,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<ActionResult<Message>> CreateUser([FromBody] AdminCreateUserDTO dto)
         {
             var result = await _userService.CreateUser(dto);
@@ -74,6 +71,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<ActionResult<List<UserResponseDTO>>> GetAllUsers()
         {
             var users = await _userService.GetAllUsers();
@@ -81,6 +79,7 @@ namespace backend.Controllers
         }
 
         [HttpPatch("role")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDTO dto)
         {
             var result = await _userService.UpdateRole(dto);
@@ -91,6 +90,6 @@ namespace backend.Controllers
             return Ok(new Message("Cập nhật vai trò thành công"));
         }
 
-    
+
     }
 }
