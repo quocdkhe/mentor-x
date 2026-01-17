@@ -70,17 +70,29 @@ public class BookingController : ControllerBase
         return Ok(result.Data);
     }
 
-    [HttpPost("appointments/{mentorId}/reject")]
+    [HttpPost("appointments/{appointmentId}/cancel")]
     [Authorize]
-    public async Task<ActionResult<Message>> RejectAppointment(Guid mentorId)
+    public async Task<ActionResult<Message>> CancelAppointment(Guid appointmentId)
     {
-        return null;
+        var userId = User.GetUserId();
+        var result = await _bookingService.CancelAppointment(userId, appointmentId);
+        if (!result.Success)
+        {
+            return BadRequest(new Message(result.Message));
+        }
+        return Ok(result.Data);
     }
 
-    [HttpPost("appointments/{mentorId}/complete")]
+    [HttpPost("appointments/{appointmentId}/complete")]
     [Authorize]
-    public async Task<ActionResult<Message>> CompleteAppointment(Guid mentorId)
+    public async Task<ActionResult<Message>> CompleteAppointment(Guid appointmentId)
     {
-        return null;
+        var mentorId = User.GetUserId();
+        var result = await _bookingService.CompleteAppointment(mentorId, appointmentId);
+        if (!result.Success)
+        {
+            return BadRequest(new Message(result.Message));
+        }
+        return Ok(result.Data);
     }
 }

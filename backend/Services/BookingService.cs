@@ -249,7 +249,7 @@ namespace backend.Services
                 a.Id == appointmentId && a.MentorId == mentorId);
             if (appointment == null)
             {
-                return (ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn"));
+                return ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn");
             }
 
             try
@@ -267,10 +267,10 @@ namespace backend.Services
             {
                 return ServiceResult<Message>.Fail(ex.Message);
             }
-            
+
             _context.Appointments.Update(appointment);
             _context.SaveChangesAsync();
-            
+
             return ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã được chấp nhận"));
         }
 
@@ -288,11 +288,11 @@ namespace backend.Services
             return Task.FromResult(ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã bị từ chối")));
         }
 
-        public Task<ServiceResult<Message>> CancelAppointment(Guid mentorId, Guid menteeId, Guid appointmentId)
+        public Task<ServiceResult<Message>> CancelAppointment(Guid userId, Guid appointmentId)
         {
             var appointment = _context.Appointments.FirstOrDefault(a =>
-                a.Id == appointmentId && a.MenteeId == menteeId && a.MentorId == mentorId);
-            if (appointment == null)
+                a.Id == appointmentId);
+            if (appointment == null || (appointment.MentorId != userId && appointment.MenteeId != userId))
             {
                 return Task.FromResult(ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn"));
             }

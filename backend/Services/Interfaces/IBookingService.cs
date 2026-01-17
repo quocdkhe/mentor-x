@@ -14,7 +14,7 @@ namespace backend.Services.Interfaces
         Task<ServiceResult<List<MenteeAppointmentDto>>> GetMenteeAppointments(Guid menteeId, DateTime? date);
         Task<ServiceResult<MentorScheduleDto>> GetMentorSchedule(Guid mentorId, DateTime? date);
         Task<ServiceResult<Message>> AcceptAppointment(Guid mentorId, Guid appointmentId);
-        Task<ServiceResult<Message>> CancelAppointment(Guid mentorId, Guid menteeId, Guid appointmentId);
+        Task<ServiceResult<Message>> CancelAppointment(Guid userId, Guid appointmentId); // userId can be mentorId or menteeId, depending on who is cancelling
         Task<ServiceResult<Message>> CompleteAppointment(Guid mentorId, Guid appointmentId);
 
     }

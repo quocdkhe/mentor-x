@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Info, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, convertDateToUTC } from "@/lib/utils";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { useBooking, useGetMentorSchedules } from "@/api/appointment";
 import { useQueryClient } from "@tanstack/react-query";
@@ -29,7 +29,7 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
   const [endRange, setEndRange] = useState<{ date: Date; time: string } | null>(null);
 
   // Fetch mentor schedules for the selected date
-  const { data: scheduleData, isLoading: isLoadingSchedules } = useGetMentorSchedules(selectedDate, mentor.userId);
+  const { data: scheduleData, isLoading: isLoadingSchedules } = useGetMentorSchedules(convertDateToUTC(selectedDate), mentor.userId);
   const bookingMutation = useBooking();
   const queryClient = useQueryClient();
 

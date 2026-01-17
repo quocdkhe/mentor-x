@@ -4,8 +4,9 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon, Video, CalendarDays, CheckCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 
-import { cn } from "@/lib/utils";
+import { cn, convertDateToUTC } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -30,7 +31,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -38,10 +38,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useMentorGetAppointments, useAcceptAppointments } from "@/api/appointment";
+import { useMentorGetAppointments, useAcceptAppointments, useCancelAppointment, useCompleteAppointment } from "@/api/appointment";
 import type { AppointmentStatusEnum } from "@/types/appointment";
 import SchedulesTableSkeleton from "@/components/skeletons/schedules-table.skeleton";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 // --- Types & Interfaces ---
 interface ScheduleItem {
@@ -82,9 +83,9 @@ const Schedules = () => {
   const queryClient = useQueryClient();
 
   // Fetch appointments from API for the selected date (or today)
-  const { data: appointmentsData = [], isLoading } = useMentorGetAppointments(date || new Date());
+  const { data: appointmentsData = [], isLoading } = useMentorGetAppointments(convertDateToUTC(date || new Date()));
 
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<AppointmentStatusEnum | "all">("all");
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     appointmentId: string;
@@ -93,8 +94,13 @@ const Schedules = () => {
     description: string;
   }>({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
 
-  // Initialize the accept appointments mutation
+  // Initialize the appointment mutations
   const { mutate: acceptAppointment, isPending: isAccepting } = useAcceptAppointments();
+  const { mutate: cancelAppointment, isPending: isCancelling } = useCancelAppointment();
+  const { mutate: completeAppointment, isPending: isCompleting } = useCompleteAppointment();
+
+  // Combined loading state for all mutations
+  const isProcessing = isAccepting || isCancelling || isCompleting;
 
   // Map API data to component format
   const schedules: ScheduleItem[] = appointmentsData.map((apt) => ({
@@ -113,26 +119,44 @@ const Schedules = () => {
   }));
 
   const handleConfirmAction = () => {
-    console.log(`${confirmDialog.newStatus} ${confirmDialog.appointmentId}`)
     if (confirmDialog.newStatus && confirmDialog.appointmentId) {
-      // Only use the API for accepting appointments (Confirmed status)
-      if (confirmDialog.newStatus === "Confirmed") {
-        acceptAppointment(confirmDialog.appointmentId, {
-          onSuccess: (data) => {
-            // Invalidate queries to refresh the data
-            queryClient.invalidateQueries({ queryKey: ["mentor-appointments", date?.toISOString()] });
-            setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
-            toast.success(data.message);
-          },
-          onError: (error) => {
-            toast.error(error.response?.data.message || "Đã xảy ra lỗi, vui lòng thử lại.");
-          },
-        });
-      } else {
-        // For other statuses, just log for now (implement other APIs as needed)
-        console.log("Appointment ID:", confirmDialog.appointmentId);
-        console.log("New Status:", confirmDialog.newStatus);
+      const onSuccessHandler = (data: { message: string }) => {
+        // Invalidate queries to refresh the data
+        queryClient.invalidateQueries({ queryKey: ["mentor-appointments", convertDateToUTC(date || new Date())] });
+        toast.success(data.message);
+        // Close dialog after successful API call
         setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+      };
+
+      const onErrorHandler = (error: AxiosError<{ message?: string }>) => {
+        toast.error(error.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+        // Close dialog on error as well
+        setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+      };
+
+      // Call the appropriate API based on the status
+      switch (confirmDialog.newStatus) {
+        case "Confirmed":
+          acceptAppointment(confirmDialog.appointmentId, {
+            onSuccess: onSuccessHandler,
+            onError: onErrorHandler,
+          });
+          break;
+        case "Cancelled":
+          cancelAppointment(confirmDialog.appointmentId, {
+            onSuccess: onSuccessHandler,
+            onError: onErrorHandler,
+          });
+          break;
+        case "Completed":
+          completeAppointment(confirmDialog.appointmentId, {
+            onSuccess: onSuccessHandler,
+            onError: onErrorHandler,
+          });
+          break;
+        default:
+          // Fallback: just close the dialog
+          setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
       }
     }
   };
@@ -179,7 +203,7 @@ const Schedules = () => {
           </Popover>
 
           {/* Right: Status Tabs */}
-          <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setStatusFilter}>
+          <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={(value) => setStatusFilter(value as AppointmentStatusEnum | "all")}>
             <TabsList className="grid w-full md:w-auto grid-cols-5">
               <TabsTrigger value="all">Tất cả</TabsTrigger>
               <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
@@ -227,7 +251,7 @@ const Schedules = () => {
         </Popover>
 
         {/* Right: Status Tabs */}
-        <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setStatusFilter}>
+        <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={(value) => setStatusFilter(value as AppointmentStatusEnum | "all")}>
           <TabsList className="grid w-full md:w-auto grid-cols-5">
             <TabsTrigger value="all">Tất cả</TabsTrigger>
             <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
@@ -336,10 +360,14 @@ const Schedules = () => {
                           <CheckCircle className="h-4 w-4" />
                           Đã hoàn thành
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-2 border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-500 dark:hover:bg-blue-950/20">
-                          <CalendarDays className="h-4 w-4" />
-                          Google Calendar
-                        </Button>
+                        {schedule.googleCalendarLink && (
+                          <Button size="sm" variant="outline" className="gap-2 border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-500 dark:hover:bg-blue-950/20" asChild>
+                            <a href={schedule.googleCalendarLink} target="_blank" rel="noopener noreferrer">
+                              <CalendarDays className="h-4 w-4" />
+                              Google Calendar
+                            </a>
+                          </Button>
+                        )}
                       </div>
                     )}
                     {schedule.status === "Completed" && (
@@ -368,14 +396,12 @@ const Schedules = () => {
             <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isAccepting}>
+            <AlertDialogCancel disabled={isProcessing}>
               Hủy
             </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button onClick={handleConfirmAction} disabled={isAccepting}>
-                {isAccepting ? "Đang xử lý..." : "Xác nhận"}
-              </Button>
-            </AlertDialogAction>
+            <Button onClick={handleConfirmAction} disabled={isProcessing}>
+              {isProcessing ? <><Spinner /> Đang xử lý...</> : "Xác nhận"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

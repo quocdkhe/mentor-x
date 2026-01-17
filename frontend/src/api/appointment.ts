@@ -18,12 +18,7 @@ export function useBooking() {
   });
 }
 
-export function useMentorGetAppointments(date: Date) {
-  // Set time to noon to avoid timezone-related date shifts when converting to ISO
-  const dateAtNoon = new Date(date);
-  dateAtNoon.setHours(12, 0, 0, 0);
-  const dateISOString = dateAtNoon.toISOString();
-
+export function useMentorGetAppointments(dateISOString: string) {
   return useQuery<MentorAppointmentDto[], AxiosError<Message>>({
     queryKey: ["mentor-appointments", dateISOString],
     queryFn: async () => {
@@ -40,12 +35,7 @@ export function useMentorGetAppointments(date: Date) {
   });
 }
 
-export function useMenteeGetAppointments(date: Date) {
-  // Set time to noon to avoid timezone-related date shifts when converting to ISO
-  const dateAtNoon = new Date(date);
-  dateAtNoon.setHours(12, 0, 0, 0);
-  const dateISOString = dateAtNoon.toISOString();
-
+export function useMenteeGetAppointments(dateISOString: string) {
   return useQuery<MenteeAppointmentDto[], AxiosError<Message>>({
     queryKey: ["mentee-appointments", dateISOString],
     queryFn: async () => {
@@ -62,12 +52,7 @@ export function useMenteeGetAppointments(date: Date) {
   });
 }
 
-export function useGetMentorSchedules(date: Date, mentorId: string) {
-  // Set time to noon to avoid timezone-related date shifts when converting to ISO
-  const dateAtNoon = new Date(date);
-  dateAtNoon.setHours(12, 0, 0, 0);
-  const dateISOString = dateAtNoon.toISOString();
-
+export function useGetMentorSchedules(dateISOString: string, mentorId: string) {
   return useQuery<MentorScheduleDto, AxiosError<Message>>({
     queryKey: ["mentor-schedules", dateISOString, mentorId],
     queryFn: async () => {
@@ -89,6 +74,30 @@ export function useAcceptAppointments() {
     mutationFn: async (appointmentId: string): Promise<Message> => {
       const res = await api.post<Message>(
         `/appointments/${appointmentId}/accept`,
+        {},
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useCancelAppointment() {
+  return useMutation<Message, AxiosError<Message>, string>({
+    mutationFn: async (appointmentId: string): Promise<Message> => {
+      const res = await api.post<Message>(
+        `/appointments/${appointmentId}/cancel`,
+        {},
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useCompleteAppointment() {
+  return useMutation<Message, AxiosError<Message>, string>({
+    mutationFn: async (appointmentId: string): Promise<Message> => {
+      const res = await api.post<Message>(
+        `/appointments/${appointmentId}/complete`,
         {},
       );
       return res.data;

@@ -1,10 +1,12 @@
-import { createLazyRoute } from "@tanstack/react-router";
+import { createLazyRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon, Video, CalendarDays, X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 
-import { cn } from "@/lib/utils";
+import { cn, convertDateToUTC } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,7 +24,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -30,8 +31,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useMenteeGetAppointments } from "@/api/appointment";
+import { useMenteeGetAppointments, useCancelAppointment } from "@/api/appointment";
 import type { AppointmentStatusEnum } from "@/types/appointment";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 // --- Components ---
 
@@ -53,11 +56,15 @@ const StatusBadge = ({ status }: { status: AppointmentStatusEnum }) => {
 function MenteeSchedulesPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch appointments from API for the selected date (or today)
-  const { data: appointmentsData = [], isLoading } = useMenteeGetAppointments(date || new Date());
+  const { data: appointmentsData = [], isLoading } = useMenteeGetAppointments(convertDateToUTC(date || new Date()));
 
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  // Initialize the cancel appointment mutation
+  const { mutate: cancelAppointment, isPending: isCancelling } = useCancelAppointment();
+
+  const [statusFilter, setStatusFilter] = useState<AppointmentStatusEnum | "all">("all");
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     appointmentId: string;
@@ -68,11 +75,23 @@ function MenteeSchedulesPage() {
 
   const handleConfirmAction = () => {
     if (confirmDialog.action && confirmDialog.appointmentId) {
-      console.log("Appointment ID:", confirmDialog.appointmentId);
-      console.log("Action:", confirmDialog.action);
-      // Here you would typically call an API to cancel the appointment
+      if (confirmDialog.action === "cancel") {
+        cancelAppointment(confirmDialog.appointmentId, {
+          onSuccess: (data) => {
+            // Invalidate queries to refresh the data
+            queryClient.invalidateQueries({ queryKey: ["mentee-appointments", convertDateToUTC(date || new Date())] });
+            toast.success(data.message);
+            // Close dialog after successful API call
+            setConfirmDialog({ open: false, appointmentId: "", action: null, title: "", description: "" });
+          },
+          onError: (error: AxiosError<{ message?: string }>) => {
+            toast.error(error.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+            // Close dialog on error as well
+            setConfirmDialog({ open: false, appointmentId: "", action: null, title: "", description: "" });
+          },
+        });
+      }
     }
-    setConfirmDialog({ open: false, appointmentId: "", action: null, title: "", description: "" });
   };
 
   const openCancelDialog = (appointmentId: string) => {
@@ -152,7 +171,7 @@ function MenteeSchedulesPage() {
         </Popover>
 
         {/* Right: Status Tabs */}
-        <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setStatusFilter}>
+        <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={(value) => setStatusFilter(value as AppointmentStatusEnum | "all")}>
           <TabsList className="grid w-full md:w-auto grid-cols-5">
             <TabsTrigger value="all">Tất cả</TabsTrigger>
             <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
@@ -165,8 +184,25 @@ function MenteeSchedulesPage() {
 
       {/* Appointments Grid */}
       {filteredAppointments.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Không có lịch hẹn nào.</p>
+        <div className="flex flex-col items-center justify-center py-12 space-y-6">
+          <div
+            className="relative h-64 w-64 bg-contain bg-center bg-no-repeat opacity-90 dark:opacity-70 transition-transform duration-700 hover:scale-105"
+            style={{
+              backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc0KV_9mJioueeH3g4gr9C6tYouarNzblXMTkbr3MzxDVDtvPASXUPxCwRqovN1H_KiZ8M9PplDKbEclMsn_GIxdNtIEy5rnDcHCjiNXW_2E05ifF_R7aWHeD2_P91xB1aDh8PgPvVybH1Ed3AXIk9rzxfWksOpcvQHSkRLShBPoYjcyTlL0dpNN8RyjyqxRxKivdebI7TldsQJ0D4CsTJuDkq5YTFV8R05NXRgiQL1IKBz1yrBu390Qt8ihenklbEEZugMThabQ")`
+            }}
+            aria-label="Minh họa lịch trống"
+          />
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-semibold text-foreground">Chưa có lịch hẹn nào</h3>
+            <p className="text-muted-foreground max-w-md">
+              Bạn chưa có lịch hẹn nào cho ngày này. Hãy tìm kiếm mentor phù hợp và đặt lịch ngay!
+            </p>
+          </div>
+          <Button asChild size="lg">
+            <Link to="/mentors">
+              Tìm kiếm Mentor
+            </Link>
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -209,9 +245,11 @@ function MenteeSchedulesPage() {
                           Tham gia Meet
                         </a>
                       </Button>
-                      <Button variant="outline" className="w-full gap-2">
-                        <CalendarDays className="h-4 w-4" />
-                        Thêm vào Google Calendar
+                      <Button variant="outline" className="w-full gap-2" asChild>
+                        <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer">
+                          <CalendarDays className="h-4 w-4" />
+                          Thêm vào Google Calendar
+                        </a>
                       </Button>
                     </>
                   )}
@@ -220,7 +258,7 @@ function MenteeSchedulesPage() {
                     <Button
                       variant="outline"
                       className="w-full gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
-                      onClick={() => openCancelDialog(appointment.mentorId)}
+                      onClick={() => openCancelDialog(appointment.appointmentId)}
                     >
                       <X className="h-4 w-4" />
                       Hủy yêu cầu
@@ -253,12 +291,12 @@ function MenteeSchedulesPage() {
             <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>
+            <AlertDialogCancel disabled={isCancelling}>
               Hủy
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmAction}>
-              Xác nhận
-            </AlertDialogAction>
+            <Button onClick={handleConfirmAction} disabled={isCancelling}>
+              {isCancelling ? <><Spinner /> Đang xử lý...</> : "Xác nhận"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
