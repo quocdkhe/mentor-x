@@ -1,6 +1,5 @@
 import {
   ChevronsUpDown,
-  LogOut,
 } from "lucide-react"
 
 import {
@@ -28,6 +27,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { setUser } from "@/store/auth.slice.ts";
 import { useQueryClient } from "@tanstack/react-query";
+import { getInitials } from "@/lib/utils";
 
 export function NavUser() {
   const { isMobile } = useSidebar()
@@ -81,7 +81,7 @@ export function NavUser() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user?.avatar} alt={user?.name} className="object-cover" />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{getInitials(user?.name || "")}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user?.name}</span>
@@ -91,7 +91,13 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
-              <LogOut /> Log out
+              Đăng xuất
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate({ to: "/forum" })}>
+              Chuyển đến diễn đàn
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate({ to: "/" })}>
+              Về trang chủ
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -15,13 +15,13 @@ const landingRoute = createRoute({
 
 const mentorListingRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
-  path: "/mentors"
-}).lazy(() => import("@/pages/public/mentors-listing").then((d) => d.Route))
+  path: "/mentors",
+}).lazy(() => import("@/pages/public/mentors-listing").then((d) => d.Route));
 
 const mentorProfileRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
-  path: "/mentors/$mentorId"
-}).lazy(() => import("@/pages/public/mentor-profile").then((d) => d.Route))
+  path: "/mentors/$mentorId",
+}).lazy(() => import("@/pages/public/mentor-profile").then((d) => d.Route));
 
 const forumListingRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
@@ -33,12 +33,18 @@ export const topicDetailRoute = createRoute({
   path: "/forum/topic/$topicId",
 }).lazy(() => import("@/pages/public/forum/topic-detail").then((d) => d.Route));
 
+const unauthorizedRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: "/unauthorized",
+}).lazy(() => import("@/components/errors/unauthorized").then((d) => d.Route));
+
 const publicRouteTree = publicLayoutRoute.addChildren([
   landingRoute,
   forumListingRoute,
   mentorListingRoute,
   mentorProfileRoute,
   topicDetailRoute,
+  unauthorizedRoute,
 ]);
 
 export { publicRouteTree };

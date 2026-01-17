@@ -36,31 +36,13 @@ function LoginPage() {
 
   const navigationBasedOnRole = (role: UserRole) => {
     if (role === USER_ROLES.ADMIN) {
-      navigate({ to: '/admin' });
+      navigate({ to: '/admin/user-management' });
     } else if (role === USER_ROLES.MENTOR) {
-      navigate({ to: '/mentor' });
+      navigate({ to: '/mentor/schedules' });
     } else if (role === USER_ROLES.USER) {
       navigate({ to: '/user' });
     }
   }
-
-  // const handleGoogleLogin = (credentialResponse: GoogleCredentialResponse) => {
-  //   googleLoginMutation.mutate({
-  //     token: credentialResponse.credential
-  //   }, {
-  //     onSuccess: (data) => {
-  //       // Refetch redux
-  //       dispatch(setUser(data));
-  //       console.log("Logged in user data:", data);
-  //       // check for role
-  //       navigationBasedOnRole(data.role);
-  //       toast.success('Đăng nhập thành công');
-  //     },
-  //     onError: (err) => {
-  //       toast.error(`Đăng nhập thất bại: ${err.response?.data.message || err.message}`);
-  //     }
-  //   });
-  // }
 
   const loginWithGoogle = useGoogleLogin({
     flow: 'auth-code',
