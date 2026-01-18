@@ -1,11 +1,8 @@
 import { createLazyRoute } from "@tanstack/react-router";
+import { Error403 } from "./error-403";
 
 function Unauthorized() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold">Bạn không có quyền truy cập trang này</h1>
-    </div>
-  );
+  return <Error403 />;
 }
 
 export default Unauthorized;

@@ -9,6 +9,7 @@ import { adminRouteTree } from "./admin.router";
 import { publicRouteTree } from "./public.router";
 import { mentorRouteTree } from "./mentor.router";
 import { redirectIfAuthenticated } from "@/utils/route-guards";
+import { Error404 } from "@/components/errors";
 
 export const rootRoute = createRootRoute({
   component: App,
@@ -45,6 +46,7 @@ export const router = createRouter({
   defaultPreload: "intent",
   defaultStaleTime: 5000,
   scrollRestoration: true,
+  defaultNotFoundComponent: Error404,
 });
 
 declare module "@tanstack/react-router" {

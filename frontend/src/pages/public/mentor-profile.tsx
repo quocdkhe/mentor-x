@@ -11,7 +11,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { BookingDialog } from "@/components/features/booking/booking-dialog";
-import DefaultSkeleton from "@/components/skeletons/default.skeleton";
+import { MentorProfileSkeleton } from "@/components/skeletons/mentor-profile.skeleton";
 import {
   Calendar,
   MessageCircle,
@@ -35,7 +35,7 @@ const MentorProfilePage = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   if (isLoading) {
-    return <DefaultSkeleton />
+    return <MentorProfileSkeleton />
   }
 
   if (error || !mentor) {
@@ -170,9 +170,10 @@ const MentorProfilePage = () => {
                 <Card className="rounded-2xl shadow-sm border">
                   <CardContent className="p-6 sm:p-8">
                     <h2 className="text-xl font-bold mb-4">Về tôi</h2>
-                    <div className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed mb-8">
-                      <p>{mentor.biography}</p>
-                    </div>
+                    <div
+                      className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed mb-8"
+                      dangerouslySetInnerHTML={{ __html: mentor.biography }}
+                    />
 
                     <div className="space-y-8 pt-6 border-t">
                       {/* Skills */}
