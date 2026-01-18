@@ -45,21 +45,7 @@ namespace backend.Configurations
                     }
                 };
             });
-
             services.AddAuthorization();
-
-            // Cors configuration
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy", policy =>
-                {
-                    policy
-                        .WithOrigins("http://localhost:5173", "http://localhost:4173", "https://mentor-x-gamma.vercel.app") // your frontend URL
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials(); // allow cookies
-                });
-            });
             return services;
         }
     }

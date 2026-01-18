@@ -20,6 +20,7 @@ builder.Services.AddMemoryCache(); // Memory cache store Google access token
 // Add services to the container.
 builder.Services.AddProjectServices();
 builder.Services.AddJwtConfig(builder.Configuration); // JWT and CORS configuration
+builder.Services.AddCorsConfig(builder.Configuration); // CORS configuration
 
 
 var app = builder.Build();

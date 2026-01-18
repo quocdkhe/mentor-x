@@ -77,7 +77,7 @@ namespace backend.Services
                     Id = Guid.NewGuid(),
                     UserId = newUser.Id,
                     Biography = "",
-                    Status = "Approved",
+                    Status = "approved",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
