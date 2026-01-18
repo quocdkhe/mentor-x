@@ -10,14 +10,16 @@ namespace backend.Services
 
         private readonly IAmazonS3 _s3Client;
         private readonly string _bucketName;
-        private readonly string _baseUrl;
+        private readonly string _publicUrl;
 
         public FileService(IAmazonS3 s3Client, IConfiguration configuration)
         {
             _s3Client = s3Client;
             _bucketName = configuration["S3Credential:BUCKET_NAME"]!;
-            _baseUrl = configuration["S3Credential:ServiceURL"]!;
+            _publicUrl = configuration["S3Credential:PublicUrl"]!;
         }
+
+
 
         public async Task<(bool Success, string? UrlOrError)> UploadFileAsync(IFormFile file)
         {
@@ -26,28 +28,50 @@ namespace backend.Services
 
             try
             {
-                var objectKey = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                // Generate unique object key
+                var objectKey = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
-                using var stream = file.OpenReadStream();
-                var uploadRequest = new TransferUtilityUploadRequest
+                // Read file into a MemoryStream
+                byte[] fileBytes;
+                await using (var ms = new MemoryStream())
                 {
-                    InputStream = stream,
-                    Key = objectKey,
+                    await file.CopyToAsync(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+                // Build the PutObjectRequest for R2
+                var request = new PutObjectRequest
+                {
                     BucketName = _bucketName,
-                    ContentType = file.ContentType
+                    Key = objectKey,
+                    ContentType = file.ContentType,
+                    InputStream = new MemoryStream(fileBytes),
+
+                    // FROM CLOUDFARE DOCS — REQUIRED FOR R2
+                    DisablePayloadSigning = true,
+                    DisableDefaultChecksumValidation = true
                 };
 
-                var transferUtility = new TransferUtility(_s3Client);
-                await transferUtility.UploadAsync(uploadRequest);
+                // Upload
+                await _s3Client.PutObjectAsync(request);
 
-                var fileUrl = $"{_baseUrl}/{_bucketName}/{objectKey}";
+                // Construct public URL
+                var fileUrl = _publicUrl.Contains("r2-storage")
+                    ? $"{_publicUrl}/{objectKey}"
+                    : $"{_publicUrl}/{_bucketName}/{objectKey}";
+
                 return (true, fileUrl);
+            }
+            catch (AmazonS3Exception ex)
+            {
+                return (false, $"S3 error: {ex.Message}");
             }
             catch (Exception ex)
             {
                 return (false, ex.Message);
             }
         }
+
 
         public async Task<(bool Success, string? UrlOrError)> UpdateFileAsync(string fileUrl, IFormFile newFile)
         {
