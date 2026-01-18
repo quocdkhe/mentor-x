@@ -7,10 +7,14 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Provider } from 'react-redux'
 import { store } from './store/store'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { fetchCurrentUser } from './store/auth.slice'
 import './index.css'
 
 const queryClient = new QueryClient()
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+// Dispatch fetchCurrentUser BEFORE rendering to avoid race condition with route guards
+store.dispatch(fetchCurrentUser())
 
 createRoot(document.getElementById('root')!).render(
   <Provider store={store}>

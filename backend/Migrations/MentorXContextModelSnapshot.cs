@@ -40,6 +40,117 @@ namespace backend.Migrations
                     b.ToTable("mentor_skill", (string)null);
                 });
 
+            modelBuilder.Entity("backend.Models.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime>("EndAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end_at");
+
+                    b.Property<string>("GoogleCalendarLink")
+                        .HasColumnType("text")
+                        .HasColumnName("google_calendar_link");
+
+                    b.Property<string>("MeetingLink")
+                        .HasColumnType("text")
+                        .HasColumnName("meeting_link");
+
+                    b.Property<Guid>("MenteeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mentee_id");
+
+                    b.Property<Guid>("MentorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mentor_id");
+
+                    b.Property<DateTime>("StartAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("appointments_pkey");
+
+                    b.HasIndex("MenteeId");
+
+                    b.HasIndex("MentorId");
+
+                    b.ToTable("appointments", (string)null);
+                });
+
+            modelBuilder.Entity("backend.Models.Availability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time")
+                        .HasColumnName("end_time");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<Guid>("MentorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mentor_id");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time")
+                        .HasColumnName("start_time");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("availabilities_pkey");
+
+                    b.HasIndex("MentorId");
+
+                    b.ToTable("availabilities", (string)null);
+                });
+
             modelBuilder.Entity("backend.Models.ForumPost", b =>
                 {
                     b.Property<Guid>("Id")
@@ -123,6 +234,53 @@ namespace backend.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("forum_topics", (string)null);
+                });
+
+            modelBuilder.Entity("backend.Models.GoogleAccount", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("GoogleUserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("google_user_id");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text")
+                        .HasColumnName("refresh_token");
+
+                    b.Property<bool>("RefreshTokenRevoked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("refresh_token_revoked");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("scope");
+
+                    b.Property<string>("TokenType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("token_type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("UserId")
+                        .HasName("google_accounts_pkey");
+
+                    b.ToTable("google_accounts", (string)null);
                 });
 
             modelBuilder.Entity("backend.Models.MentorProfile", b =>
@@ -391,6 +549,39 @@ namespace backend.Migrations
                         .HasConstraintName("fk_mentor_skill_skill");
                 });
 
+            modelBuilder.Entity("backend.Models.Appointment", b =>
+                {
+                    b.HasOne("backend.Models.User", "Mentee")
+                        .WithMany()
+                        .HasForeignKey("MenteeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointments_mentee");
+
+                    b.HasOne("backend.Models.User", "Mentor")
+                        .WithMany()
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointments_mentor");
+
+                    b.Navigation("Mentee");
+
+                    b.Navigation("Mentor");
+                });
+
+            modelBuilder.Entity("backend.Models.Availability", b =>
+                {
+                    b.HasOne("backend.Models.User", "Mentor")
+                        .WithMany()
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_availabilities_mentor");
+
+                    b.Navigation("Mentor");
+                });
+
             modelBuilder.Entity("backend.Models.ForumPost", b =>
                 {
                     b.HasOne("backend.Models.ForumTopic", "ForumTopic")
@@ -420,6 +611,18 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_forum_topic_created_by");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Models.GoogleAccount", b =>
+                {
+                    b.HasOne("backend.Models.User", "User")
+                        .WithOne()
+                        .HasForeignKey("backend.Models.GoogleAccount", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_google_accounts_user");
 
                     b.Navigation("User");
                 });

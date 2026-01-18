@@ -116,18 +116,18 @@ export default function SimpleNavbar() {
               <PopoverContent align="start" className="w-48 p-2">
                 <div className="flex flex-col gap-1">
                   <Link
-                    to="/user"
+                    to="/user/schedules"
                     className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Home
+                    Lịch học của tôi
                   </Link>
                   <Link
                     to="/user/about"
                     className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    About
+                    Đội ngũ
                   </Link>
                 </div>
               </PopoverContent>
@@ -147,16 +147,16 @@ export default function SimpleNavbar() {
           <nav className="hidden md:flex items-center gap-1">
             <Link
               activeOptions={{ exact: true }}
-              to="/user"
+              to="/user/schedules"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
-              Trang chủ
+              Lịch học của tôi
             </Link>
             <Link
-              to="/user/about"
+              to="/user/profile"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
-              Đội ngũ
+              Tài khoản của tôi
             </Link>
           </nav>
         </div>
@@ -210,6 +210,9 @@ export default function SimpleNavbar() {
                     </div>
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate({ to: "/forum" })}>
+                    Chuyển đến diễn đàn
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleProfileNavigation}>
                     Tài khoản của tôi
                   </DropdownMenuItem>

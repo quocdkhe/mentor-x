@@ -13,7 +13,7 @@ export function formatDate(dateString: string | undefined) {
   const date = new Date(dateString);
   const now = new Date();
   const diffInHours = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
   );
   const diffInDays = Math.floor(diffInHours / 24);
 
@@ -82,4 +82,12 @@ export function getTopicTypeMeta(type: TopicType | undefined): {
     default:
       return { label: "Khác", variant: "outline" };
   }
+}
+
+export function convertDateToUTC(date: Date): string {
+  // Set time to noon to avoid timezone-related date shifts when converting to ISO
+  const dateAtNoon = new Date(date);
+  dateAtNoon.setHours(12, 0, 0, 0);
+  const dateISOString = dateAtNoon.toISOString();
+  return dateISOString;
 }

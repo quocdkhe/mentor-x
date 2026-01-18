@@ -1,8 +1,6 @@
 import * as React from "react"
 import {
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
+  Calendar,
   User,
 } from "lucide-react"
 
@@ -15,55 +13,26 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar.tsx"
-import {AppTitle} from "@/components/dashboard/app-title.tsx";
+import { AppTitle } from "@/components/dashboard/app-title.tsx";
 
 // This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+const navMain = [
+  {
+    title: "Quản lý lịch",
+    url: "/mentor/schedules" as const,
+    icon: Calendar,
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Chỉnh sửa thông tin",
-      url: "/mentor/edit-form" as const,
-      icon: User,
-    },
-    // {
-    //   title: "Models",
-    //   url: "#",
-    //   icon: Bot,
-    // },
-    // {
-    //   title: "Documentation",
-    //   url: "#",
-    //   icon: BookOpen,
-    // },
-    // {
-    //   title: "Settings",
-    //   url: "#",
-    //   icon: Settings2,
-    // },
-  ]
-}
+  {
+    title: "Lên lịch khả dụng",
+    url: "/mentor/set-availabilities" as const,
+    icon: Calendar,
+  },
+  {
+    title: "Chỉnh sửa thông tin",
+    url: "/mentor/edit-form" as const,
+    icon: User,
+  },
+]
 
 export function MentorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -73,7 +42,7 @@ export function MentorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

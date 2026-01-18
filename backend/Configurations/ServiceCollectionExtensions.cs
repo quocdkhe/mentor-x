@@ -1,4 +1,4 @@
-﻿using backend.Services; 
+﻿using backend.Services;
 using backend.Services.Interfaces;
 
 namespace backend.Configurations
@@ -16,6 +16,8 @@ namespace backend.Configurations
             services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
             services.AddScoped<IMentorService, MentorService>();
             services.AddScoped<IForumService, ForumService>();
+            services.AddScoped<IBookingService, BookingService>();
+            services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
             return services;
         }
     }

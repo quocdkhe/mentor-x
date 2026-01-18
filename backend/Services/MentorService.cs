@@ -52,6 +52,7 @@ namespace backend.Services
             .Select(m => new MentorListItemDTO
             {
                 Id = m.Id,
+                UserId = m.UserId,
                 Name = m.User.Name,
                 Avatar = m.User.Avatar,
                 Biography = m.Biography,
@@ -88,14 +89,14 @@ namespace backend.Services
             return skills;
         }
 
-        public async Task<MentorDetailResponseDTO?> GetMentorById(Guid mentorId)
+        public async Task<MentorDetailResponseDTO?> GetMentorByUserId(Guid userId)
         {
             var mentor = await _context.MentorProfiles
                 .Include(m => m.User)
                 .Include(m => m.MentorSkills)
                 .Include(m => m.MentorReviews)
                 .ThenInclude(r => r.User)
-                .FirstOrDefaultAsync(m => m.Id == mentorId);
+                .FirstOrDefaultAsync(m => m.UserId == userId);
 
             if (mentor == null)
                 return null;
@@ -103,6 +104,7 @@ namespace backend.Services
             var mentorDetail = new MentorDetailResponseDTO
             {
                 Id = mentor.Id,
+                UserId = mentor.UserId,
                 Name = mentor.User.Name,
                 Avatar = mentor.User.Avatar,
                 Biography = mentor.Biography,
@@ -278,6 +280,13 @@ namespace backend.Services
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Guid?> GetMentorIdByUserId(Guid userId)
+        {
+            var mentor = await _context.MentorProfiles
+                .FirstOrDefaultAsync(m => m.UserId == userId);
+            return mentor?.Id;
         }
     }
 }

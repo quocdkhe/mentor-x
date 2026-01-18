@@ -12,7 +12,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
   return (
     <Link
       to="/mentors/$mentorId"
-      params={{ mentorId: mentor.id }}
+      params={{ mentorId: mentor.userId }}
       className="block h-full"
     >
       <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 group p-0 rounded-2xl">

@@ -9,18 +9,30 @@ import {
   SheetClose,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAppSelector } from "@/store/hooks";
 import { Skeleton } from "../ui/skeleton";
+import { USER_ROLES } from "@/types/user";
 
 
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoading } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  const navigationBasedOnRole = () => {
+    if (user?.role === USER_ROLES.ADMIN) {
+      navigate({ to: '/admin/user-management' });
+    } else if (user?.role === USER_ROLES.MENTOR) {
+      navigate({ to: '/mentor/schedules' });
+    } else if (user?.role === USER_ROLES.USER) {
+      navigate({ to: '/user' });
+    }
+  }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
           <GraduationCap className="h-8 w-8" />
@@ -47,8 +59,8 @@ export function Navbar() {
           {isLoading ? (
             <Skeleton className="h-10 w-24 rounded-md" />
           ) : user ? (
-            <Button>
-              <Link to="/user">Trang của tôi</Link>
+            <Button onClick={navigationBasedOnRole}>
+              Trang của tôi
             </Button>
           ) : (<>
             <Button variant="ghost">

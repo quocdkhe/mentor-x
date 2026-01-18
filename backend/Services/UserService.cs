@@ -70,6 +70,19 @@ namespace backend.Services
                 Password = PasswordHashing.HashPassword("123456") // Default password
             };
             _context.Users.Add(newUser);
+            if(newUser.Role == UserRole.Mentor)
+            {
+                var mentorProfile = new MentorProfile
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = newUser.Id,
+                    Biography = "",
+                    Status = "Approved",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.MentorProfiles.Add(mentorProfile);
+            }
             await _context.SaveChangesAsync();
             return ServiceResult<bool>.Ok(true, "Tạo người dùng thành công.");
         }
