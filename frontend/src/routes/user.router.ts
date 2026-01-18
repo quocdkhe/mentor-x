@@ -1,11 +1,16 @@
 import UserLayout from "@/layouts/user.layout";
 import { createRoute } from "@tanstack/react-router";
 import { rootRoute } from "./router";
+import { requireRole } from "@/utils/route-guards";
+import { USER_ROLES } from "@/types/user";
 
 const userLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "user",
   component: UserLayout,
+  beforeLoad: async () => {
+    await requireRole(USER_ROLES.USER);
+  },
 });
 
 const aboutRoute = createRoute({

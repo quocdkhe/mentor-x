@@ -8,6 +8,7 @@ import App from "@/App";
 import { adminRouteTree } from "./admin.router";
 import { publicRouteTree } from "./public.router";
 import { mentorRouteTree } from "./mentor.router";
+import { redirectIfAuthenticated } from "@/utils/route-guards";
 
 export const rootRoute = createRootRoute({
   component: App,
@@ -17,11 +18,17 @@ export const rootRoute = createRootRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "login",
+  beforeLoad: async () => {
+    await redirectIfAuthenticated();
+  },
 }).lazy(() => import("@/pages/public/login").then((d) => d.Route));
 
 const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "register",
+  beforeLoad: async () => {
+    await redirectIfAuthenticated();
+  },
 }).lazy(() => import("@/pages/public/register.tsx").then((d) => d.Route));
 
 const routeTree = rootRoute.addChildren([

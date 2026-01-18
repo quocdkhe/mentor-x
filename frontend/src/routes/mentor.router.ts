@@ -1,19 +1,24 @@
 import MentorLayout from "@/layouts/mentor.layout";
 import { createRoute } from "@tanstack/react-router";
 import { rootRoute } from "./router";
+import { requireRole } from "@/utils/route-guards";
+import { USER_ROLES } from "@/types/user";
 
 // Pathless routes, used for layouts or grouping, in Route, use /user/*
 const mentorLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mentor",
   component: MentorLayout,
+  beforeLoad: async () => {
+    await requireRole(USER_ROLES.MENTOR);
+  },
 });
 
 const editProfileRoute = createRoute({
   getParentRoute: () => mentorLayoutRoute,
   path: "/edit-form",
 }).lazy(() =>
-  import("@/pages/mentor/mentor-edit-profile").then((d) => d.Route)
+  import("@/pages/mentor/mentor-edit-profile").then((d) => d.Route),
 );
 
 const setAvailabilitiesRoute = createRoute({
