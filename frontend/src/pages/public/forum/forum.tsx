@@ -16,8 +16,12 @@ import { formatDate, getInitials, getTopicTypeMeta } from "@/lib/utils";
 import { createLazyRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
+import { USER_ROLES } from "@/types/user";
 
 export function ForumListing() {
+  const user = useSelector((state: RootState) => state.auth.user);
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
   const pageSize = 10;
@@ -82,13 +86,23 @@ export function ForumListing() {
                   </TableCell>
 
                   <TableCell>
-                    <Link
-                      to="/forum/topic/$topicId"
-                      params={{ topicId: topic.id }}
-                      className="font-medium hover:underline"
-                    >
-                      {topic.title}
-                    </Link>
+                    {user?.role === USER_ROLES.USER ? (
+                      <Link
+                        to="/user/forum/topic/$topicId"
+                        params={{ topicId: topic.id }}
+                        className="font-medium hover:underline"
+                      >
+                        {topic.title}
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/forum/topic/$topicId"
+                        params={{ topicId: topic.id }}
+                        className="font-medium hover:underline"
+                      >
+                        {topic.title}
+                      </Link>
+                    )}
                   </TableCell>
 
                   <TableCell>
@@ -131,3 +145,5 @@ export function ForumListing() {
 }
 
 export const Route = createLazyRoute('/public/forum')({ component: ForumListing });
+
+export const UserRoute = createLazyRoute('/user/forum')({ component: ForumListing });

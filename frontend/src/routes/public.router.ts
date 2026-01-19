@@ -28,7 +28,7 @@ const forumListingRoute = createRoute({
   path: "/forum",
 }).lazy(() => import("@/pages/public/forum/forum").then((d) => d.Route));
 
-export const topicDetailRoute = createRoute({
+const topicDetailRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: "/forum/topic/$topicId",
 }).lazy(() => import("@/pages/public/forum/topic-detail").then((d) => d.Route));

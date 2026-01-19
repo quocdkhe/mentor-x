@@ -20,15 +20,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-const route = getRouteApi('/public/forum/topic/$topicId');
-
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
+import { USER_ROLES } from "@/types/user";
 
 export function TopicDetail() {
   const textEditorRef = useRef<TextEditorHandle>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const route = user?.role === USER_ROLES.USER ? getRouteApi('/user/forum/topic/$topicId') : getRouteApi('/public/forum/topic/$topicId');
   const { topicId } = route.useParams();
   const pageSize = 10;
   const postsQuery = useGetAllPostsByTopicId(topicId, currentPage, pageSize);
@@ -190,3 +192,7 @@ export function TopicDetail() {
 export const Route = createLazyRoute('/public/forum/topic/$topicId')({
   component: TopicDetail
 })
+
+export const UserRoute = createLazyRoute('/user/forum/topic/$topicId')({
+  component: TopicDetail
+});
