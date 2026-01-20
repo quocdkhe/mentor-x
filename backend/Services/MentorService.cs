@@ -17,7 +17,31 @@ namespace backend.Services
             _context = context;
         }
 
-        public async Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest, String searchTerm = "", Guid skillId = default)
+        private async Task<double> GetMentoredHours(Guid mentorId, Guid? menteeId = null)
+        {
+            var completedAppointments = await _context.Appointments
+                .Where(a => a.MentorId == mentorId && a.MenteeId == menteeId && a.Status == AppointmentStatusEnum.Completed)
+                .ToListAsync();
+
+            var totalHours = completedAppointments.Sum(a =>
+            {
+                var duration = a.EndAt - a.StartAt;
+                return duration.TotalHours;
+            });
+
+            return totalHours;
+        }
+
+        private async Task<bool> HasUserStudiedWithMentor(Guid menteeId, Guid mentorId)
+        {
+            var hasStudied = await _context.Appointments
+                .AnyAsync(a => a.MenteeId == menteeId && 
+                              a.MentorId == mentorId && 
+                              a.Status == AppointmentStatusEnum.Completed);
+            return hasStudied;
+        }
+
+        public async Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest, String searchTerm = "", Guid skillId = default, Guid? currentUserId = null)
         {
             var page = paginationRequest.Page < 1 ? 1 : paginationRequest.Page;
             var pageSize = paginationRequest.PageSize < 1 ? 10 : paginationRequest.PageSize;
@@ -43,28 +67,35 @@ namespace backend.Services
                 query = query.Where(m => m.MentorSkills.Any(s => s.Id == skillId));
             }
             
-            var items = await query
+            var mentorData = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Where(m => m.Status == "approved")
             .Include(m => m.User)
             .Include(m => m.MentorSkills)
-            .Select(m => new MentorListItemDTO
-            {
-                Id = m.Id,
-                UserId = m.UserId,
-                Name = m.User.Name,
-                Avatar = m.User.Avatar,
-                Biography = m.Biography,
-                Skills = m.MentorSkills.Select(s => s.Name).ToList(),
-                AvgRating = m.AvgRating,
-                TotalRatings = m.TotalRatings,
-                PricePerHour = m.PricePerHour,
-                Position = m.Position,
-                Company = m.Company,
-                YearsOfExperience = m.YearsOfExperience
-            })
             .ToListAsync();
+
+            var items = new List<MentorListItemDTO>();
+            foreach (var m in mentorData)
+            {
+                var hasStudied = currentUserId.HasValue ? await HasUserStudiedWithMentor(currentUserId.Value, m.UserId) : false;
+                items.Add(new MentorListItemDTO
+                {
+                    Id = m.Id,
+                    UserId = m.UserId,
+                    Name = m.User.Name,
+                    Avatar = m.User.Avatar,
+                    Biography = m.Biography,
+                    Skills = m.MentorSkills.Select(s => s.Name).ToList(),
+                    AvgRating = m.AvgRating,
+                    TotalRatings = m.TotalRatings,
+                    PricePerHour = m.PricePerHour,
+                    Position = m.Position,
+                    Company = m.Company,
+                    YearsOfExperience = m.YearsOfExperience,
+                    IsMeeting = hasStudied
+                });
+            }
             
             return new PaginationDto<MentorListItemDTO>
             {
@@ -89,7 +120,7 @@ namespace backend.Services
             return skills;
         }
 
-        public async Task<MentorDetailResponseDTO?> GetMentorByUserId(Guid userId)
+        public async Task<MentorDetailResponseDTO?> GetMentorByUserId(Guid userId, Guid? currentUserId = null)
         {
             var mentor = await _context.MentorProfiles
                 .Include(m => m.User)
@@ -100,6 +131,8 @@ namespace backend.Services
 
             if (mentor == null)
                 return null;
+
+            var MentoredHours = await GetMentoredHours(mentor.UserId, currentUserId);
 
             var mentorDetail = new MentorDetailResponseDTO
             {
@@ -115,6 +148,7 @@ namespace backend.Services
                 Position = mentor.Position,
                 Company = mentor.Company,
                 YearsOfExperience = mentor.YearsOfExperience,
+                MeetingHours = MentoredHours,
                 Reviews = mentor.MentorReviews
                     .OrderByDescending(r => r.CreatedAt)
                     .Select(r => new MentorReviewDTO
@@ -142,7 +176,6 @@ namespace backend.Services
 
             if (mentor == null)
                 return null;
-
             var profileResponse = new MentorProfileResponseDTO
             {
                 User = new UserInfoResponseDTO

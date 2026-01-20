@@ -23,7 +23,8 @@ namespace backend.Controllers
         [HttpGet("")]
         public async Task<ActionResult<MentorListResponseDTO>> GetAllMentors([FromQuery] PaginationRequest paginationRequest, String searchTerm = "", Guid skillId = default)
         {
-            var mentorList = await _mentorService.GetAllMentors(paginationRequest, searchTerm, skillId);
+            var currentUserId = User.GetUserId();
+            var mentorList = await _mentorService.GetAllMentors(paginationRequest, searchTerm, skillId, currentUserId);
             return Ok(mentorList);
         }
 
@@ -37,7 +38,8 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MentorDetailResponseDTO>> GetMentorByUserId(Guid id)
         {
-            var mentor = await _mentorService.GetMentorByUserId(id);
+            var currentUserId = User.GetUserId();
+            var mentor = await _mentorService.GetMentorByUserId(id, currentUserId);
             if (mentor == null)
                 return NotFound(new { message = "Không tìm thấy mentor." });
 
