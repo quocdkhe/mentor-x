@@ -134,7 +134,7 @@ namespace backend.Services
                     UpdatedAt = DateTime.UtcNow
                 });
             await _context.SaveChangesAsync();
-            return ServiceResult<Message>.Ok(new Message("Ok"));
+            return ServiceResult<Message>.Ok(new Message("Đặt lịch thành công, vui lòng chuyển đến trang lịch học của tôi"));
         }
 
         public async Task<ServiceResult<List<MentorAppointmentDto>>> GetMentorAppointments(Guid mentorId, DateTime? date)
@@ -285,7 +285,7 @@ namespace backend.Services
             appointment.Status = AppointmentStatusEnum.Completed;
             _context.Appointments.Update(appointment);
             _context.SaveChanges();
-            return Task.FromResult(ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã bị từ chối")));
+            return Task.FromResult(ServiceResult<Message>.Ok(new Message("Thành công")));
         }
 
         public Task<ServiceResult<Message>> CancelAppointment(Guid userId, Guid appointmentId)
