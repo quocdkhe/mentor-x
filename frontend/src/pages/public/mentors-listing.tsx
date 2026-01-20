@@ -161,3 +161,7 @@ export default MentorListing;
 export const Route = createLazyRoute("/public/mentors")({
   component: MentorListing,
 });
+
+export const UserRoute = createLazyRoute("/user/mentors")({
+  component: MentorListing,
+});

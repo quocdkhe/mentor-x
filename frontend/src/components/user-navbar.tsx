@@ -21,29 +21,8 @@ import { useLogout } from "@/api/auth";
 import { toast } from "sonner";
 import { setUser } from "@/store/auth.slice";
 import { useQueryClient } from "@tanstack/react-query";
-import { USER_ROLES } from "@/types/user";
-
-// Simple logo component
-const Logo = () => (
-  <svg width="32" height="32" viewBox="0 0 324 323" fill="currentColor">
-    <rect
-      x="88.1023"
-      y="144.792"
-      width="151.802"
-      height="36.5788"
-      rx="18.2894"
-      transform="rotate(-38.5799 88.1023 144.792)"
-    />
-    <rect
-      x="85.3459"
-      y="244.537"
-      width="151.802"
-      height="36.5788"
-      rx="18.2894"
-      transform="rotate(-38.5799 85.3459 244.537)"
-    />
-  </svg>
-);
+import { GraduationCap, LogOut } from "lucide-react";
+import { getInitials } from "@/lib/utils";
 
 // Hamburger icon
 const HamburgerIcon = () => (
@@ -59,14 +38,6 @@ const HamburgerIcon = () => (
   </svg>
 );
 
-const getInitials = (name: string) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-};
 
 export default function SimpleNavbar() {
   const { user, isLoading } = useAppSelector((state) => state.auth);
@@ -92,14 +63,6 @@ export default function SimpleNavbar() {
     });
   };
 
-  const handleProfileNavigation = () => {
-    if (user?.role === USER_ROLES.MENTOR) {
-      navigate({ to: "/mentor/edit-form" });
-    } else {
-      navigate({ to: "/user/profile" });
-    }
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -116,18 +79,32 @@ export default function SimpleNavbar() {
               <PopoverContent align="start" className="w-48 p-2">
                 <div className="flex flex-col gap-1">
                   <Link
+                    to="/user/mentors"
+                    className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Tìm mentor
+                  </Link>
+                  <Link
                     to="/user/schedules"
                     className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Lịch học của tôi
+                    Lịch học
                   </Link>
                   <Link
-                    to="/user/about"
+                    to="/user/forum"
                     className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Đội ngũ
+                    Diễn đàn
+                  </Link>
+                  <Link
+                    to="/user/profile"
+                    className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Tài khoản của tôi
                   </Link>
                 </div>
               </PopoverContent>
@@ -135,22 +112,31 @@ export default function SimpleNavbar() {
           </div>
 
           {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <Logo />
-            <span className="font-bold text-xl hidden sm:block">Brand</span>
+          <Link to="/user" className="flex items-center gap-2">
+            <GraduationCap className="h-8 w-8" />
+            <span className="text-xl font-bold">Mentor-X</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             <Link
+              to="/user/mentors"
+              className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
+            >
+              Tìm mentor
+            </Link>
+            <Link
               activeOptions={{ exact: true }}
               to="/user/schedules"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
-              Lịch học của tôi
+              Lịch học
+            </Link>
+            <Link
+              to="/user/forum"
+              className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
+            >
+              Diễn đàn
             </Link>
             <Link
               to="/user/profile"
@@ -210,14 +196,9 @@ export default function SimpleNavbar() {
                     </div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate({ to: "/forum" })}>
-                    Chuyển đến diễn đàn
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleProfileNavigation}>
-                    Tài khoản của tôi
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     Đăng xuất
+                    <LogOut className="ml-auto h-4 w-4" />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

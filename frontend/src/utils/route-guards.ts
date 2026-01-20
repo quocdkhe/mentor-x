@@ -53,8 +53,6 @@ export const requireAuth = async () => {
   // Wait for auth to finish loading
   const { user } = await waitForAuthInit();
 
-  console.log("requireAuth - user after waiting:", user);
-
   if (!user) {
     throw redirect({
       to: "/login",
@@ -77,8 +75,6 @@ export const requireRole = async (allowedRole: UserRole) => {
       to: "/login",
     });
   }
-
-  console.log("requireRole - user after waiting:", user);
 
   if (user.role !== allowedRole) {
     throw redirect({

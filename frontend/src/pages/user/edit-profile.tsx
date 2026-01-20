@@ -129,11 +129,15 @@ export function ProfileEditPage() {
 
 
   if (isLoading) {
-    return <DefaultSkeleton />;
+    return (
+      <div className="container mx-auto pt-12 pb-20 min-h-screen">
+        <DefaultSkeleton />
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto pt-12">
+    <div className="container mx-auto pt-12 pb-20 min-h-screen">
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12 items-start">
         <div className="flex flex-col items-center gap-6">
           <Avatar className="h-40 w-40 border-4 border-border shadow-xl">

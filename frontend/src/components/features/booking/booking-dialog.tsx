@@ -13,6 +13,15 @@ import { Spinner } from "@/components/ui/spinner";
 import type { MentorInfo } from "@/types/mentor";
 import type { TimeBlockDto } from "@/types/appointment";
 import { BookingSlotsSkeleton } from "@/components/skeletons/booking-slots.skeleton";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -27,6 +36,7 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [startRange, setStartRange] = useState<{ date: Date; time: string; blockIdx: number } | null>(null);
   const [endRange, setEndRange] = useState<{ date: Date; time: string } | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Fetch mentor schedules for the selected date
   const { data: scheduleData, isLoading: isLoadingSchedules } = useGetMentorSchedules(convertDateToUTC(selectedDate), mentor.userId);
@@ -258,11 +268,13 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
         // Reset selection
         setStartRange(null);
         setEndRange(null);
-        // Close dialog
+        // Close confirmation dialog and main dialog
+        setShowConfirmDialog(false);
         onClose();
       },
       onError: (err) => {
         toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
+        setShowConfirmDialog(false);
       }
     });
   };
@@ -463,9 +475,8 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
               <Button
                 className="flex-1 sm:flex-none min-w-[140px]"
                 disabled={!startRange || !endRange || bookingMutation.isPending}
-                onClick={handleConfirmBooking}
+                onClick={() => setShowConfirmDialog(true)}
               >
-                {bookingMutation.isPending && <Spinner />}
                 Xác nhận đặt lịch
               </Button>
             </div>
@@ -477,6 +488,46 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
           </div>
         </div>
       </DialogContent>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận đặt lịch</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Bạn có chắc chắn muốn đặt lịch với <span className="font-semibold">{mentor.name}</span>?</p>
+              {startRange && endRange && (
+                <div className="mt-3 p-3 bg-muted rounded-lg space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Thời gian:</span>
+                    <span className="font-medium">{startRange.time} - {endRange.time}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Ngày:</span>
+                    <span className="font-medium capitalize">{new Intl.DateTimeFormat("vi-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(startRange.date)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Thời lượng:</span>
+                    <span className="font-medium">{duration} phút</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2 mt-2">
+                    <span className="text-muted-foreground">Tổng chi phí:</span>
+                    <span className="font-bold text-primary">{new Intl.NumberFormat('vi-VN').format(Math.round((duration / 60) * mentor.pricePerHour))} VND</span>
+                  </div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bookingMutation.isPending}>
+              Hủy
+            </AlertDialogCancel>
+            <Button onClick={handleConfirmBooking} disabled={bookingMutation.isPending}>
+              {bookingMutation.isPending ? <><Spinner /> Đang xử lý...</> : "Xác nhận"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

@@ -19,13 +19,11 @@ namespace backend.Controllers
             _bookingService = bookingService;
         }
 
-        [HttpGet("/mentors/me/availabilities")]
-        [Authorize(Roles = Roles.Mentor)]
-        public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities()
+        [HttpGet("/mentors/{mentorId}/availabilities")]
+        public async Task<ActionResult<List<AvailabilityResponseDTO>>> GetAvailabilities([FromRoute] Guid mentorId)
         {
-            var mentorGuid = User.GetUserId();
-            var availabilities = await _bookingService.GetAvailabilities(mentorGuid);
-            return availabilities;
+            var availabilities = await _bookingService.GetAvailabilities(mentorId);
+            return Ok(availabilities);
         }
 
         [HttpPatch("/mentors/me/availabilities")]

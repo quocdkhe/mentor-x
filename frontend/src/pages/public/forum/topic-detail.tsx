@@ -20,15 +20,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-const route = getRouteApi('/public/forum/topic/$topicId');
-
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
+import { USER_ROLES } from "@/types/user";
 
 export function TopicDetail() {
   const textEditorRef = useRef<TextEditorHandle>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const route = user?.role === USER_ROLES.USER ? getRouteApi('/user/forum/topic/$topicId') : getRouteApi('/public/forum/topic/$topicId');
   const { topicId } = route.useParams();
   const pageSize = 10;
   const postsQuery = useGetAllPostsByTopicId(topicId, currentPage, pageSize);
@@ -121,7 +123,7 @@ export function TopicDetail() {
     <div className="container mx-auto px-4 pt-6 pb-6">
       <div className="w-full space-y-6">
         <Button variant="outline" className="mb-4" asChild>
-          <Link to='/forum'>
+          <Link to={user?.role === USER_ROLES.USER ? '/user/forum' : '/forum'}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Quay lại
           </Link>
@@ -154,15 +156,24 @@ export function TopicDetail() {
             />
           ))}
         </div>
-
-        <TextEditor
-          ref={textEditorRef}
-          topicId={topicId}
-          onAfterPostCreate={handleAfterPostCreate}
-          isEditing={!!editingPost}
-          onCancel={handleCancelEdit}
-          onUpdate={handleUpdatePost}
-        />
+        {user ? (
+          <TextEditor
+            ref={textEditorRef}
+            topicId={topicId}
+            onAfterPostCreate={handleAfterPostCreate}
+            isEditing={!!editingPost}
+            onCancel={handleCancelEdit}
+            onUpdate={handleUpdatePost}
+          />
+        ) : (
+          <div className="flex items-center justify-end">
+            <Button asChild>
+              <Link to="/login">
+                Đăng nhập để bình luận
+              </Link>
+            </Button>
+          </div>
+        )}
         <ApiPagination
           pagination={postsQuery.data}
           onPageChange={handlePageChange}
@@ -190,3 +201,7 @@ export function TopicDetail() {
 export const Route = createLazyRoute('/public/forum/topic/$topicId')({
   component: TopicDetail
 })
+
+export const UserRoute = createLazyRoute('/user/forum/topic/$topicId')({
+  component: TopicDetail
+});

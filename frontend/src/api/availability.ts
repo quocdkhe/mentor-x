@@ -5,11 +5,13 @@ import type { Availability } from "@/types/availability";
 import type { AxiosError } from "axios";
 import type { Message } from "@/types/common";
 
-export function useGetAvailability() {
+export function useGetAvailability(mentorId: string) {
   return useQuery<Availability[], AxiosError<Message>>({
-    queryKey: ["availabilities"],
+    queryKey: ["availabilities", mentorId],
     queryFn: async (): Promise<Availability[]> => {
-      const res = await api.get<Availability[]>(`/mentors/me/availabilities`);
+      const res = await api.get<Availability[]>(
+        `/mentors/${mentorId}/availabilities`,
+      );
       return res.data;
     },
     staleTime: 0,

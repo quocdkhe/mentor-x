@@ -110,38 +110,8 @@ function MenteeSchedulesPage() {
     return matchesStatus;
   });
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          {/* Skeleton content */}
-          <div className="h-10 w-48 bg-muted animate-pulse rounded" />
-          <div className="h-10 w-full md:w-auto bg-muted animate-pulse rounded" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, idx) => (
-            <Card key={idx} className="animate-pulse">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 bg-muted rounded-full" />
-                  <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-muted rounded w-3/4" />
-                    <div className="h-3 bg-muted rounded w-1/2" />
-                  </div>
-                </div>
-                <div className="h-8 bg-muted rounded" />
-                <div className="h-4 bg-muted rounded w-1/3" />
-                <div className="h-6 bg-muted rounded w-24" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto pt-6 pb-20 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         {/* Left: Date Picker */}
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
@@ -183,7 +153,26 @@ function MenteeSchedulesPage() {
       </div>
 
       {/* Appointments Grid */}
-      {filteredAppointments.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <Card key={idx} className="animate-pulse">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 bg-muted rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="h-8 bg-muted rounded" />
+                <div className="h-4 bg-muted rounded w-1/3" />
+                <div className="h-6 bg-muted rounded w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : filteredAppointments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 space-y-6">
           <div
             className="relative h-64 w-64 bg-contain bg-center bg-no-repeat opacity-90 dark:opacity-70 transition-transform duration-700 hover:scale-105"
@@ -199,13 +188,13 @@ function MenteeSchedulesPage() {
             </p>
           </div>
           <Button asChild size="lg">
-            <Link to="/mentors">
+            <Link to="/user/mentors">
               Tìm kiếm Mentor
             </Link>
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
           {filteredAppointments.map((appointment, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6 space-y-4">
