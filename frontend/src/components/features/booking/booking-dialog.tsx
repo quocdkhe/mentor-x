@@ -127,9 +127,40 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
     });
   };
 
+  // Check if a time slot is in the past
+  const isPastSlot = (time: string): boolean => {
+    // Only check for past times if the selected date is today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDateNormalized = new Date(selectedDate);
+    selectedDateNormalized.setHours(0, 0, 0, 0);
+
+    if (selectedDateNormalized.getTime() !== today.getTime()) {
+      // Not today, so no slots are in the past
+      return false;
+    }
+
+    // Get current time
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    // Parse the slot time
+    const [slotHour, slotMinute] = time.split(":").map(Number);
+
+    // Compare: slot is in the past if it's before or equal to current time
+    if (slotHour < currentHour) {
+      return true;
+    } else if (slotHour === currentHour && slotMinute <= currentMinute) {
+      return true;
+    }
+
+    return false;
+  };
+
   // Generate slots for a block with 15-minute steps
-  const generateSlots = (block: TimeBlockDto): { time: string; isBooked: boolean }[] => {
-    const slots: { time: string; isBooked: boolean }[] = [];
+  const generateSlots = (block: TimeBlockDto): { time: string; isBooked: boolean; isPast: boolean }[] => {
+    const slots: { time: string; isBooked: boolean; isPast: boolean }[] = [];
     const [startH, startM] = block.startTime.split(":").map(Number);
     const [endH, endM] = block.endTime.split(":").map(Number);
 
@@ -140,7 +171,7 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
       const h = Math.floor(currentInMinutes / 60).toString().padStart(2, "0");
       const m = (currentInMinutes % 60).toString().padStart(2, "0");
       const time = `${h}:${m}`;
-      slots.push({ time, isBooked: isSlotBooked(time) });
+      slots.push({ time, isBooked: isSlotBooked(time), isPast: isPastSlot(time) });
       currentInMinutes += SLOT_DURATION;
     }
     return slots;
@@ -402,11 +433,11 @@ export function BookingDialog({ isOpen, onClose, mentor }: BookingDialogProps) {
                     </div>
 
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-3">
-                      {slots.map(({ time, isBooked }) => {
+                      {slots.map(({ time, isBooked, isPast }) => {
                         const status = getSlotStatus(time);
 
-                        // Booked slots have disabled styling with strikethrough
-                        if (isBooked) {
+                        // Booked or past slots have disabled styling with strikethrough
+                        if (isBooked || isPast) {
                           return (
                             <Button
                               key={time}
