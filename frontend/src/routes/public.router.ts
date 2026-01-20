@@ -1,6 +1,7 @@
 import { createRoute } from "@tanstack/react-router";
 import { rootRoute } from "./router";
 import PublicLayout from "@/layouts/public.layout";
+import { redirectIfAuthenticated } from "@/utils/route-guards";
 
 const publicLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -11,6 +12,9 @@ const publicLayoutRoute = createRoute({
 const landingRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: "/",
+  beforeLoad: async () => {
+    await redirectIfAuthenticated();
+  },
 }).lazy(() => import("@/pages/public/landing").then((d) => d.Route));
 
 const mentorListingRoute = createRoute({
