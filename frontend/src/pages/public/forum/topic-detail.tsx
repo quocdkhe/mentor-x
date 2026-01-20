@@ -156,15 +156,24 @@ export function TopicDetail() {
             />
           ))}
         </div>
-
-        <TextEditor
-          ref={textEditorRef}
-          topicId={topicId}
-          onAfterPostCreate={handleAfterPostCreate}
-          isEditing={!!editingPost}
-          onCancel={handleCancelEdit}
-          onUpdate={handleUpdatePost}
-        />
+        {user ? (
+          <TextEditor
+            ref={textEditorRef}
+            topicId={topicId}
+            onAfterPostCreate={handleAfterPostCreate}
+            isEditing={!!editingPost}
+            onCancel={handleCancelEdit}
+            onUpdate={handleUpdatePost}
+          />
+        ) : (
+          <div className="flex items-center justify-end">
+            <Button asChild>
+              <Link to="/login">
+                Đăng nhập để bình luận
+              </Link>
+            </Button>
+          </div>
+        )}
         <ApiPagination
           pagination={postsQuery.data}
           onPageChange={handlePageChange}

@@ -244,60 +244,62 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
           <Separator className="mb-4 mt-auto" />
 
           {/* Footer Area */}
-          <div>
+          <div className="flex flex-col gap-4">
             {/* Likes Summary Box */}
             <LikesInfo likers={likers} />
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer",
-                    isLiked && "text-primary font-bold"
-                  )}
-                  onClick={handeLikeOrDislikePost}
-                >
-                  <ThumbsUp className={cn("h-4 w-4", isLiked && "fill-current")} />
-                  <span className="font-medium">Like {likers.length > 0 && `(${likers.length})`}</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer"
-                  onClick={handleReplyClick}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="font-medium">Trả lời</span>
-                </Button>
-              </div>
-
-              {isOwner && (
-                <div className="flex items-center gap-2">
+            {user && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer text-muted-foreground"
-                    onClick={() => onEdit?.(post)}
+                    className={cn(
+                      "h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer",
+                      isLiked && "text-primary font-bold"
+                    )}
+                    onClick={handeLikeOrDislikePost}
                   >
-                    <Pencil className="h-4 w-4" />
-                    <span className="font-medium">Sửa</span>
+                    <ThumbsUp className={cn("h-4 w-4", isLiked && "fill-current")} />
+                    <span className="font-medium">Like {likers.length > 0 && `(${likers.length})`}</span>
                   </Button>
+
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-auto p-0 gap-2 hover:bg-transparent hover:text-destructive cursor-pointer text-muted-foreground"
-                    onClick={() => onDelete?.(post.id)}
+                    className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer"
+                    onClick={handleReplyClick}
                   >
-                    <Trash className="h-4 w-4" />
-                    <span className="font-medium">Xóa</span>
+                    <MessageSquare className="h-4 w-4" />
+                    <span className="font-medium">Trả lời</span>
                   </Button>
                 </div>
-              )}
-            </div>
+
+                {isOwner && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer text-muted-foreground"
+                      onClick={() => onEdit?.(post)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="font-medium">Sửa</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 gap-2 hover:bg-transparent hover:text-destructive cursor-pointer text-muted-foreground"
+                      onClick={() => onDelete?.(post.id)}
+                    >
+                      <Trash className="h-4 w-4" />
+                      <span className="font-medium">Xóa</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
