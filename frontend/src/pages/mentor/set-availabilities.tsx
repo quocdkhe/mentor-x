@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import AvailabilitySkeleton from '@/components/skeletons/availability.skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import type { Availability, WeekDayEnum } from '@/types/availability';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
 
 const DAYS_OF_WEEK = [
   'Chủ nhật',
@@ -24,7 +26,8 @@ const DAYS_OF_WEEK = [
 ];
 
 const SetAvailabilities = () => {
-  const { data: availabilityData, isLoading: isLoadingAvailability } = useGetAvailability();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const { data: availabilityData, isLoading: isLoadingAvailability } = useGetAvailability(user?.id || '');
   const updateAvailabilityMutation = useUpdateAvailability();
   const queryClient = useQueryClient();
 

@@ -1,4 +1,4 @@
-import { createLazyRoute, getRouteApi, Link } from "@tanstack/react-router";
+import { createLazyRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { useGetMentorProfile } from "@/api/mentor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,19 +23,23 @@ import {
   Clock,
   Brain,
   CalendarClock,
-  ArrowLeft
+  ArrowLeft,
+  LogIn
 } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { USER_ROLES } from "@/types/user";
+// import { useGetAvailability } from "@/api/availability";
 
 const MentorProfilePage = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const route = user?.role === USER_ROLES.USER ? getRouteApi('/user/mentors/$mentorId') : getRouteApi('/public/mentors/$mentorId');
   const { mentorId } = route.useParams();
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
+  // const { data: availabilites, isLoading: isLoadingAvailabilities } = useGetAvailability(mentorId);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const navigator = useNavigate();
 
   if (isLoading) {
     return <MentorProfileSkeleton />
@@ -203,16 +207,29 @@ const MentorProfilePage = () => {
                           <CalendarClock className="w-5 h-5" />
                           <h3 className="font-bold">Lịch rảnh</h3>
                         </div>
-                        <ul className="space-y-2 text-sm text-muted-foreground max-w-md">
-                          <li className="flex justify-between">
-                            <span>Thứ 2 - Thứ 6</span>
-                            <span className="font-medium text-foreground">19:00 - 22:00</span>
-                          </li>
-                          <li className="flex justify-between">
-                            <span>Cuối tuần</span>
-                            <span className="font-medium text-foreground">09:00 - 18:00</span>
-                          </li>
-                        </ul>
+                        {/* <ul className="space-y-2 text-sm text-muted-foreground max-w-md">
+                          {availabilites && availabilites.filter((a) => a.isActive).length > 0 ? (
+                            availabilites
+                              ?.filter((availability) => availability.isActive)
+                              .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+                              .map((availability, index) => {
+                                // Map day numbers to Vietnamese names (0=Sunday, 1=Monday, etc.)
+                                const dayNameVi = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+
+                                // Trim seconds from time format (13:00:00 -> 13:00)
+                                const formatTime = (time: string) => time.substring(0, 5);
+
+                                return (
+                                  <li key={index} className="flex justify-between items-center">
+                                    <span className="font-medium text-foreground">{dayNameVi[availability.dayOfWeek]}</span>
+                                    <span className="text-muted-foreground">{formatTime(availability.startTime)} - {formatTime(availability.endTime)}</span>
+                                  </li>
+                                );
+                              })
+                          ) : (
+                            <li className="text-muted-foreground italic">Chưa có lịch rảnh</li>
+                          )}
+                        </ul> */}
                       </div>
                     </div>
                   </CardContent>
@@ -247,19 +264,30 @@ const MentorProfilePage = () => {
                   </div>
 
                   {/* Action Buttons - using primary color */}
-                  <div className="space-y-3">
-                    <Button className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
-                      <Calendar className="w-5 h-5" />
-                      Đặt lịch
-                    </Button>
+                  {user ? (
+                    user.role === USER_ROLES.USER && (<div className="space-y-3">
+                      <Button className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
+                        <Calendar className="w-5 h-5" />
+                        Đặt lịch
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                        Gửi tin nhắn
+                      </Button>
+                    </div>)
+                  ) : (<div className="space-y-3">
                     <Button
-                      variant="outline"
                       className="w-full gap-2"
+                      onClick={() => navigator({ to: '/login' })}
                     >
-                      <MessageCircle className="w-5 h-5" />
-                      Gửi tin nhắn
+                      <LogIn className="w-5 h-5" />
+                      Đăng nhập để đặt lịch
                     </Button>
-                  </div>
+                  </div>)}
+
 
                   {/* Features */}
                   <div className="h-px bg-border my-6"></div>

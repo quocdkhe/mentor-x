@@ -349,13 +349,15 @@ const Schedules = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-2 border-green-500 text-green-600 hover:bg-green-50 dark:border-green-600 dark:text-green-500 dark:hover:bg-green-950/20"
+                          className="gap-2 border-green-500 text-green-600 hover:bg-green-50 dark:border-green-600 dark:text-green-500 dark:hover:bg-green-950/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={new Date() < new Date(schedule.endAt)}
                           onClick={() => openConfirmDialog(
                             schedule.appointmentId,
                             "Completed",
                             "Đánh dấu hoàn thành",
                             "Bạn có chắc chắn muốn đánh dấu lịch hẹn này là đã hoàn thành không?"
                           )}
+                          title={new Date() < new Date(schedule.endAt) ? `Chỉ có thể đánh dấu hoàn thành sau ${format(new Date(schedule.endAt), "HH:mm dd/MM/yyyy")}` : "Đánh dấu buổi học đã hoàn thành"}
                         >
                           <CheckCircle className="h-4 w-4" />
                           Đã hoàn thành
