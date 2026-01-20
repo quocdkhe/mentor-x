@@ -51,7 +51,7 @@ export function ForumListing() {
   const startIndex = (page - 1) * pageSize;
 
   return (
-    <div className="container mx-auto px-4 pt-6 pb-6">
+    <div className="container mx-auto px-4 pt-6 pb-20 min-h-screen">
       <div className="w-full space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">

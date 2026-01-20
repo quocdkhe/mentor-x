@@ -21,7 +21,7 @@ import { useLogout } from "@/api/auth";
 import { toast } from "sonner";
 import { setUser } from "@/store/auth.slice";
 import { useQueryClient } from "@tanstack/react-query";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, LogOut } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 
 // Hamburger icon
@@ -79,6 +79,13 @@ export default function SimpleNavbar() {
               <PopoverContent align="start" className="w-48 p-2">
                 <div className="flex flex-col gap-1">
                   <Link
+                    to="/user/mentors"
+                    className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Tìm mentor
+                  </Link>
+                  <Link
                     to="/user/schedules"
                     className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
                     onClick={() => setMobileMenuOpen(false)}
@@ -91,6 +98,13 @@ export default function SimpleNavbar() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Diễn đàn
+                  </Link>
+                  <Link
+                    to="/user/profile"
+                    className="inline-flex items-center justify-start rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground w-full [&.active]:bg-accent [&.active]:text-accent-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Tài khoản của tôi
                   </Link>
                 </div>
               </PopoverContent>
@@ -106,6 +120,12 @@ export default function SimpleNavbar() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             <Link
+              to="/user/mentors"
+              className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
+            >
+              Tìm mentor
+            </Link>
+            <Link
               activeOptions={{ exact: true }}
               to="/user/schedules"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
@@ -113,23 +133,16 @@ export default function SimpleNavbar() {
               Lịch học
             </Link>
             <Link
-              to="/user/mentors"
+              to="/user/forum"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
-              Tìm mentor
+              Diễn đàn
             </Link>
             <Link
               to="/user/profile"
               className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
             >
               Tài khoản của tôi
-            </Link>
-
-            <Link
-              to="/user/forum"
-              className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
-            >
-              Diễn đàn
             </Link>
           </nav>
         </div>
@@ -183,14 +196,9 @@ export default function SimpleNavbar() {
                     </div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate({ to: "/forum" })}>
-                    Chuyển đến diễn đàn
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate({ to: "/user/profile" })}>
-                    Tài khoản của tôi
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     Đăng xuất
+                    <LogOut className="ml-auto h-4 w-4" />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

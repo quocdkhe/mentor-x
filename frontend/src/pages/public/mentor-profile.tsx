@@ -26,10 +26,13 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useState } from "react";
-
-const route = getRouteApi('/public/mentors/$mentorId');
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
+import { USER_ROLES } from "@/types/user";
 
 const MentorProfilePage = () => {
+  const user = useSelector((state: RootState) => state.auth.user);
+  const route = user?.role === USER_ROLES.USER ? getRouteApi('/user/mentors/$mentorId') : getRouteApi('/public/mentors/$mentorId');
   const { mentorId } = route.useParams();
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -83,7 +86,7 @@ const MentorProfilePage = () => {
       <div className="container mx-auto px-4">
         <div className="mb-6">
           <Button variant="ghost" asChild className="gap-2 hover:bg-muted">
-            <Link to="/mentors">
+            <Link to={user?.role === USER_ROLES.USER ? "/user/mentors" : "/mentors"}>
               <ArrowLeft className="h-4 w-4" />
               Quay lại danh sách
             </Link>
@@ -300,5 +303,9 @@ const MentorProfilePage = () => {
 };
 
 export const Route = createLazyRoute("/public/mentors/$mentorId")({
+  component: MentorProfilePage,
+});
+
+export const UserRoute = createLazyRoute("/user/mentors/$mentorId")({
   component: MentorProfilePage,
 });

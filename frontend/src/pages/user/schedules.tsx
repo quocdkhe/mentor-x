@@ -112,7 +112,7 @@ function MenteeSchedulesPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto pt-6 pb-20 min-h-screen">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           {/* Skeleton content */}
           <div className="h-10 w-48 bg-muted animate-pulse rounded" />
@@ -141,7 +141,7 @@ function MenteeSchedulesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto pt-6 pb-20 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         {/* Left: Date Picker */}
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>

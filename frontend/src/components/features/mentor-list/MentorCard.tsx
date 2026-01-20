@@ -3,15 +3,20 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { MentorInfo } from '@/types/mentor';
 import { Link } from '@tanstack/react-router';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
+import { USER_ROLES } from '@/types/user';
 
 interface MentorCardProps {
   mentor: MentorInfo;
 }
 
 export function MentorCard({ mentor }: MentorCardProps) {
+  const user = useSelector((state: RootState) => state.auth.user);
+
   return (
     <Link
-      to="/mentors/$mentorId"
+      to={user?.role === USER_ROLES.USER ? "/user/mentors/$mentorId" : "/mentors/$mentorId"}
       params={{ mentorId: mentor.userId }}
       className="block h-full"
     >

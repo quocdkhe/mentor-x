@@ -21,7 +21,7 @@ const homeRoute = createRoute({
 const schedulesRoute = createRoute({
   getParentRoute: () => userLayoutRoute,
   path: "/schedules",
-}).lazy(() => import("@/pages/user/shedules").then((d) => d.Route));
+}).lazy(() => import("@/pages/user/schedules").then((d) => d.Route));
 
 const profileRoute = createRoute({
   getParentRoute: () => userLayoutRoute,
@@ -47,6 +47,11 @@ const mentorsRoute = createRoute({
   import("@/pages/public/mentors-listing").then((d) => d.UserRoute),
 );
 
+const mentorProfileRoute = createRoute({
+  getParentRoute: () => userLayoutRoute,
+  path: "/mentors/$mentorId",
+}).lazy(() => import("@/pages/public/mentor-profile").then((d) => d.UserRoute));
+
 const userRouteTree = userLayoutRoute.addChildren([
   homeRoute,
   schedulesRoute,
@@ -54,6 +59,7 @@ const userRouteTree = userLayoutRoute.addChildren([
   forumRoute,
   topicDetailRoute,
   mentorsRoute,
+  mentorProfileRoute,
 ]);
 
 export { userRouteTree };

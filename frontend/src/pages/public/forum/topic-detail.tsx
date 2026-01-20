@@ -123,7 +123,7 @@ export function TopicDetail() {
     <div className="container mx-auto px-4 pt-6 pb-6">
       <div className="w-full space-y-6">
         <Button variant="outline" className="mb-4" asChild>
-          <Link to='/forum'>
+          <Link to={user?.role === USER_ROLES.USER ? '/user/forum' : '/forum'}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Quay lại
           </Link>
