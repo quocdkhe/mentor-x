@@ -2,17 +2,13 @@ import { createLazyRoute, Link } from '@tanstack/react-router';
 import { Search, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useGetCurrentUser } from '@/api/user';
-import DefaultSkeleton from '@/components/skeletons/default.skeleton';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
 
 export function UserHomePage() {
-  const { data, isLoading } = useGetCurrentUser();
+  const user = useSelector((state: RootState) => state.auth.user);
 
-  if (isLoading) {
-    return <DefaultSkeleton />;
-  }
-
-  const firstName = data?.name?.split(' ')[0] || 'Bạn';
+  const firstName = user?.name?.split(' ')[0] || 'Bạn';
 
   return (
     <div className="container mx-auto px-4 py-12">
