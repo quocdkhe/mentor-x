@@ -1,8 +1,10 @@
 import { ArrowRight, Users, Target, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "@tanstack/react-router";
 
 export function Hero() {
+  const navigate = useNavigate();
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
       <div className="container mx-auto px-4">
@@ -22,7 +24,7 @@ export function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Button size="lg" className="gap-2">
+            <Button size="lg" className="gap-2" onClick={() => navigate({ to: "/mentors" })}>
               Tìm người hướng dẫn
               <ArrowRight className="h-4 w-4" />
             </Button>
