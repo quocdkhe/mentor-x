@@ -296,7 +296,7 @@ const MentorProfilePage = () => {
                             <div className="flex items-start gap-4">
                               {/* User Avatar */}
                               <Avatar className="h-12 w-12">
-                                <AvatarImage src={review.menteeAvatar || undefined} alt={review.menteeName} />
+                                <AvatarImage src={review.menteeAvatar || undefined} alt={review.menteeName} className="object-cover" />
                                 <AvatarFallback>{review.menteeName.substring(0, 2).toUpperCase()}</AvatarFallback>
                               </Avatar>
 
