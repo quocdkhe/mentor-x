@@ -95,7 +95,7 @@ namespace backend.Services
                 .Include(m => m.User)
                 .Include(m => m.MentorSkills)
                 .Include(m => m.MentorReviews)
-                .ThenInclude(r => r.User)
+                .ThenInclude(r => r.Mentee)
                 .FirstOrDefaultAsync(m => m.UserId == userId);
 
             if (mentor == null)
@@ -120,9 +120,9 @@ namespace backend.Services
                     .Select(r => new MentorReviewDTO
                     {
                         Id = r.Id,
-                        UserId = r.UserId,
-                        UserName = r.User.Name,
-                        UserAvatar = r.User.Avatar,
+                        UserId = r.MenteeId,
+                        UserName = r.Mentee.Name,
+                        UserAvatar = r.Mentee.Avatar,
                         Rating = r.Rating,
                         Comment = r.Comment,
                         Date = r.CreatedAt

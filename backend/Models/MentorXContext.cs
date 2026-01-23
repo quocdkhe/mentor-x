@@ -154,15 +154,17 @@ public partial class MentorXContext : DbContext
             entity.HasKey(e => e.Id).HasName("mentor_reviews_pkey");
             entity.ToTable("mentor_reviews");
 
-            entity.HasIndex(e => e.MentorProfileId, "idx_mentor_reviews_mentor_profile_id");
-            entity.HasIndex(e => e.UserId, "idx_mentor_reviews_user_id");
+            entity.HasIndex(e => e.MentorId, "idx_mentor_reviews_mentor_id");
+            entity.HasIndex(e => e.MenteeId, "idx_mentor_reviews_mentee_id");
+            entity.HasIndex(e => e.AppointmentId, "idx_mentor_reviews_appointment_id");
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
 
-            entity.Property(e => e.MentorProfileId).HasColumnName("mentor_profile_id");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.MentorId).HasColumnName("mentor_id");
+            entity.Property(e => e.MenteeId).HasColumnName("mentee_id");
+            entity.Property(e => e.AppointmentId).HasColumnName("appointment_id");
             entity.Property(e => e.Rating).HasColumnName("rating");
             entity.Property(e => e.Comment).HasColumnName("comment");
 
@@ -170,16 +172,50 @@ public partial class MentorXContext : DbContext
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
 
-            entity.HasOne(d => d.MentorProfile)
+            // Foreign key: Mentor
+            entity.HasOne(d => d.Mentor)
                 .WithMany(p => p.MentorReviews)
-                .HasForeignKey(d => d.MentorProfileId)
-                .HasConstraintName("fk_mentor_reviews_mentor_profile");
-
-            entity.HasOne(d => d.User)
-                .WithMany(p => p.MentorReviews)
-                .HasForeignKey(d => d.UserId)
+                .HasForeignKey(d => d.MentorId)
                 .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("fk_mentor_reviews_user");
+                .HasConstraintName("fk_mentor_reviews_mentor");
+
+            // Foreign key: Mentee
+            entity.HasOne(d => d.Mentee)
+                .WithMany(p => p.MenteeReviews)
+                .HasForeignKey(d => d.MenteeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_mentor_reviews_mentee");
+
+            // Foreign key: Appointment
+            entity.HasOne(d => d.Appointment)
+                .WithMany(p => p.Reviews)
+                .HasForeignKey(d => d.AppointmentId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_mentor_reviews_appointment");
+
+            // Many-to-Many: Upvoters
+            entity.HasMany(r => r.Upvoters)
+                .WithMany(u => u.UpvotedReviews)
+                .UsingEntity<Dictionary<string, object>>(
+                    "mentor_review_upvotes",
+                    j => j
+                        .HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .HasConstraintName("fk_mentor_review_upvotes_user")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<MentorReview>()
+                        .WithMany()
+                        .HasForeignKey("mentor_review_id")
+                        .HasConstraintName("fk_mentor_review_upvotes_review")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j =>
+                    {
+                        j.HasKey("mentor_review_id", "user_id");
+                        j.ToTable("mentor_review_upvotes");
+                    }
+                );
         });
 
         // pivot table mentor_skill (no entity)
