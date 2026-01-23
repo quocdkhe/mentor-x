@@ -46,6 +46,7 @@ export interface MenteeAppointmentDto {
   status: AppointmentStatusEnum;
   meetingLink?: string | null;
   googleCalendarLink?: string | null;
+  isReviewed: boolean;
 }
 
 export interface TimeBlockDto {

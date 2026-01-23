@@ -309,14 +309,23 @@ function MenteeSchedulesPage() {
                   )}
 
                   {appointment.status === "Completed" && (
-                    <Button
-                      variant="outline"
-                      className="w-full gap-2"
-                      onClick={() => openReviewDialog(appointment.appointmentId)}
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      Viết đánh giá
-                    </Button>
+                    <>
+                      {appointment.isReviewed ? (
+                        <div className="w-full py-2 px-4 rounded-md bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 flex items-center gap-2 justify-center">
+                          <Star className="h-4 w-4 fill-green-600 text-green-600" />
+                          <span className="text-sm font-medium text-green-700 dark:text-green-400">Đã đánh giá</span>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full gap-2"
+                          onClick={() => openReviewDialog(appointment.appointmentId)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          Viết đánh giá
+                        </Button>
+                      )}
+                    </>
                   )}
 
                   {appointment.status === "Cancelled" && (
@@ -372,8 +381,8 @@ function MenteeSchedulesPage() {
                   >
                     <Star
                       className={`h-8 w-8 ${star <= reviewData.rating
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
                         }`}
                     />
                   </button>
