@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Models;
@@ -11,9 +12,11 @@ using backend.Models;
 namespace backend.Migrations
 {
     [DbContext(typeof(MentorXContext))]
-    partial class MentorXContextModelSnapshot : ModelSnapshot
+    [Migration("20260123031427_UpdateMentorReviewsSchema")]
+    partial class UpdateMentorReviewsSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -384,12 +387,17 @@ namespace backend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("mentor_id");
 
+                    b.Property<Guid?>("MentorProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Rating")
                         .HasColumnType("integer")
                         .HasColumnName("rating");
 
                     b.HasKey("Id")
                         .HasName("mentor_reviews_pkey");
+
+                    b.HasIndex("MentorProfileId");
 
                     b.HasIndex(new[] { "AppointmentId" }, "idx_mentor_reviews_appointment_id");
 
@@ -683,6 +691,10 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_mentor_reviews_mentor");
 
+                    b.HasOne("backend.Models.MentorProfile", null)
+                        .WithMany("MentorReviews")
+                        .HasForeignKey("MentorProfileId");
+
                     b.Navigation("Appointment");
 
                     b.Navigation("Mentee");
@@ -744,6 +756,11 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.ForumTopic", b =>
                 {
                     b.Navigation("ForumPosts");
+                });
+
+            modelBuilder.Entity("backend.Models.MentorProfile", b =>
+                {
+                    b.Navigation("MentorReviews");
                 });
 
             modelBuilder.Entity("backend.Models.User", b =>

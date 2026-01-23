@@ -2,7 +2,7 @@ import { createLazyRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Calendar as CalendarIcon, Video, CalendarDays, X } from "lucide-react";
+import { Calendar as CalendarIcon, Video, CalendarDays, X, Star, MessageSquare } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
@@ -32,9 +32,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMenteeGetAppointments, useCancelAppointment } from "@/api/appointment";
+import { useCreateReview } from "@/api/review";
 import type { AppointmentStatusEnum } from "@/types/appointment";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 // --- Components ---
 
@@ -64,6 +74,9 @@ function MenteeSchedulesPage() {
   // Initialize the cancel appointment mutation
   const { mutate: cancelAppointment, isPending: isCancelling } = useCancelAppointment();
 
+  // Initialize the create review mutation
+  const { mutate: createReview, isPending: isSubmittingReview } = useCreateReview();
+
   const [statusFilter, setStatusFilter] = useState<AppointmentStatusEnum | "all">("all");
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -72,6 +85,16 @@ function MenteeSchedulesPage() {
     title: string;
     description: string;
   }>({ open: false, appointmentId: "", action: null, title: "", description: "" });
+
+  const [reviewDialog, setReviewDialog] = useState<{
+    open: boolean;
+    appointmentId: string;
+  }>({ open: false, appointmentId: "" });
+
+  const [reviewData, setReviewData] = useState<{
+    rating: number;
+    comment: string;
+  }>({ rating: 0, comment: "" });
 
   const handleConfirmAction = () => {
     if (confirmDialog.action && confirmDialog.appointmentId) {
@@ -102,6 +125,45 @@ function MenteeSchedulesPage() {
       title: "Hủy lịch hẹn",
       description: "Bạn có chắc chắn muốn hủy lịch hẹn này không?"
     });
+  };
+
+  const openReviewDialog = (appointmentId: string) => {
+    setReviewDialog({ open: true, appointmentId });
+    setReviewData({ rating: 0, comment: "" });
+  };
+
+  const handleReviewSubmit = () => {
+    if (reviewData.rating === 0) {
+      toast.error("Vui lòng chọn số sao đánh giá");
+      return;
+    }
+
+    createReview(
+      {
+        appointmentId: reviewDialog.appointmentId,
+        rating: reviewData.rating,
+        comment: reviewData.comment || undefined,
+      },
+      {
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({ queryKey: ["mentee-appointments", convertDateToUTC(date || new Date())] });
+
+          // Invalidate mentor specific queries
+          const appointment = appointmentsData.find((a) => a.appointmentId === reviewDialog.appointmentId);
+          if (appointment?.mentorId) {
+            queryClient.invalidateQueries({ queryKey: ["mentor-reviews", appointment.mentorId] });
+            queryClient.invalidateQueries({ queryKey: ["mentor", appointment.mentorId] });
+          }
+
+          toast.success(data.message);
+          setReviewDialog({ open: false, appointmentId: "" });
+          setReviewData({ rating: 0, comment: "" });
+        },
+        onError: (error: AxiosError<{ message?: string }>) => {
+          toast.error(error.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+        },
+      }
+    );
   };
 
   // Filter logic
@@ -255,9 +317,23 @@ function MenteeSchedulesPage() {
                   )}
 
                   {appointment.status === "Completed" && (
-                    <p className="text-sm text-muted-foreground text-center py-2">
-                      Buổi học đã kết thúc
-                    </p>
+                    <>
+                      {appointment.isReviewed ? (
+                        <div className="w-full py-2 px-4 rounded-md bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 flex items-center gap-2 justify-center">
+                          <Star className="h-4 w-4 fill-green-600 text-green-600" />
+                          <span className="text-sm font-medium text-green-700 dark:text-green-400">Đã đánh giá</span>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full gap-2"
+                          onClick={() => openReviewDialog(appointment.appointmentId)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          Viết đánh giá
+                        </Button>
+                      )}
+                    </>
                   )}
 
                   {appointment.status === "Cancelled" && (
@@ -289,6 +365,67 @@ function MenteeSchedulesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Review Dialog */}
+      <Dialog open={reviewDialog.open} onOpenChange={(open) => !open && setReviewDialog({ open: false, appointmentId: "" })}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Đánh giá Mentor</DialogTitle>
+            <DialogDescription>
+              Chia sẻ trải nghiệm của bạn về buổi học để giúp người khác
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {/* Star Rating */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Đánh giá</label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setReviewData({ ...reviewData, rating: star })}
+                    className="transition-all hover:scale-110"
+                  >
+                    <Star
+                      className={`h-8 w-8 ${star <= reviewData.rating
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                        }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Comment */}
+            <div className="space-y-2">
+              <label htmlFor="comment" className="text-sm font-medium">
+                Nhận xét (Tùy chọn)
+              </label>
+              <Textarea
+                id="comment"
+                placeholder="Chia sẻ chi tiết về trải nghiệm của bạn..."
+                value={reviewData.comment}
+                onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setReviewDialog({ open: false, appointmentId: "" })}
+              disabled={isSubmittingReview}
+            >
+              Hủy
+            </Button>
+            <Button onClick={handleReviewSubmit} disabled={isSubmittingReview}>
+              {isSubmittingReview ? <><Spinner /> Đang gửi...</> : "Gửi đánh giá"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

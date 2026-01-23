@@ -199,7 +199,8 @@ namespace backend.Services
                     EndAt = a.EndAt,
                     Status = a.Status,
                     MeetingLink = a.MeetingLink,
-                    GoogleCalendarLink = a.GoogleCalendarLink
+                    GoogleCalendarLink = a.GoogleCalendarLink,
+                    IsReviewed = _context.MentorReviews.Any(r => r.AppointmentId == a.Id)
                 })
                 .ToListAsync();
 

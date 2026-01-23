@@ -29,4 +29,6 @@ public class MenteeAppointmentDto
     public string? MeetingLink { get; set; }
     
     public string? GoogleCalendarLink { get; set; }
+    
+    public bool IsReviewed { get; set; }
 }

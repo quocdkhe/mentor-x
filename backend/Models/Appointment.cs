@@ -33,4 +33,5 @@ public class Appointment
 
     public User Mentor { get; set; }
     public User Mentee { get; set; }
+    public virtual ICollection<MentorReview> Reviews { get; set; } = new List<MentorReview>();
 }
