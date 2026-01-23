@@ -18,6 +18,5 @@ public partial class MentorProfile
     public string Status { get; set; } = null;
     public virtual User User { get; set; } = null!;
     public virtual ICollection<Skill> MentorSkills { get; set; } = new List<Skill>();
-    public virtual ICollection<MentorReview> MentorReviews { get; set; } = new List<MentorReview>();
 
 }

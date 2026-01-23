@@ -94,8 +94,6 @@ namespace backend.Services
             var mentor = await _context.MentorProfiles
                 .Include(m => m.User)
                 .Include(m => m.MentorSkills)
-                .Include(m => m.MentorReviews)
-                .ThenInclude(r => r.Mentee)
                 .FirstOrDefaultAsync(m => m.UserId == userId);
 
             if (mentor == null)
@@ -114,20 +112,7 @@ namespace backend.Services
                 PricePerHour = mentor.PricePerHour,
                 Position = mentor.Position,
                 Company = mentor.Company,
-                YearsOfExperience = mentor.YearsOfExperience,
-                Reviews = mentor.MentorReviews
-                    .OrderByDescending(r => r.CreatedAt)
-                    .Select(r => new MentorReviewDTO
-                    {
-                        Id = r.Id,
-                        UserId = r.MenteeId,
-                        UserName = r.Mentee.Name,
-                        UserAvatar = r.Mentee.Avatar,
-                        Rating = r.Rating,
-                        Comment = r.Comment,
-                        Date = r.CreatedAt
-                    })
-                    .ToList()
+                YearsOfExperience = mentor.YearsOfExperience
             };
             return mentorDetail;
         }
