@@ -17,6 +17,9 @@ const mentorLayoutRoute = createRoute({
 const editProfileRoute = createRoute({
   getParentRoute: () => mentorLayoutRoute,
   path: "/edit-form",
+  head: () => ({
+    meta: [{ title: "MentorX - Chỉnh sửa hồ sơ Mentor" }],
+  }),
 }).lazy(() =>
   import("@/pages/mentor/mentor-edit-profile").then((d) => d.Route),
 );
@@ -24,11 +27,17 @@ const editProfileRoute = createRoute({
 const setAvailabilitiesRoute = createRoute({
   getParentRoute: () => mentorLayoutRoute,
   path: "/set-availabilities",
+  head: () => ({
+    meta: [{ title: "MentorX - Đặt lịch rảnh" }],
+  }),
 }).lazy(() => import("@/pages/mentor/set-availabilities").then((d) => d.Route));
 
 const schedulesRoute = createRoute({
   getParentRoute: () => mentorLayoutRoute,
   path: "/schedules",
+  head: () => ({
+    meta: [{ title: "MentorX - Lịch hẹn Mentor" }],
+  }),
 }).lazy(() => import("@/pages/mentor/schedules").then((d) => d.Route));
 
 const mentorRouteTree = mentorLayoutRoute.addChildren([

@@ -1,4 +1,4 @@
-import { Outlet } from '@tanstack/react-router'
+import { HeadContent, Outlet } from '@tanstack/react-router'
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from 'sonner'
 import { useSelector } from 'react-redux'
@@ -21,6 +21,7 @@ const App = () => {
   return (
     <>
       <ThemeProvider storageKey="vite-ui-theme">
+        <HeadContent />
         <Outlet />
         <Toaster position="top-center" richColors />
       </ThemeProvider>

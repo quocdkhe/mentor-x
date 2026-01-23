@@ -17,6 +17,9 @@ const adminLayoutRoute = createRoute({
 const userManagementRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: "/user-management",
+  head: () => ({
+    meta: [{ title: "MentorX - Quản lý người dùng" }],
+  }),
 }).lazy(() => import("@/pages/admin/user-management").then((d) => d.Route));
 
 const adminRouteTree = adminLayoutRoute.addChildren([userManagementRoute]);
