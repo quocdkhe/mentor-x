@@ -17,15 +17,15 @@ namespace backend.Services
             _context = context;
         }
 
-        public async Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest, String searchTerm = "", Guid skillId = default)
+        public async Task<PaginationDto<MentorListItemDTO>> GetAllMentors(PaginationRequest paginationRequest, String searchTerm = "", Guid skillId = default, Guid? userId = null)
         {
             var page = paginationRequest.Page < 1 ? 1 : paginationRequest.Page;
             var pageSize = paginationRequest.PageSize < 1 ? 10 : paginationRequest.PageSize;
             var query = _context.MentorProfiles
                 .AsNoTracking();
-            
+
             var totalItems = await query.CountAsync();
-            
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var keyword = $"%{searchTerm}%";
@@ -42,7 +42,7 @@ namespace backend.Services
             {
                 query = query.Where(m => m.MentorSkills.Any(s => s.Id == skillId));
             }
-            
+
             var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -62,10 +62,12 @@ namespace backend.Services
                 PricePerHour = m.PricePerHour,
                 Position = m.Position,
                 Company = m.Company,
-                YearsOfExperience = m.YearsOfExperience
+                YearsOfExperience = m.YearsOfExperience,
+                HasMet = userId.HasValue && _context.Appointments.Any(a => a.MenteeId == userId.Value
+                    && a.MentorId == m.UserId && a.Status == AppointmentStatusEnum.Completed)
             })
             .ToListAsync();
-            
+
             return new PaginationDto<MentorListItemDTO>
             {
                 Items = items,
@@ -89,7 +91,7 @@ namespace backend.Services
             return skills;
         }
 
-        public async Task<MentorDetailResponseDTO?> GetMentorByUserId(Guid userId)
+        public async Task<MentorDetailResponseDTO?> GetMentorByUserId(Guid userId, Guid? currentUserId = null)
         {
             var mentor = await _context.MentorProfiles
                 .Include(m => m.User)
@@ -98,6 +100,20 @@ namespace backend.Services
 
             if (mentor == null)
                 return null;
+
+            // Calculate meeting hours if currentUserId is provided
+            double meetingHours = 0;
+            if (currentUserId.HasValue)
+            {
+                var completedAppointments = await _context.Appointments
+                    .Where(a => a.MenteeId == currentUserId.Value 
+                        && a.MentorId == mentor.UserId 
+                        && a.Status == AppointmentStatusEnum.Completed)
+                    .ToListAsync();
+
+                meetingHours = completedAppointments
+                    .Sum(a => (a.EndAt - a.StartAt).TotalHours);
+            }
 
             var mentorDetail = new MentorDetailResponseDTO
             {
@@ -112,7 +128,8 @@ namespace backend.Services
                 PricePerHour = mentor.PricePerHour,
                 Position = mentor.Position,
                 Company = mentor.Company,
-                YearsOfExperience = mentor.YearsOfExperience
+                YearsOfExperience = mentor.YearsOfExperience,
+                MeetingHours = meetingHours
             };
             return mentorDetail;
         }

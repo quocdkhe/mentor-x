@@ -23,7 +23,15 @@ namespace backend.Controllers
         [HttpGet("")]
         public async Task<ActionResult<MentorListResponseDTO>> GetAllMentors([FromQuery] PaginationRequest paginationRequest, String searchTerm = "", Guid skillId = default)
         {
-            var mentorList = await _mentorService.GetAllMentors(paginationRequest, searchTerm, skillId);
+            // Try to get userId from JWT if user is logged in
+            Guid? userId = null;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var parsedUserId))
+            {
+                userId = parsedUserId;
+            }
+
+            var mentorList = await _mentorService.GetAllMentors(paginationRequest, searchTerm, skillId, userId);
             return Ok(mentorList);
         }
 
@@ -37,7 +45,15 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MentorDetailResponseDTO>> GetMentorByUserId(Guid id)
         {
-            var mentor = await _mentorService.GetMentorByUserId(id);
+            // Try to get currentUserId from JWT if user is logged in
+            Guid? currentUserId = null;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var parsedUserId))
+            {
+                currentUserId = parsedUserId;
+            }
+
+            var mentor = await _mentorService.GetMentorByUserId(id, currentUserId);
             if (mentor == null)
                 return NotFound(new { message = "Không tìm thấy mentor." });
 

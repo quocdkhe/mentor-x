@@ -26,6 +26,8 @@ export interface MentorInfo {
   position: string;
   company: string;
   yearsOfExperience: number;
+  hasMet: boolean;
+  meetingHours: number;
 }
 
 export interface MentorProfile {

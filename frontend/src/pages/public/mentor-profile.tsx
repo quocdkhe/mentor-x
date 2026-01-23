@@ -153,11 +153,14 @@ const MentorProfilePage = () => {
                           <span>{mentor.company}</span>
                         </div>
 
+
                         {/* Study hours badge - using primary color */}
-                        {/* <div className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-primary shadow-sm">
-                          <History className="w-5 h-5" />
-                          <span className="font-bold text-sm">Bạn đã học 4 giờ cùng Mentor này</span>
-                        </div> */}
+                        {user && mentor.meetingHours > 0 && (
+                          <div className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-primary shadow-sm">
+                            <Clock className="w-5 h-5" />
+                            <span className="font-bold text-sm">Bạn đã học {mentor.meetingHours.toFixed(1)} giờ cùng Mentor này</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 

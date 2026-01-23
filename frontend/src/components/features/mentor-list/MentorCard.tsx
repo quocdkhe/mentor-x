@@ -35,6 +35,11 @@ export function MentorCard({ mentor }: MentorCardProps) {
           {/* Name */}
           <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors flex items-center gap-2">
             {mentor.name}
+            {mentor.hasMet && (
+              <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400">
+                Đã học
+              </Badge>
+            )}
           </h3>
 
           {/* Position at Company */}

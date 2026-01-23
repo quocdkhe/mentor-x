@@ -14,5 +14,6 @@ namespace backend.Models.DTOs.Mentor
         public string? Position { get; set; }
         public string? Company { get; set; }
         public int YearsOfExperience { get; set; }
+        public bool HasMet { get; set; }
     }
 }
