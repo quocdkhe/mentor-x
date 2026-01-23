@@ -18,6 +18,7 @@ namespace backend.Configurations
             services.AddScoped<IForumService, ForumService>();
             services.AddScoped<IBookingService, BookingService>();
             services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
+            services.AddScoped<IReviewService, ReviewService>();
             return services;
         }
     }

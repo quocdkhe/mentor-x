@@ -130,7 +130,6 @@ namespace backend.Services
                     .ToList()
             };
             return mentorDetail;
-
         }
 
         public async Task<MentorProfileResponseDTO?> GetMentorProfileByUserId(Guid userId)
