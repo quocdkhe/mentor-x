@@ -147,6 +147,14 @@ function MenteeSchedulesPage() {
       {
         onSuccess: (data) => {
           queryClient.invalidateQueries({ queryKey: ["mentee-appointments", convertDateToUTC(date || new Date())] });
+
+          // Invalidate mentor specific queries
+          const appointment = appointmentsData.find((a) => a.appointmentId === reviewDialog.appointmentId);
+          if (appointment?.mentorId) {
+            queryClient.invalidateQueries({ queryKey: ["mentor-reviews", appointment.mentorId] });
+            queryClient.invalidateQueries({ queryKey: ["mentor", appointment.mentorId] });
+          }
+
           toast.success(data.message);
           setReviewDialog({ open: false, appointmentId: "" });
           setReviewData({ rating: 0, comment: "" });

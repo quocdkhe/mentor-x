@@ -22,12 +22,46 @@ public class ReviewController : ControllerBase
     {
         var menteeId = User.GetUserId();
         var result = await _reviewService.CreateReviewAsync(menteeId, dto);
-        
+
         if (!result.Success)
         {
             return BadRequest(new Message(result.Message));
         }
-        
+
+        return Ok(result.Data);
+    }
+
+    [HttpGet("mentors/{mentorId}/reviews")]
+    public async Task<ActionResult<PaginationDto<MentorReviewResponseDTO>>> GetMentorReviews(
+        Guid mentorId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 5)
+    {
+        // Get current user ID if authenticated
+        Guid userId = User.GetUserId();
+
+        var result = await _reviewService.GetMentorReviews(mentorId, page, pageSize, userId);
+
+        if (!result.Success)
+        {
+            return BadRequest(new Message(result.Message));
+        }
+
+        return Ok(result.Data);
+    }
+
+    [HttpPost("reviews/{reviewId}/upvote")]
+    [Authorize]
+    public async Task<ActionResult<Message>> ToggleUpvote(Guid reviewId)
+    {
+        var userId = User.GetUserId();
+        var result = await _reviewService.ToggleUpvoteAsync(reviewId, userId);
+
+        if (!result.Success)
+        {
+            return BadRequest(new Message(result.Message));
+        }
+
         return Ok(result.Data);
     }
 }

@@ -1,5 +1,6 @@
 import { createLazyRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { useGetMentorProfile } from "@/api/mentor";
+import { useGetMentorReviews, useToggleUpvote } from "@/api/review";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { BookingDialog } from "@/components/features/booking/booking-dialog";
+import { ApiPagination } from "@/components/api-pagination";
 import { MentorProfileSkeleton } from "@/components/skeletons/mentor-profile.skeleton";
 import {
   Calendar,
@@ -24,12 +26,18 @@ import {
   Brain,
   CalendarClock,
   ArrowLeft,
-  LogIn
+  LogIn,
+  ThumbsUp
 } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { USER_ROLES } from "@/types/user";
+import type { AxiosError } from "axios";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 // import { useGetAvailability } from "@/api/availability";
 
 const MentorProfilePage = () => {
@@ -39,7 +47,26 @@ const MentorProfilePage = () => {
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
   // const { data: availabilites, isLoading: isLoadingAvailabilities } = useGetAvailability(mentorId);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [reviewPage, setReviewPage] = useState(1);
+  const { data: reviewsData, isLoading: isLoadingReviews } = useGetMentorReviews(mentorId, reviewPage, 5);
+  const { mutate: toggleUpvote } = useToggleUpvote();
+  const queryClient = useQueryClient();
   const navigator = useNavigate();
+
+  const handleToggleUpvote = (reviewId: string) => {
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để thực hiện chức năng này");
+      return;
+    }
+    toggleUpvote(reviewId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["mentor-reviews", mentorId] });
+      },
+      onError: (err: AxiosError<{ message?: string }>) => {
+        toast.error(err.response?.data?.message || "Có lỗi xảy ra");
+      }
+    });
+  };
 
   if (isLoading) {
     return <MentorProfileSkeleton />
@@ -240,8 +267,93 @@ const MentorProfilePage = () => {
               <TabsContent value="reviews" className="mt-6">
                 <Card className="rounded-2xl shadow-sm border">
                   <CardContent className="p-6 sm:p-8">
-                    <h2 className="text-xl font-bold mb-4">Đánh giá</h2>
-                    <p className="text-muted-foreground">Chưa có đánh giá nào.</p>
+                    <h2 className="text-xl font-bold mb-6">Đánh giá</h2>
+
+                    {isLoadingReviews ? (
+                      <div className="space-y-4">
+                        {Array.from({ length: 3 }).map((_, idx) => (
+                          <div key={idx} className="animate-pulse border rounded-lg p-4">
+                            <div className="flex items-start gap-4">
+                              <div className="h-12 w-12 bg-muted rounded-full" />
+                              <div className="flex-1 space-y-2">
+                                <div className="h-4 bg-muted rounded w-1/4" />
+                                <div className="h-3 bg-muted rounded w-1/3" />
+                                <div className="h-16 bg-muted rounded w-full mt-2" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : !reviewsData || reviewsData.items.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">Chưa có đánh giá nào.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {reviewsData.items.map((review) => (
+                          <div key={review.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                            <div className="flex items-start gap-4">
+                              {/* User Avatar */}
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage src={review.menteeAvatar || undefined} alt={review.menteeName} />
+                                <AvatarFallback>{review.menteeName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                              </Avatar>
+
+                              <div className="flex-1 min-w-0">
+                                {/* User Info and Date */}
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div>
+                                    <h4 className="font-semibold text-sm">{review.menteeName}</h4>
+                                    <p className="text-xs text-muted-foreground">
+                                      Đã học: {" "}
+                                      {format(new Date(review.appointmentStartAt), "dd/MM/yyyy · HH:mm", { locale: vi })}
+                                      {" - "}
+                                      {format(new Date(review.appointmentEndAt), "HH:mm", { locale: vi })}
+                                    </p>
+                                  </div>
+
+                                  {/* Stars */}
+                                  <div className="flex gap-0.5">
+                                    {Array.from({ length: 5 }).map((_, idx) => (
+                                      <Star
+                                        key={idx}
+                                        className={`h-4 w-4 ${idx < review.rating
+                                          ? "fill-orange-400 text-orange-400"
+                                          : "text-gray-300"
+                                          }`}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Comment */}
+                                {review.comment && (
+                                  <p className="text-sm text-foreground leading-relaxed mb-3">
+                                    {review.comment}
+                                  </p>
+                                )}
+
+                                {/* Upvote Button */}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={`gap-2 h-8 px-3 text-muted-foreground hover:text-primary ${review.isUpvotedByCurrentUser ? 'bg-primary/10' : ''}`}
+                                  onClick={() => handleToggleUpvote(review.id)}
+                                >
+                                  <ThumbsUp className={`h-4 w-4 ${review.isUpvotedByCurrentUser ? 'fill-primary text-primary' : ''}`} />
+                                  <span className={`text-xs ${review.isUpvotedByCurrentUser ? 'text-primary font-medium' : ''}`}>
+                                    Hữu ích {review.upvoteCount > 0 && `(${review.upvoteCount})`}
+                                  </span>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+
+                        <ApiPagination
+                          pagination={reviewsData}
+                          onPageChange={setReviewPage}
+                        />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -319,13 +431,15 @@ const MentorProfilePage = () => {
           </div>
         </div>
       </div>
-      {mentor && (
-        <BookingDialog
-          isOpen={isBookingOpen}
-          onClose={() => setIsBookingOpen(false)}
-          mentor={mentor}
-        />
-      )}
+      {
+        mentor && (
+          <BookingDialog
+            isOpen={isBookingOpen}
+            onClose={() => setIsBookingOpen(false)}
+            mentor={mentor}
+          />
+        )
+      }
     </div>
   );
 };
