@@ -38,7 +38,11 @@ public class ReviewController : ControllerBase
         [FromQuery] int pageSize = 5)
     {
         // Get current user ID if authenticated
-        Guid userId = User.GetUserId();
+        Guid? userId = null;
+        if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            userId = User.GetUserId();
+        }
 
         var result = await _reviewService.GetMentorReviews(mentorId, page, pageSize, userId);
 

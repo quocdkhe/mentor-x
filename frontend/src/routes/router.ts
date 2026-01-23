@@ -22,6 +22,9 @@ const loginRoute = createRoute({
   beforeLoad: async () => {
     await redirectIfAuthenticated();
   },
+  head: () => ({
+    meta: [{ title: "MentorX - Đăng nhập" }],
+  }),
 }).lazy(() => import("@/pages/public/login").then((d) => d.Route));
 
 const registerRoute = createRoute({
@@ -30,6 +33,9 @@ const registerRoute = createRoute({
   beforeLoad: async () => {
     await redirectIfAuthenticated();
   },
+  head: () => ({
+    meta: [{ title: "MentorX - Đăng ký" }],
+  }),
 }).lazy(() => import("@/pages/public/register.tsx").then((d) => d.Route));
 
 const routeTree = rootRoute.addChildren([
