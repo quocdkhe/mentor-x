@@ -1,17 +1,17 @@
-import { createLazyRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import {
+  createLazyRoute,
+  getRouteApi,
+  Link,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useGetMentorProfile } from "@/api/mentor";
 import { useGetMentorReviews, useToggleUpvote } from "@/api/review";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { BookingDialog } from "@/components/features/booking/booking-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookingDrawer } from "@/components/features/booking/booking-drawer";
 import { ApiPagination } from "@/components/api-pagination";
 import { MentorProfileSkeleton } from "@/components/skeletons/mentor-profile.skeleton";
 import {
@@ -27,7 +27,7 @@ import {
   CalendarClock,
   ArrowLeft,
   LogIn,
-  ThumbsUp
+  ThumbsUp,
 } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -42,13 +42,17 @@ import { toast } from "sonner";
 
 const MentorProfilePage = () => {
   const user = useSelector((state: RootState) => state.auth.user);
-  const route = user?.role === USER_ROLES.USER ? getRouteApi('/user/mentors/$mentorId') : getRouteApi('/public/mentors/$mentorId');
+  const route =
+    user?.role === USER_ROLES.USER
+      ? getRouteApi("/user/mentors/$mentorId")
+      : getRouteApi("/public/mentors/$mentorId");
   const { mentorId } = route.useParams();
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
   // const { data: availabilites, isLoading: isLoadingAvailabilities } = useGetAvailability(mentorId);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [reviewPage, setReviewPage] = useState(1);
-  const { data: reviewsData, isLoading: isLoadingReviews } = useGetMentorReviews(mentorId, reviewPage, 5);
+  const { data: reviewsData, isLoading: isLoadingReviews } =
+    useGetMentorReviews(mentorId, reviewPage, 5);
   const { mutate: toggleUpvote } = useToggleUpvote();
   const queryClient = useQueryClient();
   const navigator = useNavigate();
@@ -60,22 +64,26 @@ const MentorProfilePage = () => {
     }
     toggleUpvote(reviewId, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["mentor-reviews", mentorId] });
+        queryClient.invalidateQueries({
+          queryKey: ["mentor-reviews", mentorId],
+        });
       },
       onError: (err: AxiosError<{ message?: string }>) => {
         toast.error(err.response?.data?.message || "Có lỗi xảy ra");
-      }
+      },
     });
   };
 
   if (isLoading) {
-    return <MentorProfileSkeleton />
+    return <MentorProfileSkeleton />;
   }
 
   if (error || !mentor) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <p className="text-destructive font-medium">Không thể tải hồ sơ mentor</p>
+        <p className="text-destructive font-medium">
+          Không thể tải hồ sơ mentor
+        </p>
         <Button onClick={() => window.location.reload()} variant="outline">
           Thử lại
         </Button>
@@ -90,7 +98,7 @@ const MentorProfilePage = () => {
 
   // Format price to Vietnamese currency
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN').format(price);
+    return new Intl.NumberFormat("vi-VN").format(price);
   };
 
   // Render stars for rating
@@ -101,12 +109,18 @@ const MentorProfilePage = () => {
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(
-        <Star key={`full-${i}`} className="w-5 h-5 fill-orange-400 text-orange-400" />
+        <Star
+          key={`full-${i}`}
+          className="w-5 h-5 fill-orange-400 text-orange-400"
+        />,
       );
     }
     if (hasHalfStar) {
       stars.push(
-        <StarHalf key="half" className="w-5 h-5 fill-orange-400 text-orange-400" />
+        <StarHalf
+          key="half"
+          className="w-5 h-5 fill-orange-400 text-orange-400"
+        />,
       );
     }
     return stars;
@@ -117,7 +131,9 @@ const MentorProfilePage = () => {
       <div className="container mx-auto px-4">
         <div className="mb-6">
           <Button variant="ghost" asChild className="gap-2 hover:bg-muted">
-            <Link to={user?.role === USER_ROLES.USER ? "/user/mentors" : "/mentors"}>
+            <Link
+              to={user?.role === USER_ROLES.USER ? "/user/mentors" : "/mentors"}
+            >
               <ArrowLeft className="h-4 w-4" />
               Quay lại danh sách
             </Link>
@@ -134,8 +150,14 @@ const MentorProfilePage = () => {
                   <div className="shrink-0 relative mx-auto sm:mx-0">
                     <div className="h-32 w-32 rounded-full p-1 bg-linear-to-tr from-primary to-purple-300">
                       <Avatar className="h-full w-full border-4 border-card">
-                        <AvatarImage src={mentor.avatar} alt={mentor.name} className="object-cover" />
-                        <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
+                        <AvatarImage
+                          src={mentor.avatar}
+                          alt={mentor.name}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="text-4xl">
+                          {initials}
+                        </AvatarFallback>
                       </Avatar>
                     </div>
                   </div>
@@ -144,7 +166,9 @@ const MentorProfilePage = () => {
                   <div className="flex-1 text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row justify-between items-start">
                       <div>
-                        <h1 className="text-3xl font-bold mb-1">{mentor.name}</h1>
+                        <h1 className="text-3xl font-bold mb-1">
+                          {mentor.name}
+                        </h1>
                         <p className="text-lg text-muted-foreground font-medium">
                           {mentor.position} tại {mentor.company}
                         </p>
@@ -153,12 +177,14 @@ const MentorProfilePage = () => {
                           <span>{mentor.company}</span>
                         </div>
 
-
                         {/* Study hours badge - using primary color */}
                         {user && mentor.meetingHours > 0 && (
                           <div className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-primary shadow-sm">
                             <Clock className="w-5 h-5" />
-                            <span className="font-bold text-sm">Bạn đã học {mentor.meetingHours.toFixed(1)} giờ cùng Mentor này</span>
+                            <span className="font-bold text-sm">
+                              Bạn đã học {mentor.meetingHours.toFixed(1)} giờ
+                              cùng Mentor này
+                            </span>
                           </div>
                         )}
                       </div>
@@ -181,7 +207,9 @@ const MentorProfilePage = () => {
                       <div className="flex text-orange-400">
                         {renderStars(mentor.avgRating)}
                       </div>
-                      <span className="font-bold text-lg">{mentor.avgRating.toFixed(1)}</span>
+                      <span className="font-bold text-lg">
+                        {mentor.avgRating.toFixed(1)}
+                      </span>
                       <span className="text-muted-foreground text-sm underline cursor-pointer hover:text-primary">
                         ({mentor.totalRatings} đánh giá)
                       </span>
@@ -194,10 +222,16 @@ const MentorProfilePage = () => {
             {/* Tabs */}
             <Tabs defaultValue="about" className="w-full">
               <TabsList className="w-full grid grid-cols-2 h-11">
-                <TabsTrigger value="about" className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20">
+                <TabsTrigger
+                  value="about"
+                  className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20"
+                >
                   Về tôi
                 </TabsTrigger>
-                <TabsTrigger value="reviews" className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20">
+                <TabsTrigger
+                  value="reviews"
+                  className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20"
+                >
                   Đánh giá
                 </TabsTrigger>
               </TabsList>
@@ -275,7 +309,10 @@ const MentorProfilePage = () => {
                     {isLoadingReviews ? (
                       <div className="space-y-4">
                         {Array.from({ length: 3 }).map((_, idx) => (
-                          <div key={idx} className="animate-pulse border rounded-lg p-4">
+                          <div
+                            key={idx}
+                            className="animate-pulse border rounded-lg p-4"
+                          >
                             <div className="flex items-start gap-4">
                               <div className="h-12 w-12 bg-muted rounded-full" />
                               <div className="flex-1 space-y-2">
@@ -288,28 +325,51 @@ const MentorProfilePage = () => {
                         ))}
                       </div>
                     ) : !reviewsData || reviewsData.items.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-8">Chưa có đánh giá nào.</p>
+                      <p className="text-muted-foreground text-center py-8">
+                        Chưa có đánh giá nào.
+                      </p>
                     ) : (
                       <div className="space-y-4">
                         {reviewsData.items.map((review) => (
-                          <div key={review.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                          <div
+                            key={review.id}
+                            className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                          >
                             <div className="flex items-start gap-4">
                               {/* User Avatar */}
                               <Avatar className="h-12 w-12">
-                                <AvatarImage src={review.menteeAvatar || undefined} alt={review.menteeName} className="object-cover" />
-                                <AvatarFallback>{review.menteeName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                <AvatarImage
+                                  src={review.menteeAvatar || undefined}
+                                  alt={review.menteeName}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback>
+                                  {review.menteeName
+                                    .substring(0, 2)
+                                    .toUpperCase()}
+                                </AvatarFallback>
                               </Avatar>
 
                               <div className="flex-1 min-w-0">
                                 {/* User Info and Date */}
                                 <div className="flex items-start justify-between gap-2 mb-2">
                                   <div>
-                                    <h4 className="font-semibold text-sm">{review.menteeName}</h4>
+                                    <h4 className="font-semibold text-sm">
+                                      {review.menteeName}
+                                    </h4>
                                     <p className="text-xs text-muted-foreground">
-                                      Đã học: {" "}
-                                      {format(new Date(review.appointmentStartAt), "dd/MM/yyyy · HH:mm", { locale: vi })}
+                                      Đã học:{" "}
+                                      {format(
+                                        new Date(review.appointmentStartAt),
+                                        "dd/MM/yyyy · HH:mm",
+                                        { locale: vi },
+                                      )}
                                       {" - "}
-                                      {format(new Date(review.appointmentEndAt), "HH:mm", { locale: vi })}
+                                      {format(
+                                        new Date(review.appointmentEndAt),
+                                        "HH:mm",
+                                        { locale: vi },
+                                      )}
                                     </p>
                                   </div>
 
@@ -318,10 +378,11 @@ const MentorProfilePage = () => {
                                     {Array.from({ length: 5 }).map((_, idx) => (
                                       <Star
                                         key={idx}
-                                        className={`h-4 w-4 ${idx < review.rating
-                                          ? "fill-orange-400 text-orange-400"
-                                          : "text-gray-300"
-                                          }`}
+                                        className={`h-4 w-4 ${
+                                          idx < review.rating
+                                            ? "fill-orange-400 text-orange-400"
+                                            : "text-gray-300"
+                                        }`}
                                       />
                                     ))}
                                   </div>
@@ -338,12 +399,18 @@ const MentorProfilePage = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className={`gap-2 h-8 px-3 text-muted-foreground hover:text-primary ${review.isUpvotedByCurrentUser ? 'bg-primary/10' : ''}`}
+                                  className={`gap-2 h-8 px-3 text-muted-foreground hover:text-primary ${review.isUpvotedByCurrentUser ? "bg-primary/10" : ""}`}
                                   onClick={() => handleToggleUpvote(review.id)}
                                 >
-                                  <ThumbsUp className={`h-4 w-4 ${review.isUpvotedByCurrentUser ? 'fill-primary text-primary' : ''}`} />
-                                  <span className={`text-xs ${review.isUpvotedByCurrentUser ? 'text-primary font-medium' : ''}`}>
-                                    Hữu ích {review.upvoteCount > 0 && `(${review.upvoteCount})`}
+                                  <ThumbsUp
+                                    className={`h-4 w-4 ${review.isUpvotedByCurrentUser ? "fill-primary text-primary" : ""}`}
+                                  />
+                                  <span
+                                    className={`text-xs ${review.isUpvotedByCurrentUser ? "text-primary font-medium" : ""}`}
+                                  >
+                                    Hữu ích{" "}
+                                    {review.upvoteCount > 0 &&
+                                      `(${review.upvoteCount})`}
                                   </span>
                                 </Button>
                               </div>
@@ -372,52 +439,65 @@ const MentorProfilePage = () => {
                   {/* Price */}
                   <div className="text-center mb-8">
                     <div className="flex items-center justify-center text-primary font-bold">
-                      <span className="text-3xl mr-1">{formatPrice(mentor.pricePerHour)}</span>
+                      <span className="text-3xl mr-1">
+                        {formatPrice(mentor.pricePerHour)}
+                      </span>
                       <span className="text-xl">VND</span>
                     </div>
-                    <p className="text-muted-foreground text-sm mt-1 font-medium">giá mỗi giờ</p>
+                    <p className="text-muted-foreground text-sm mt-1 font-medium">
+                      giá mỗi giờ
+                    </p>
                   </div>
 
                   {/* Action Buttons - using primary color */}
                   {user ? (
-                    user.role === USER_ROLES.USER && (<div className="space-y-3">
-                      <Button className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
-                        <Calendar className="w-5 h-5" />
-                        Đặt lịch
-                      </Button>
+                    user.role === USER_ROLES.USER && (
+                      <div className="space-y-3">
+                        <Button
+                          className="w-full gap-2"
+                          onClick={() => setIsBookingOpen(true)}
+                        >
+                          <Calendar className="w-5 h-5" />
+                          Đặt lịch
+                        </Button>
+                        <Button variant="outline" className="w-full gap-2">
+                          <MessageCircle className="w-5 h-5" />
+                          Gửi tin nhắn
+                        </Button>
+                      </div>
+                    )
+                  ) : (
+                    <div className="space-y-3">
                       <Button
-                        variant="outline"
                         className="w-full gap-2"
+                        onClick={() => navigator({ to: "/login" })}
                       >
-                        <MessageCircle className="w-5 h-5" />
-                        Gửi tin nhắn
+                        <LogIn className="w-5 h-5" />
+                        Đăng nhập để đặt lịch
                       </Button>
-                    </div>)
-                  ) : (<div className="space-y-3">
-                    <Button
-                      className="w-full gap-2"
-                      onClick={() => navigator({ to: '/login' })}
-                    >
-                      <LogIn className="w-5 h-5" />
-                      Đăng nhập để đặt lịch
-                    </Button>
-                  </div>)}
-
+                    </div>
+                  )}
 
                   {/* Features */}
                   <div className="h-px bg-border my-6"></div>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">Xác nhận đặt lịch ngay lập tức</span>
+                      <span className="text-sm text-muted-foreground">
+                        Xác nhận đặt lịch ngay lập tức
+                      </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">Hủy lịch miễn phí trước 24 giờ</span>
+                      <span className="text-sm text-muted-foreground">
+                        Hủy lịch miễn phí trước 24 giờ
+                      </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">Video call bảo mật và ổn định</span>
+                      <span className="text-sm text-muted-foreground">
+                        Video call bảo mật và ổn định
+                      </span>
                     </li>
                   </ul>
                 </CardContent>
@@ -427,22 +507,21 @@ const MentorProfilePage = () => {
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800/50 flex items-start gap-3">
                 <Info className="w-5 h-5 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-700 dark:text-blue-300 leading-snug">
-                  {mentor.name} thường phản hồi trong vòng vài giờ. Hãy đặt lịch sớm để giữ chỗ.
+                  {mentor.name} thường phản hồi trong vòng vài giờ. Hãy đặt lịch
+                  sớm để giữ chỗ.
                 </p>
               </div>
             </div>
           </div>
         </div>
       </div>
-      {
-        mentor && (
-          <BookingDialog
-            isOpen={isBookingOpen}
-            onClose={() => setIsBookingOpen(false)}
-            mentor={mentor}
-          />
-        )
-      }
+      {mentor && (
+        <BookingDrawer
+          isOpen={isBookingOpen}
+          onClose={() => setIsBookingOpen(false)}
+          mentor={mentor}
+        />
+      )}
     </div>
   );
 };

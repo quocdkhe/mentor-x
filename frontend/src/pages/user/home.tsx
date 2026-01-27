@@ -1,14 +1,20 @@
-import { createLazyRoute, Link } from '@tanstack/react-router';
-import { Search, Calendar } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/store/store';
+import { createLazyRoute, Link } from "@tanstack/react-router";
+import { Search, Calendar } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 
 export function UserHomePage() {
   const user = useSelector((state: RootState) => state.auth.user);
 
-  const firstName = user?.name?.split(' ')[0] || 'Bạn';
+  const firstName = user?.name?.split(" ")[0] || "Bạn";
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -18,7 +24,8 @@ export function UserHomePage() {
           Chào mừng trở lại, {firstName}.
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Hành trình học tập của bạn đang đi đúng hướng. Sẵn sàng cho buổc tiếp theo hôm nay chưa?
+          Hành trình học tập của bạn đang đi đúng hướng. Sẵn sàng cho buổc tiếp
+          theo hôm nay chưa?
         </p>
       </div>
 
@@ -32,12 +39,16 @@ export function UserHomePage() {
             </div>
             <CardTitle className="text-2xl">Tìm kiếm Mentor</CardTitle>
             <CardDescription className="text-base pt-2">
-              Kết nối với các chuyên gia hàng đầu để nhận lời khuyên và định hướng nghề nghiệp phù hợp với bạn.
+              Kết nối với các chuyên gia hàng đầu để nhận lời khuyên và định
+              hướng nghề nghiệp phù hợp với bạn.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center pb-6">
-            <Button asChild className="group-hover:scale-105 transition-transform">
-              <Link to="/mentors">
+            <Button
+              asChild
+              className="group-hover:scale-105 transition-transform"
+            >
+              <Link to="/user/mentors">
                 Bắt đầu tìm kiếm <span className="ml-1">→</span>
               </Link>
             </Button>
@@ -52,11 +63,15 @@ export function UserHomePage() {
             </div>
             <CardTitle className="text-2xl">Xem lịch học của tôi</CardTitle>
             <CardDescription className="text-base pt-2">
-              Theo dõi các buổi mentoring sắp tới, xem lại lịch sử và chuẩn bị sẵn sàng cho buổi gặp tiếp theo.
+              Theo dõi các buổi mentoring sắp tới, xem lại lịch sử và chuẩn bị
+              sẵn sàng cho buổi gặp tiếp theo.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center pb-6">
-            <Button asChild className="group-hover:scale-105 transition-transform">
+            <Button
+              asChild
+              className="group-hover:scale-105 transition-transform"
+            >
               <Link to="/user/schedules">
                 Xem chi tiết <span className="ml-1">→</span>
               </Link>
@@ -83,7 +98,8 @@ export function UserHomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Tìm Mentor Phù Hợp</h3>
               <p className="text-muted-foreground">
-                Duyệt qua hồ sơ các chuyên gia đưa ra lời khuyên về kỹ năng, kinh nghiệm và đánh giá từ cộng đồng.
+                Duyệt qua hồ sơ các chuyên gia đưa ra lời khuyên về kỹ năng,
+                kinh nghiệm và đánh giá từ cộng đồng.
               </p>
             </div>
             {/* Connector Line - Hidden on mobile */}
@@ -98,7 +114,8 @@ export function UserHomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Đặt Lịch Hẹn</h3>
               <p className="text-muted-foreground">
-                Chọn khung giờ phù hợp với lịch trình của bạn và mentor để bắt đầu buổi trao đổi.
+                Chọn khung giờ phù hợp với lịch trình của bạn và mentor để bắt
+                đầu buổi trao đổi.
               </p>
             </div>
             {/* Connector Line - Hidden on mobile */}
@@ -112,7 +129,8 @@ export function UserHomePage() {
             </div>
             <h3 className="text-xl font-semibold mb-3">Học Hỏi & Phát Triển</h3>
             <p className="text-muted-foreground">
-              Tham gia buổi session 1:1, nhận phản hồi và áp dụng vào công việc thực tế.
+              Tham gia buổi session 1:1, nhận phản hồi và áp dụng vào công việc
+              thực tế.
             </p>
           </div>
         </div>
@@ -121,6 +139,6 @@ export function UserHomePage() {
   );
 }
 
-export const Route = createLazyRoute('/user/')({
+export const Route = createLazyRoute("/user/")({
   component: UserHomePage,
 });

@@ -1,8 +1,8 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -10,7 +10,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
 import {
   Card,
   CardContent,
@@ -18,26 +18,28 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { createLazyRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useRegister, useLoginWithGoogle } from '@/api/auth';
-import { toast } from 'sonner';
-import { Spinner } from '@/components/ui/spinner';
-import { useGoogleLogin } from '@react-oauth/google';
-import { useAppDispatch } from '@/store/hooks';
-import { setUser } from '@/store/auth.slice';
-import { USER_ROLES, type UserRole } from '@/types/user.ts';
+} from "@/components/ui/card";
+import { createLazyRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useRegister, useLoginWithGoogle } from "@/api/auth";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useAppDispatch } from "@/store/hooks";
+import { setUser } from "@/store/auth.slice";
+import { USER_ROLES, type UserRole } from "@/types/user.ts";
 
-const formSchema = z.object({
-  fullName: z.string().min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
-  email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-  confirmPassword: z.string().min(6, 'Vui lòng xác nhận mật khẩu'),
-  phoneNumber: z.string().min(10, 'Số điện thoại phải có ít nhất 10 ký tự'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Mật khẩu không khớp',
-  path: ['confirmPassword'],
-});
+const formSchema = z
+  .object({
+    fullName: z.string().min(2, "Họ và tên phải có ít nhất 2 ký tự"),
+    email: z.email("Vui lòng nhập địa chỉ email hợp lệ"),
+    password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+    confirmPassword: z.string().min(6, "Vui lòng xác nhận mật khẩu"),
+    phoneNumber: z.string().min(10, "Số điện thoại phải có ít nhất 10 ký tự"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Mật khẩu không khớp",
+    path: ["confirmPassword"],
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -49,71 +51,77 @@ function Register() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      phoneNumber: '',
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phoneNumber: "",
     },
   });
 
   const navigationBasedOnRole = (role: UserRole) => {
     if (role === USER_ROLES.ADMIN) {
-      navigate({ to: '/admin/user-management' });
+      navigate({ to: "/admin/user-management" });
     } else if (role === USER_ROLES.MENTOR) {
-      navigate({ to: '/mentor/schedules' });
+      navigate({ to: "/mentor/schedules" });
     } else if (role === USER_ROLES.USER) {
-      navigate({ to: '/user' });
+      navigate({ to: "/user" });
     }
-  }
+  };
 
   const registerWithGoogle = useGoogleLogin({
-    flow: 'auth-code',
-    scope: 'openid email profile https://www.googleapis.com/auth/calendar',
+    flow: "auth-code",
+    scope: "openid email profile https://www.googleapis.com/auth/calendar",
     onSuccess: ({ code }) => {
-      googleLoginMutation.mutate({ code }, {
-        onSuccess: (data) => {
-          // Update Redux state
-          dispatch(setUser(data));
-          console.log("Logged in user data:", data);
-          // Navigate based on role
-          navigationBasedOnRole(data.role);
-          toast.success('Đăng ký thành công');
+      googleLoginMutation.mutate(
+        { code },
+        {
+          onSuccess: (data) => {
+            // Update Redux state
+            dispatch(setUser(data));
+            console.log("Logged in user data:", data);
+            // Navigate based on role
+            navigationBasedOnRole(data.role);
+            toast.success("Đăng ký thành công");
+          },
+          onError: (err) => {
+            toast.error(
+              `Đăng ký thất bại: ${err.response?.data.message || err.message}`,
+            );
+          },
         },
-        onError: (err) => {
-          toast.error(`Đăng ký thất bại: ${err.response?.data.message || err.message}`);
-        }
-      });
+      );
     },
     onError: () => {
-      toast.error('Google sign up failed');
-    }
+      toast.error("Google sign up failed");
+    },
   });
 
   const onSubmit = (data: FormValues) => {
-    registerMutation.mutate({
-      name: data.fullName,
-      phone: data.phoneNumber,
-      email: data.email,
-      password: data.password,
-    },
+    registerMutation.mutate(
+      {
+        name: data.fullName,
+        phone: data.phoneNumber,
+        email: data.email,
+        password: data.password,
+      },
       {
         onSuccess: () => {
-          toast.success('Đăng ký thành công!');
-          navigate({ to: '/login' });
+          toast.success("Đăng ký thành công!");
+          navigate({ to: "/login" });
         },
         onError: (err) => {
           const backendMessage =
             err.response?.data.message || "Đã xảy ra lỗi, vui lòng thử lại.";
           toast.error(`Đăng ký thất bại: ${backendMessage}`);
         },
-      }
+      },
     );
   };
 
   return (
     <div className="min-h-screen flex">
-      <div className="w-1/2 flex items-center justify-center p-16">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-16">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl">Tạo tài khoản</CardTitle>
@@ -123,7 +131,10 @@ function Register() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="fullName"
@@ -167,11 +178,7 @@ function Register() {
                     <FormItem>
                       <FormLabel>Số điện thoại</FormLabel>
                       <FormControl>
-                        <Input
-                          type="tel"
-                          placeholder="0123456789"
-                          {...field}
-                        />
+                        <Input type="tel" placeholder="0123456789" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -214,7 +221,11 @@ function Register() {
                   )}
                 />
 
-                <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={registerMutation.isPending}
+                >
                   {registerMutation.isPending ? <Spinner /> : null}
                   Đăng ký
                 </Button>
@@ -268,8 +279,8 @@ function Register() {
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
-              Đã có tài khoản?{' '}
-              <Link to='/login' className="font-medium text-primary">
+              Đã có tài khoản?{" "}
+              <Link to="/login" className="font-medium text-primary">
                 Đăng nhập
               </Link>
             </p>
@@ -277,12 +288,12 @@ function Register() {
         </Card>
       </div>
 
-      <div className="w-1/2 relative flex items-center justify-center p-16">
+      <div className="hidden md:flex w-1/2 relative items-center justify-center p-16">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              'url(https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=1920)',
+              "url(https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=1920)",
           }}
         />
         <div className="absolute inset-0 bg-black/50 dark:bg-black/70" />
@@ -292,8 +303,9 @@ function Register() {
               Kết nối với những người cố vấn giúp bạn phát triển nhanh chóng
             </h2>
             <p className="text-lg">
-              Tham gia cùng hàng nghìn chuyên gia đang tìm kiếm sự hướng dẫn, mở rộng mạng lưới
-              và khai phá tiềm năng thông qua các mối quan hệ cố vấn ý nghĩa.
+              Tham gia cùng hàng nghìn chuyên gia đang tìm kiếm sự hướng dẫn, mở
+              rộng mạng lưới và khai phá tiềm năng thông qua các mối quan hệ cố
+              vấn ý nghĩa.
             </p>
           </div>
 
@@ -318,6 +330,6 @@ function Register() {
 }
 
 export default Register;
-export const Route = createLazyRoute('/register')({
+export const Route = createLazyRoute("/register")({
   component: Register,
-})
+});

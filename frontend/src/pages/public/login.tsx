@@ -1,11 +1,25 @@
-import { useForm } from "react-hook-form"
-import { createLazyRoute, Link, useNavigate } from "@tanstack/react-router"
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { createLazyRoute, Link, useNavigate } from "@tanstack/react-router";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useLogin, useLoginWithGoogle } from "@/api/auth";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
@@ -15,8 +29,8 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { USER_ROLES, type UserRole } from "@/types/user.ts";
 
 const formSchema = z.object({
-  email: z.email('Vui lòng nhập địa chỉ email hợp lệ'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  email: z.email("Vui lòng nhập địa chỉ email hợp lệ"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -29,50 +43,55 @@ function LoginPage() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
   const navigationBasedOnRole = (role: UserRole) => {
     if (role === USER_ROLES.ADMIN) {
-      navigate({ to: '/admin/user-management' });
+      navigate({ to: "/admin/user-management" });
     } else if (role === USER_ROLES.MENTOR) {
-      navigate({ to: '/mentor/schedules' });
+      navigate({ to: "/mentor/schedules" });
     } else if (role === USER_ROLES.USER) {
-      navigate({ to: '/user' });
+      navigate({ to: "/user" });
     }
-  }
+  };
 
   const loginWithGoogle = useGoogleLogin({
-    flow: 'auth-code',
-    scope: 'openid email profile https://www.googleapis.com/auth/calendar',
+    flow: "auth-code",
+    scope: "openid email profile https://www.googleapis.com/auth/calendar",
     onSuccess: ({ code }) => {
-      googleLoginMutation.mutate({ code }, {
-        onSuccess: (data) => {
-          // Refetch redux
-          dispatch(setUser(data));
-          console.log("Logged in user data:", data);
-          // check for role
-          navigationBasedOnRole(data.role);
-          toast.success('Đăng nhập thành công');
+      googleLoginMutation.mutate(
+        { code },
+        {
+          onSuccess: (data) => {
+            // Refetch redux
+            dispatch(setUser(data));
+            console.log("Logged in user data:", data);
+            // check for role
+            navigationBasedOnRole(data.role);
+            toast.success("Đăng nhập thành công");
+          },
+          onError: (err) => {
+            toast.error(
+              `Đăng nhập thất bại: ${err.response?.data.message || err.message}`,
+            );
+          },
         },
-        onError: (err) => {
-          toast.error(`Đăng nhập thất bại: ${err.response?.data.message || err.message}`);
-        }
-      });
+      );
     },
     onError: () => {
-      toast.error('Google login failed');
-    }
+      toast.error("Google login failed");
+    },
   });
 
-
   const onSubmit = async (data: FormValues) => {
-    loginMutation.mutate({
-      email: data.email,
-      password: data.password,
-    },
+    loginMutation.mutate(
+      {
+        email: data.email,
+        password: data.password,
+      },
       {
         onSuccess: (data) => {
           // Refetch redux
@@ -80,16 +99,19 @@ function LoginPage() {
           console.log("Logged in user data:", data);
           // check for role
           navigationBasedOnRole(data.role);
-          toast.success('Đăng nhập thành công');
+          toast.success("Đăng nhập thành công");
         },
         onError: (err) => {
-          toast.error(`Đăng nhập thất bại: ${err.response?.data.message || err.message}`);
-        }
-      });
+          toast.error(
+            `Đăng nhập thất bại: ${err.response?.data.message || err.message}`,
+          );
+        },
+      },
+    );
   };
   return (
     <div className="min-h-screen flex">
-      <div className="w-1/2 flex items-center justify-center p-16">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-16">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl">Chào mừng trở lại</CardTitle>
@@ -99,7 +121,10 @@ function LoginPage() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -136,7 +161,11 @@ function LoginPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loginMutation.isPending}
+                >
                   {loginMutation.isPending && <Spinner />}
                   Đăng nhập
                 </Button>
@@ -195,23 +224,28 @@ function LoginPage() {
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex justify-center">
+          <CardFooter className="flex flex-col justify-center">
             <p className="text-sm text-muted-foreground">
-              Chưa có tài khoản?{' '}
+              Chưa có tài khoản?{" "}
               <Link to="/register" className="font-medium text-primary">
                 Đăng ký
+              </Link>
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              <Link to="/" className="font-medium text-primary">
+                Về trang chủ
               </Link>
             </p>
           </CardFooter>
         </Card>
       </div>
 
-      <div className="w-1/2 relative flex items-center justify-center p-16">
+      <div className="hidden md:flex w-1/2 relative items-center justify-center p-16">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              'url(https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=1920)',
+              "url(https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=1920)",
           }}
         />
         <div className="absolute inset-0 bg-black/50 dark:bg-black/70" />
@@ -221,8 +255,9 @@ function LoginPage() {
               Kết nối với những người cố vấn giúp bạn phát triển nhanh chóng
             </h2>
             <p className="text-lg">
-              Tham gia cùng hàng nghìn chuyên gia đang tìm kiếm sự hướng dẫn, mở rộng mạng lưới
-              và khai phá tiềm năng thông qua các mối quan hệ cố vấn ý nghĩa.
+              Tham gia cùng hàng nghìn chuyên gia đang tìm kiếm sự hướng dẫn, mở
+              rộng mạng lưới và khai phá tiềm năng thông qua các mối quan hệ cố
+              vấn ý nghĩa.
             </p>
           </div>
 
@@ -247,6 +282,6 @@ function LoginPage() {
 }
 
 export default LoginPage;
-export const Route = createLazyRoute('/login')({
+export const Route = createLazyRoute("/login")({
   component: LoginPage,
-})
+});
