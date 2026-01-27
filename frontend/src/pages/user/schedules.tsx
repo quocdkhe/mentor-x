@@ -1,8 +1,15 @@
 import { createLazyRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Calendar as CalendarIcon, Video, CalendarDays, X, Star, MessageSquare } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Video,
+  CalendarDays,
+  X,
+  Star,
+  MessageSquare,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
@@ -14,11 +21,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,7 +42,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useMenteeGetAppointments, useCancelAppointment } from "@/api/appointment";
+import {
+  useMenteeGetAppointments,
+  useCancelAppointment,
+} from "@/api/appointment";
 import { useCreateReview } from "@/api/review";
 import type { AppointmentStatusEnum } from "@/types/appointment";
 import { toast } from "sonner";
@@ -51,17 +65,53 @@ import { Textarea } from "@/components/ui/textarea";
 const StatusBadge = ({ status }: { status: AppointmentStatusEnum }) => {
   switch (status) {
     case "Pending":
-      return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80 dark:bg-yellow-900/30 dark:text-yellow-500">Chờ xác nhận</Badge>;
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80 dark:bg-yellow-900/30 dark:text-yellow-500"
+        >
+          Chờ xác nhận
+        </Badge>
+      );
     case "Confirmed":
-      return <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-500">Đã xác nhận</Badge>;
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-500"
+        >
+          Đã xác nhận
+        </Badge>
+      );
     case "Completed":
-      return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-500">Hoàn thành</Badge>;
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-500"
+        >
+          Hoàn thành
+        </Badge>
+      );
     case "Cancelled":
-      return <Badge variant="secondary" className="bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-500">Đã hủy</Badge>;
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-500"
+        >
+          Đã hủy
+        </Badge>
+      );
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
 };
+
+const statusItems = [
+  { value: "all", label: "Tất cả" },
+  { value: "Pending", label: "Chờ xác nhận" },
+  { value: "Confirmed", label: "Đã xác nhận" },
+  { value: "Completed", label: "Hoàn thành" },
+  { value: "Cancelled", label: "Đã hủy" },
+];
 
 function MenteeSchedulesPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -69,22 +119,34 @@ function MenteeSchedulesPage() {
   const queryClient = useQueryClient();
 
   // Fetch appointments from API for the selected date (or today)
-  const { data: appointmentsData = [], isLoading } = useMenteeGetAppointments(convertDateToUTC(date || new Date()));
+  const { data: appointmentsData = [], isLoading } = useMenteeGetAppointments(
+    convertDateToUTC(date || new Date()),
+  );
 
   // Initialize the cancel appointment mutation
-  const { mutate: cancelAppointment, isPending: isCancelling } = useCancelAppointment();
+  const { mutate: cancelAppointment, isPending: isCancelling } =
+    useCancelAppointment();
 
   // Initialize the create review mutation
-  const { mutate: createReview, isPending: isSubmittingReview } = useCreateReview();
+  const { mutate: createReview, isPending: isSubmittingReview } =
+    useCreateReview();
 
-  const [statusFilter, setStatusFilter] = useState<AppointmentStatusEnum | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    AppointmentStatusEnum | "all"
+  >("all");
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     appointmentId: string;
     action: "cancel" | null;
     title: string;
     description: string;
-  }>({ open: false, appointmentId: "", action: null, title: "", description: "" });
+  }>({
+    open: false,
+    appointmentId: "",
+    action: null,
+    title: "",
+    description: "",
+  });
 
   const [reviewDialog, setReviewDialog] = useState<{
     open: boolean;
@@ -102,15 +164,35 @@ function MenteeSchedulesPage() {
         cancelAppointment(confirmDialog.appointmentId, {
           onSuccess: (data) => {
             // Invalidate queries to refresh the data
-            queryClient.invalidateQueries({ queryKey: ["mentee-appointments", convertDateToUTC(date || new Date())] });
+            queryClient.invalidateQueries({
+              queryKey: [
+                "mentee-appointments",
+                convertDateToUTC(date || new Date()),
+              ],
+            });
             toast.success(data.message);
             // Close dialog after successful API call
-            setConfirmDialog({ open: false, appointmentId: "", action: null, title: "", description: "" });
+            setConfirmDialog({
+              open: false,
+              appointmentId: "",
+              action: null,
+              title: "",
+              description: "",
+            });
           },
           onError: (error: AxiosError<{ message?: string }>) => {
-            toast.error(error.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+            toast.error(
+              error.response?.data?.message ||
+                "Đã xảy ra lỗi, vui lòng thử lại.",
+            );
             // Close dialog on error as well
-            setConfirmDialog({ open: false, appointmentId: "", action: null, title: "", description: "" });
+            setConfirmDialog({
+              open: false,
+              appointmentId: "",
+              action: null,
+              title: "",
+              description: "",
+            });
           },
         });
       }
@@ -123,7 +205,7 @@ function MenteeSchedulesPage() {
       appointmentId,
       action: "cancel",
       title: "Hủy lịch hẹn",
-      description: "Bạn có chắc chắn muốn hủy lịch hẹn này không?"
+      description: "Bạn có chắc chắn muốn hủy lịch hẹn này không?",
     });
   };
 
@@ -146,13 +228,24 @@ function MenteeSchedulesPage() {
       },
       {
         onSuccess: (data) => {
-          queryClient.invalidateQueries({ queryKey: ["mentee-appointments", convertDateToUTC(date || new Date())] });
+          queryClient.invalidateQueries({
+            queryKey: [
+              "mentee-appointments",
+              convertDateToUTC(date || new Date()),
+            ],
+          });
 
           // Invalidate mentor specific queries
-          const appointment = appointmentsData.find((a) => a.appointmentId === reviewDialog.appointmentId);
+          const appointment = appointmentsData.find(
+            (a) => a.appointmentId === reviewDialog.appointmentId,
+          );
           if (appointment?.mentorId) {
-            queryClient.invalidateQueries({ queryKey: ["mentor-reviews", appointment.mentorId] });
-            queryClient.invalidateQueries({ queryKey: ["mentor", appointment.mentorId] });
+            queryClient.invalidateQueries({
+              queryKey: ["mentor-reviews", appointment.mentorId],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ["mentor", appointment.mentorId],
+            });
           }
 
           toast.success(data.message);
@@ -160,17 +253,27 @@ function MenteeSchedulesPage() {
           setReviewData({ rating: 0, comment: "" });
         },
         onError: (error: AxiosError<{ message?: string }>) => {
-          toast.error(error.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+          toast.error(
+            error.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.",
+          );
         },
-      }
+      },
     );
   };
 
   // Filter logic
   const filteredAppointments = appointmentsData.filter((item) => {
-    const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || item.status === statusFilter;
     return matchesStatus;
   });
+
+  // Get current status item for Combobox
+  const currentStatusValue = useMemo(
+    () =>
+      statusItems.find((item) => item.value === statusFilter) || statusItems[0],
+    [statusFilter],
+  );
 
   return (
     <div className="container mx-auto pt-6 pb-20 min-h-screen">
@@ -182,11 +285,15 @@ function MenteeSchedulesPage() {
               variant={"outline"}
               className={cn(
                 "w-[200px] justify-start text-left font-normal",
-                !date && "text-muted-foreground"
+                !date && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PP", { locale: vi }) : <span>Chọn ngày</span>}
+              {date ? (
+                format(date, "PP", { locale: vi })
+              ) : (
+                <span>Chọn ngày</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -202,8 +309,40 @@ function MenteeSchedulesPage() {
           </PopoverContent>
         </Popover>
 
+        {/* Right: Status Filter - Combobox on Mobile, Tabs on Desktop */}
+        <div className="md:hidden w-full">
+          <Combobox
+            items={statusItems}
+            value={currentStatusValue}
+            itemToStringValue={(item) => item.label}
+            onValueChange={(item) =>
+              setStatusFilter(
+                (item?.value as AppointmentStatusEnum | "all") || "all",
+              )
+            }
+          >
+            <ComboboxInput placeholder="Chọn trạng thái..." />
+            <ComboboxContent>
+              <ComboboxEmpty>Không tìm thấy</ComboboxEmpty>
+              <ComboboxList>
+                {(item) => (
+                  <ComboboxItem key={item.value} value={item}>
+                    {item.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+        </div>
+
         {/* Right: Status Tabs */}
-        <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={(value) => setStatusFilter(value as AppointmentStatusEnum | "all")}>
+        <Tabs
+          defaultValue="all"
+          className="hidden md:block w-full md:w-auto"
+          onValueChange={(value) =>
+            setStatusFilter(value as AppointmentStatusEnum | "all")
+          }
+        >
           <TabsList className="grid w-full md:w-auto grid-cols-5">
             <TabsTrigger value="all">Tất cả</TabsTrigger>
             <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
@@ -239,20 +378,21 @@ function MenteeSchedulesPage() {
           <div
             className="relative h-64 w-64 bg-contain bg-center bg-no-repeat opacity-90 dark:opacity-70 transition-transform duration-700 hover:scale-105"
             style={{
-              backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc0KV_9mJioueeH3g4gr9C6tYouarNzblXMTkbr3MzxDVDtvPASXUPxCwRqovN1H_KiZ8M9PplDKbEclMsn_GIxdNtIEy5rnDcHCjiNXW_2E05ifF_R7aWHeD2_P91xB1aDh8PgPvVybH1Ed3AXIk9rzxfWksOpcvQHSkRLShBPoYjcyTlL0dpNN8RyjyqxRxKivdebI7TldsQJ0D4CsTJuDkq5YTFV8R05NXRgiQL1IKBz1yrBu390Qt8ihenklbEEZugMThabQ")`
+              backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc0KV_9mJioueeH3g4gr9C6tYouarNzblXMTkbr3MzxDVDtvPASXUPxCwRqovN1H_KiZ8M9PplDKbEclMsn_GIxdNtIEy5rnDcHCjiNXW_2E05ifF_R7aWHeD2_P91xB1aDh8PgPvVybH1Ed3AXIk9rzxfWksOpcvQHSkRLShBPoYjcyTlL0dpNN8RyjyqxRxKivdebI7TldsQJ0D4CsTJuDkq5YTFV8R05NXRgiQL1IKBz1yrBu390Qt8ihenklbEEZugMThabQ")`,
             }}
             aria-label="Minh họa lịch trống"
           />
           <div className="text-center space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">Chưa có lịch hẹn nào</h3>
+            <h3 className="text-xl font-semibold text-foreground">
+              Chưa có lịch hẹn nào
+            </h3>
             <p className="text-muted-foreground max-w-md">
-              Bạn chưa có lịch hẹn nào cho ngày này. Hãy tìm kiếm mentor phù hợp và đặt lịch ngay!
+              Bạn chưa có lịch hẹn nào cho ngày này. Hãy tìm kiếm mentor phù hợp
+              và đặt lịch ngay!
             </p>
           </div>
           <Button asChild size="lg">
-            <Link to="/user/mentors">
-              Tìm kiếm Mentor
-            </Link>
+            <Link to="/user/mentors">Tìm kiếm Mentor</Link>
           </Button>
         </div>
       ) : (
@@ -263,11 +403,18 @@ function MenteeSchedulesPage() {
                 {/* Mentor Info */}
                 <div className="flex items-start gap-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={appointment.mentor.avatar || undefined} alt={appointment.mentor.name} />
-                    <AvatarFallback>{appointment.mentor.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarImage
+                      src={appointment.mentor.avatar || undefined}
+                      alt={appointment.mentor.name}
+                    />
+                    <AvatarFallback>
+                      {appointment.mentor.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{appointment.mentor.name}</h3>
+                    <h3 className="font-semibold text-sm truncate">
+                      {appointment.mentor.name}
+                    </h3>
                     <p className="text-xs text-muted-foreground truncate">
                       {`${appointment.mentor.position} tại ${appointment.mentor.company || appointment.mentor.email}`}
                     </p>
@@ -278,7 +425,8 @@ function MenteeSchedulesPage() {
                 {/* Time and Date */}
                 <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-3 text-center space-y-1">
                   <div className="text-2xl font-bold text-primary">
-                    {format(new Date(appointment.startAt), "HH:mm")} - {format(new Date(appointment.endAt), "HH:mm")}
+                    {format(new Date(appointment.startAt), "HH:mm")} -{" "}
+                    {format(new Date(appointment.endAt), "HH:mm")}
                   </div>
                   <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <CalendarIcon className="h-4 w-4" />
@@ -288,28 +436,43 @@ function MenteeSchedulesPage() {
 
                 {/* Actions */}
                 <div className="space-y-2">
-                  {appointment.status === "Confirmed" && appointment.meetingLink && (
-                    <>
-                      <Button className="w-full gap-2" asChild>
-                        <a href={appointment.meetingLink} target="_blank" rel="noopener noreferrer">
-                          <Video className="h-4 w-4" />
-                          Tham gia Meet
-                        </a>
-                      </Button>
-                      <Button variant="outline" className="w-full gap-2" asChild>
-                        <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer">
-                          <CalendarDays className="h-4 w-4" />
-                          Thêm vào Google Calendar
-                        </a>
-                      </Button>
-                    </>
-                  )}
+                  {appointment.status === "Confirmed" &&
+                    appointment.meetingLink && (
+                      <>
+                        <Button className="w-full gap-2" asChild>
+                          <a
+                            href={appointment.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Video className="h-4 w-4" />
+                            Tham gia Meet
+                          </a>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full gap-2"
+                          asChild
+                        >
+                          <a
+                            href="https://calendar.google.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <CalendarDays className="h-4 w-4" />
+                            Thêm vào Google Calendar
+                          </a>
+                        </Button>
+                      </>
+                    )}
 
                   {appointment.status === "Pending" && (
                     <Button
                       variant="outline"
                       className="w-full gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
-                      onClick={() => openCancelDialog(appointment.appointmentId)}
+                      onClick={() =>
+                        openCancelDialog(appointment.appointmentId)
+                      }
                     >
                       <X className="h-4 w-4" />
                       Hủy yêu cầu
@@ -321,13 +484,17 @@ function MenteeSchedulesPage() {
                       {appointment.isReviewed ? (
                         <div className="w-full py-2 px-4 rounded-md bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 flex items-center gap-2 justify-center">
                           <Star className="h-4 w-4 fill-green-600 text-green-600" />
-                          <span className="text-sm font-medium text-green-700 dark:text-green-400">Đã đánh giá</span>
+                          <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                            Đã đánh giá
+                          </span>
                         </div>
                       ) : (
                         <Button
                           variant="outline"
                           className="w-full gap-2"
-                          onClick={() => openReviewDialog(appointment.appointmentId)}
+                          onClick={() =>
+                            openReviewDialog(appointment.appointmentId)
+                          }
                         >
                           <MessageSquare className="h-4 w-4" />
                           Viết đánh giá
@@ -349,25 +516,48 @@ function MenteeSchedulesPage() {
       )}
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false, appointmentId: "", action: null, title: "", description: "" })}>
+      <AlertDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) =>
+          !open &&
+          setConfirmDialog({
+            open: false,
+            appointmentId: "",
+            action: null,
+            title: "",
+            description: "",
+          })
+        }
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
-            <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
+            <AlertDialogDescription>
+              {confirmDialog.description}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isCancelling}>
-              Hủy
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={isCancelling}>Hủy</AlertDialogCancel>
             <Button onClick={handleConfirmAction} disabled={isCancelling}>
-              {isCancelling ? <><Spinner /> Đang xử lý...</> : "Xác nhận"}
+              {isCancelling ? (
+                <>
+                  <Spinner /> Đang xử lý...
+                </>
+              ) : (
+                "Xác nhận"
+              )}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {/* Review Dialog */}
-      <Dialog open={reviewDialog.open} onOpenChange={(open) => !open && setReviewDialog({ open: false, appointmentId: "" })}>
+      <Dialog
+        open={reviewDialog.open}
+        onOpenChange={(open) =>
+          !open && setReviewDialog({ open: false, appointmentId: "" })
+        }
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Đánh giá Mentor</DialogTitle>
@@ -384,14 +574,17 @@ function MenteeSchedulesPage() {
                   <button
                     key={star}
                     type="button"
-                    onClick={() => setReviewData({ ...reviewData, rating: star })}
+                    onClick={() =>
+                      setReviewData({ ...reviewData, rating: star })
+                    }
                     className="transition-all hover:scale-110"
                   >
                     <Star
-                      className={`h-8 w-8 ${star <= reviewData.rating
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
-                        }`}
+                      className={`h-8 w-8 ${
+                        star <= reviewData.rating
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
                     />
                   </button>
                 ))}
@@ -407,7 +600,9 @@ function MenteeSchedulesPage() {
                 id="comment"
                 placeholder="Chia sẻ chi tiết về trải nghiệm của bạn..."
                 value={reviewData.comment}
-                onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
+                onChange={(e) =>
+                  setReviewData({ ...reviewData, comment: e.target.value })
+                }
                 rows={4}
               />
             </div>
@@ -415,13 +610,21 @@ function MenteeSchedulesPage() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setReviewDialog({ open: false, appointmentId: "" })}
+              onClick={() =>
+                setReviewDialog({ open: false, appointmentId: "" })
+              }
               disabled={isSubmittingReview}
             >
               Hủy
             </Button>
             <Button onClick={handleReviewSubmit} disabled={isSubmittingReview}>
-              {isSubmittingReview ? <><Spinner /> Đang gửi...</> : "Gửi đánh giá"}
+              {isSubmittingReview ? (
+                <>
+                  <Spinner /> Đang gửi...
+                </>
+              ) : (
+                "Gửi đánh giá"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -430,7 +633,7 @@ function MenteeSchedulesPage() {
   );
 }
 
-export const Route = createLazyRoute('/user/schedules')({
+export const Route = createLazyRoute("/user/schedules")({
   component: MenteeSchedulesPage,
 });
 
