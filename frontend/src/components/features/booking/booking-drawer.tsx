@@ -381,7 +381,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
       direction="right"
       dismissible={false}
     >
-      <DrawerContent className="max-h-screen h-screen w-screen flex flex-col">
+      <DrawerContent className="inset-0 max-h-screen h-screen w-screen flex flex-col">
         <VisuallyHidden.Root>
           <DrawerTitle>Đặt lịch với {mentor.name}</DrawerTitle>
           <DrawerDescription>
