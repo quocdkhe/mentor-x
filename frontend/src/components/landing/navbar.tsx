@@ -14,8 +14,6 @@ import { useAppSelector } from "@/store/hooks";
 import { Skeleton } from "../ui/skeleton";
 import { USER_ROLES } from "@/types/user";
 
-
-
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoading } = useAppSelector((state) => state.auth);
@@ -23,13 +21,13 @@ export function Navbar() {
 
   const navigationBasedOnRole = () => {
     if (user?.role === USER_ROLES.ADMIN) {
-      navigate({ to: '/admin/user-management' });
+      navigate({ to: "/admin/user-management" });
     } else if (user?.role === USER_ROLES.MENTOR) {
-      navigate({ to: '/mentor/schedules' });
+      navigate({ to: "/mentor/schedules" });
     } else if (user?.role === USER_ROLES.USER) {
-      navigate({ to: '/user' });
+      navigate({ to: "/user" });
     }
-  }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -59,17 +57,17 @@ export function Navbar() {
           {isLoading ? (
             <Skeleton className="h-10 w-24 rounded-md" />
           ) : user ? (
-            <Button onClick={navigationBasedOnRole}>
-              Trang của tôi
-            </Button>
-          ) : (<>
-            <Button variant="ghost">
-              <Link to="/login">Đăng nhập</Link>
-            </Button>
-            <Button>
-              <Link to="/register">Bắt đấu</Link>
-            </Button>
-          </>)}
+            <Button onClick={navigationBasedOnRole}>Trang của tôi</Button>
+          ) : (
+            <>
+              <Button variant="ghost">
+                <Link to="/login">Đăng nhập</Link>
+              </Button>
+              <Button>
+                <Link to="/register">Bắt đấu</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="flex md:hidden items-center gap-2">
@@ -100,17 +98,22 @@ export function Navbar() {
                     Mentor
                   </Link>
                 </SheetClose>
-                {isLoading ? <Skeleton className="h-10 w-full rounded-md" /> :
-                  user == null ? (<div className="flex flex-col gap-2 mt-4">
+                {isLoading ? (
+                  <Skeleton className="h-10 w-full rounded-md" />
+                ) : user == null ? (
+                  <div className="flex flex-col gap-2 mt-4">
                     <Button variant="outline" className="w-full">
-                      Đăng nhập
+                      <Link to="/login">Đăng nhập</Link>
                     </Button>
-                    <Button className="w-full">Bắt đầu</Button>
-                  </div>) : (
-                    <Link to="/user" className="mt-4">
-                      <Button className="w-full">Trang cá nhân</Button>
-                    </Link>
-                  )}
+                    <Button className="w-full">
+                      <Link to="/register">Bắt đầu</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <Link to="/user" className="mt-4">
+                    <Button className="w-full">Trang cá nhân</Button>
+                  </Link>
+                )}
               </div>
             </SheetContent>
           </Sheet>

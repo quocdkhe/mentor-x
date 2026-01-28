@@ -1,5 +1,5 @@
 import { createLazyRoute, Link } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -23,13 +23,12 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -268,13 +267,6 @@ function MenteeSchedulesPage() {
     return matchesStatus;
   });
 
-  // Get current status item for Combobox
-  const currentStatusValue = useMemo(
-    () =>
-      statusItems.find((item) => item.value === statusFilter) || statusItems[0],
-    [statusFilter],
-  );
-
   return (
     <div className="container mx-auto pt-6 pb-20 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -309,30 +301,25 @@ function MenteeSchedulesPage() {
           </PopoverContent>
         </Popover>
 
-        {/* Right: Status Filter - Combobox on Mobile, Tabs on Desktop */}
+        {/* Right: Status Filter - Select on Mobile, Tabs on Desktop */}
         <div className="md:hidden w-full">
-          <Combobox
-            items={statusItems}
-            value={currentStatusValue}
-            itemToStringValue={(item) => item.label}
-            onValueChange={(item) =>
-              setStatusFilter(
-                (item?.value as AppointmentStatusEnum | "all") || "all",
-              )
+          <Select
+            value={statusFilter}
+            onValueChange={(value) =>
+              setStatusFilter(value as AppointmentStatusEnum | "all")
             }
           >
-            <ComboboxInput placeholder="Chọn trạng thái..." />
-            <ComboboxContent>
-              <ComboboxEmpty>Không tìm thấy</ComboboxEmpty>
-              <ComboboxList>
-                {(item) => (
-                  <ComboboxItem key={item.value} value={item}>
-                    {item.label}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Chọn trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Right: Status Tabs */}

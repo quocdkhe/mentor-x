@@ -22,6 +22,14 @@ const userManagementRoute = createRoute({
   }),
 }).lazy(() => import("@/pages/admin/user-management").then((d) => d.Route));
 
-const adminRouteTree = adminLayoutRoute.addChildren([userManagementRoute]);
+const profileRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: "/profile",
+  head: () => ({
+    meta: [{ title: "MentorX - Hồ sơ" }],
+  }),
+}).lazy(() => import("@/pages/user/edit-profile").then((d) => d.AdminRoute));
+
+const adminRouteTree = adminLayoutRoute.addChildren([userManagementRoute, profileRoute]);
 
 export { adminRouteTree };

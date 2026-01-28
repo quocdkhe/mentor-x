@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -9,21 +9,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Upload, User } from 'lucide-react';
-import { createLazyRoute } from '@tanstack/react-router';
-import { toast } from 'sonner';
-import { useGetCurrentUser } from '@/api/user';
-import DefaultSkeleton from '@/components/skeletons/default.skeleton';
-import { useUpdateFile, useUploadFile } from '@/api/file';
-import { Spinner } from '@/components/ui/spinner';
-import { useUpdateProfile } from '@/api/user';
-import { useQueryClient } from '@tanstack/react-query';
-import { useAppDispatch } from '@/store/hooks';
-import { fetchCurrentUser } from '@/store/auth.slice';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Upload, User } from "lucide-react";
+import { createLazyRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { useGetCurrentUser } from "@/api/user";
+import DefaultSkeleton from "@/components/skeletons/default.skeleton";
+import { useUpdateFile, useUploadFile } from "@/api/file";
+import { Spinner } from "@/components/ui/spinner";
+import { useUpdateProfile } from "@/api/user";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAppDispatch } from "@/store/hooks";
+import { fetchCurrentUser } from "@/store/auth.slice";
 
 type UserUpdateProfile = {
   name: string;
@@ -32,24 +32,29 @@ type UserUpdateProfile = {
   avatar: string;
 };
 
-const profileSchema = z.object({
-  name: z.string().min(2, 'Tên phải có ít nhất 2 ký tự'),
-  phone: z.string(),
-  email: z.string(),
-  newPassword: z.string().optional().or(z.literal('')),
-  confirmPassword: z.string().optional().or(z.literal('')),
-}).refine((data) => {
-  if (data.newPassword || data.confirmPassword) {
-    if (!data.newPassword || data.newPassword.length < 6) {
-      return false;
-    }
-    return data.newPassword === data.confirmPassword;
-  }
-  return true;
-}, {
-  message: "Mật khẩu không khớp hoặc mật khẩu phải có ít nhất 6 ký tự",
-  path: ['confirmPassword'],
-});
+const profileSchema = z
+  .object({
+    name: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
+    phone: z.string(),
+    email: z.string(),
+    newPassword: z.string().optional().or(z.literal("")),
+    confirmPassword: z.string().optional().or(z.literal("")),
+  })
+  .refine(
+    (data) => {
+      if (data.newPassword || data.confirmPassword) {
+        if (!data.newPassword || data.newPassword.length < 6) {
+          return false;
+        }
+        return data.newPassword === data.confirmPassword;
+      }
+      return true;
+    },
+    {
+      message: "Mật khẩu không khớp hoặc mật khẩu phải có ít nhất 6 ký tự",
+      path: ["confirmPassword"],
+    },
+  );
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
@@ -66,20 +71,20 @@ export function ProfileEditPage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: '',
-      phone: '',
-      email: '',
-      newPassword: '',
-      confirmPassword: '',
+      name: "",
+      phone: "",
+      email: "",
+      newPassword: "",
+      confirmPassword: "",
     },
     // Auto-fill form when user data is loaded
     values: {
-      name: data?.name || '',
-      phone: data?.phone || '',
-      email: data?.email || '',
-      newPassword: '',
-      confirmPassword: '',
-    }
+      name: data?.name || "",
+      phone: data?.phone || "",
+      email: data?.email || "",
+      newPassword: "",
+      confirmPassword: "",
+    },
   });
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,18 +98,21 @@ export function ProfileEditPage() {
         },
         onError: (err) => {
           toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
-        }
+        },
       });
     } else {
-      updateFileMutation.mutate({ fileUrl: avatarUrl, file }, {
-        onSuccess: (data) => {
-          toast.success("Tải lên thành công!");
-          setUploadedAvatar(data.message);
+      updateFileMutation.mutate(
+        { fileUrl: avatarUrl, file },
+        {
+          onSuccess: (data) => {
+            toast.success("Tải lên thành công!");
+            setUploadedAvatar(data.message);
+          },
+          onError: (err) => {
+            toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
+          },
         },
-        onError: (err) => {
-          toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
-        }
-      });
+      );
     }
   };
 
@@ -112,7 +120,7 @@ export function ProfileEditPage() {
     const payload: UserUpdateProfile = {
       name: form.name,
       phone: form.phone,
-      avatar: avatarUrl || '',
+      avatar: avatarUrl || "",
       password: form.newPassword ? form.newPassword : undefined,
     };
     updateProfileMutation.mutate(payload, {
@@ -123,10 +131,9 @@ export function ProfileEditPage() {
       },
       onError: (err) => {
         toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
-      }
+      },
     });
-  }
-
+  };
 
   if (isLoading) {
     return (
@@ -141,21 +148,28 @@ export function ProfileEditPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12 items-start">
         <div className="flex flex-col items-center gap-6">
           <Avatar className="h-40 w-40 border-4 border-border shadow-xl">
-            <AvatarImage src={avatarUrl || undefined} className="object-cover" />
+            <AvatarImage
+              src={avatarUrl || undefined}
+              className="object-cover"
+            />
             <AvatarFallback className="text-4xl bg-muted">
               <User className="h-20 w-20" />
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center gap-3 w-full">
             <button
-              disabled={updateFileMutation.isPending || uploadFileMutation.isPending}
+              disabled={
+                updateFileMutation.isPending || uploadFileMutation.isPending
+              }
               type="button"
-              onClick={() => document.getElementById('avatar-upload')?.click()}
+              onClick={() => document.getElementById("avatar-upload")?.click()}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-card border-2 border-border rounded-lg hover:bg-accent transition-all shadow-sm w-full"
             >
               {updateFileMutation.isPending || uploadFileMutation.isPending ? (
                 <Spinner className="h-5 w-5" />
-              ) : <Upload className="h-5 w-5" />}
+              ) : (
+                <Upload className="h-5 w-5" />
+              )}
               <span className="font-medium">Tải ảnh lên</span>
             </button>
             <input
@@ -166,7 +180,9 @@ export function ProfileEditPage() {
               onChange={handleAvatarUpload}
             />
             <p className="text-sm text-muted-foreground text-center">
-              JPG, PNG hoặc GIF<br />Kích thước tối đa: 2MB
+              JPG, PNG hoặc GIF
+              <br />
+              Kích thước tối đa: 2MB
             </p>
           </div>
         </div>
@@ -209,7 +225,10 @@ export function ProfileEditPage() {
                   <FormItem>
                     <FormLabel>Số điện thoại</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nhập số điện thoại của bạn" {...field} />
+                      <Input
+                        placeholder="Nhập số điện thoại của bạn"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -258,7 +277,11 @@ export function ProfileEditPage() {
               </div>
 
               <div className="pt-6">
-                <Button type="submit" className="w-full" disabled={updateProfileMutation.isPending}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={updateProfileMutation.isPending}
+                >
                   {updateProfileMutation.isPending && <Spinner />}
                   Lưu thay đổi
                 </Button>
@@ -271,7 +294,10 @@ export function ProfileEditPage() {
   );
 }
 
-
-export const Route = createLazyRoute('/user/profile')({
+export const Route = createLazyRoute("/user/profile")({
   component: ProfileEditPage,
-})
+});
+
+export const AdminRoute = createLazyRoute("/admin/profile")({
+  component: ProfileEditPage,
+});
