@@ -19,7 +19,6 @@ namespace backend.Controllers
 
         [HttpPost("upload")]
         [Consumes("multipart/form-data")] // Important for Swagger
-        [Authorize]
         public async Task<IActionResult> UploadFile([FromForm] FileUploadRequest request)
         {
             var (success, urlOrError) = await _fileService.UploadFileAsync(request.File);
@@ -31,7 +30,6 @@ namespace backend.Controllers
 
         [HttpPut("update")]
         [Consumes("multipart/form-data")]
-        [Authorize]
         public async Task<IActionResult> UpdateFile([FromForm] FileUploadRequest request, string fileUrl)
         {
             var (success, urlOrError) = await _fileService.UpdateFileAsync(fileUrl, request.File);

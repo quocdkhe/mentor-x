@@ -381,7 +381,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
       direction="right"
       dismissible={false}
     >
-      <DrawerContent className="max-h-screen h-screen w-screen flex flex-col">
+      <DrawerContent className="inset-0 max-h-screen h-screen w-screen flex flex-col">
         <VisuallyHidden.Root>
           <DrawerTitle>Đặt lịch với {mentor.name}</DrawerTitle>
           <DrawerDescription>
@@ -397,10 +397,15 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
               <AvatarFallback>{mentor.name[0]}</AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="font-bold text-lg">Đặt lịch với {mentor.name}</h2>
+              <h2 className="font-bold text-lg">
+                <span className="hidden md:inline">Đặt lịch với </span>
+                {mentor.name}
+              </h2>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>
-                  Giá trung bình 1 giờ:{" "}
+                  <span className="hidden md:inline">
+                    Giá trung bình 1 giờ:{" "}
+                  </span>
                   {new Intl.NumberFormat("vi-VN").format(mentor.pricePerHour)}{" "}
                   VND
                 </span>
@@ -613,7 +618,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
         <DrawerFooter className="p-6 border-t bg-muted/30 mt-auto shrink-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground mb-1">
+              <h4 className="font-medium text-sm text-muted-foreground mb-1 hidden md:block">
                 Thời gian đã chọn (
                 {duration > 0 ? `${duration} phút` : "0 phút"})
               </h4>
@@ -669,7 +674,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-lg">
+          <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground p-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-lg">
             <Info className="w-4 h-4 shrink-0 text-blue-500" />
             <p>
               Chọn giờ bắt đầu, sau đó chọn giờ kết thúc. Thời lượng tối thiểu

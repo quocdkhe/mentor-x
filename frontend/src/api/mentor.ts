@@ -79,12 +79,50 @@ export interface MentorRegistrationRequest {
   biography: string;
   pricePerHour: number;
   skills: string[];
+  company: string;
+  position: string;
+  yearsOfExperience: number;
+  user: {
+    name: string;
+    phone: string;
+    email: string;
+    password: string;
+    avatar: string;
+  }
+}
+
+export function useRegisterMentor() {
+  return useMutation<Message, AxiosError<Message>, MentorRegistrationRequest>({
+    mutationFn: async (data): Promise<Message> => {
+      const res = await api.post<Message>("/mentors/register", data);
+      return res.data;
+    },
+  });
 }
 
 export function usePathUpdateMentorProfile() {
   return useMutation<Message, AxiosError<Message>, MentorProfile>({
     mutationFn: async (data): Promise<Message> => {
       const res = await api.patch<Message>(`/mentors/profile`, data);
+      return res.data;
+    },
+  });
+}
+
+export function useGetPendingMentors() {
+  return useQuery<PaginationDto<MentorInfo> | MentorInfo[], AxiosError<Message>>({
+    queryKey: ["pending-mentors"],
+    queryFn: async () => {
+      const res = await api.get<MentorInfo[]>("/mentors/pending");
+      return res.data;
+    },
+  });
+}
+
+export function useApproveMentor() {
+  return useMutation<Message, AxiosError<Message>, string>({
+    mutationFn: async (id): Promise<Message> => {
+      const res = await api.post<Message>(`/mentors/${id}/approve`);
       return res.data;
     },
   });

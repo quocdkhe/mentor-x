@@ -1,18 +1,25 @@
-import { useState, useRef, useEffect } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { formatDate, getInitials } from '@/lib/utils';
-import { ThumbsUp, MessageSquare, ChevronDown, ChevronUp, Quote, Pencil, Trash } from 'lucide-react';
-import LikesInfo from './likes-info';
-import { cn } from '@/lib/utils';
-import { useLikeOrDislikePost } from '@/api/forum';
-import type { Post } from '@/types/forum';
-import { useAppSelector } from '@/store/hooks';
-import { useQueryClient } from '@tanstack/react-query';
-
+import { useState, useRef, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { formatDate, getInitials } from "@/lib/utils";
+import {
+  ThumbsUp,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  Quote,
+  Pencil,
+  Trash,
+} from "lucide-react";
+import LikesInfo from "./likes-info";
+import { cn } from "@/lib/utils";
+import { useLikeOrDislikePost } from "@/api/forum";
+import type { Post } from "@/types/forum";
+import { useAppSelector } from "@/store/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CommentCardProps {
   post: Post;
@@ -23,16 +30,26 @@ interface CommentCardProps {
   onDelete?: (postId: string) => void;
 }
 
-
 // Maximum height for collapsed content
 const MAX_HEIGHT = 160;
 
-export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit, onDelete }: CommentCardProps) {
+export function CommentCard({
+  post,
+  commentNumber,
+  topicId,
+  onReplyClick,
+  onEdit,
+  onDelete,
+}: CommentCardProps) {
   const { user } = useAppSelector((state) => state.auth);
   const [isExpanded, setIsExpanded] = useState(false); // Track if content is overflowing - defaults to true to show button initially
   const [showToggle, setShowToggle] = useState(true);
   const [likers, setLikers] = useState<{ name: string }[]>(post.likes);
-  const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [selection, setSelection] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -44,7 +61,7 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
   // Using ID if available, fallback to name (though name is not unique usually)
   // For now assuming user.id exists as per requirements, or user.sub, or we match via name as temporary fallback if id missing on user object
   // But type Author has id. user object in redux usually mirrors user info.
-  // Let's assume user.id is the way. 
+  // Let's assume user.id is the way.
   // If user type doesn't have id, this might error. But user asked to use user.id.
   // We'll cast user to any if needed or assume it matches.
   const isOwner = user?.id === post.author.id;
@@ -63,7 +80,8 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
       if (rect.width === 0 || rect.height === 0) return;
 
       if (contentRef.current && contentRef.current.contains(sel.anchorNode)) {
-        const containerRect = contentRef.current.parentElement?.getBoundingClientRect();
+        const containerRect =
+          contentRef.current.parentElement?.getBoundingClientRect();
         if (containerRect) {
           setSelection({
             text: sel.toString().trim(),
@@ -83,14 +101,14 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
       }
     };
 
-    document.addEventListener('mouseup', handleSelectionChange);
-    document.addEventListener('keyup', handleSelectionChange);
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mouseup", handleSelectionChange);
+    document.addEventListener("keyup", handleSelectionChange);
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      document.removeEventListener('mouseup', handleSelectionChange);
-      document.removeEventListener('keyup', handleSelectionChange);
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mouseup", handleSelectionChange);
+      document.removeEventListener("keyup", handleSelectionChange);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -106,12 +124,14 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
     likeOrDislikePostMutation.mutate(undefined, {
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ['forum-topic-posts', topicId],
+          queryKey: ["forum-topic-posts", topicId],
         });
         if (isLiked) {
-          setLikers((prev) => prev.filter((liker) => liker.name !== user?.name));
+          setLikers((prev) =>
+            prev.filter((liker) => liker.name !== user?.name),
+          );
         } else {
-          setLikers((prev) => [...prev, { name: user?.name || 'Bạn' }]);
+          setLikers((prev) => [...prev, { name: user?.name || "Bạn" }]);
         }
       },
       onError: (error) => {
@@ -142,13 +162,32 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
     }
   }
 
-
-
   return (
-    <Card className="p-6">
-      <div className="flex gap-6">
-        {/* Left Side: User Info */}
-        <div className="flex flex-col items-center gap-3 shrink-0 w-28">
+    <Card className="p-4 md:p-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+        {/* Mobile Header (Hidden on Desktop) */}
+        <div className="flex items-center gap-3 md:hidden">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={post.author.avatar} className="object-cover" />
+            <AvatarFallback>{getInitials(post.author.name)}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">{post.author.name}</span>
+              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-5">
+                {post.author.role}
+              </Badge>
+            </div>
+            <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <span>{formatDate(post.timestamp)}</span>
+              <span>•</span>
+              <span>#{commentNumber}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Sidebar (Hidden on Mobile) */}
+        <div className="hidden md:flex flex-col items-center gap-3 shrink-0 w-28">
           <Avatar className="h-20 w-20">
             <AvatarImage src={post.author.avatar} className="object-cover" />
             <AvatarFallback className="text-xl">
@@ -163,14 +202,18 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
           </div>
         </div>
 
-        <Separator orientation="vertical" className="h-auto" />
+        <Separator orientation="vertical" className="hidden md:block h-auto" />
 
         {/* Right Side: Content */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-2">
-            <p className="text-sm text-muted-foreground">{formatDate(post.timestamp)}</p>
-            <span className="text-sm text-muted-foreground">#{commentNumber}</span>
+          {/* Desktop Header details (Hidden on Mobile) */}
+          <div className="hidden md:flex items-start justify-between mb-2">
+            <p className="text-sm text-muted-foreground">
+              {formatDate(post.timestamp)}
+            </p>
+            <span className="text-sm text-muted-foreground">
+              #{commentNumber}
+            </span>
           </div>
 
           {/* Body with HTML Support and Truncation */}
@@ -180,9 +223,9 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
               <div
                 ref={handleContentRef}
                 className={cn(
-                  "prose prose-sm dark:prose-invert max-w-none transition-all duration-300 ease-in-out overflow-hidden",
+                  "prose prose-sm dark:prose-invert max-w-none transition-all duration-300 ease-in-out overflow-hidden mt-2 md:mt-0",
                   // Apply max height only when collapsed and content overflows
-                  !isExpanded && showToggle ? `max-h-40` : ""
+                  !isExpanded && showToggle ? `max-h-40` : "",
                 )}
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
@@ -196,7 +239,7 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
                   style={{
                     left: `${selection.x}px`,
                     top: `${selection.y - 10}px`, // Slightly above the selection
-                    transform: 'translate(-50%, -100%)',
+                    transform: "translate(-50%, -100%)",
                   }}
                 >
                   <Button
@@ -257,12 +300,16 @@ export function CommentCard({ post, commentNumber, topicId, onReplyClick, onEdit
                     size="sm"
                     className={cn(
                       "h-auto p-0 gap-2 hover:bg-transparent hover:text-primary cursor-pointer",
-                      isLiked && "text-primary font-bold"
+                      isLiked && "text-primary font-bold",
                     )}
                     onClick={handeLikeOrDislikePost}
                   >
-                    <ThumbsUp className={cn("h-4 w-4", isLiked && "fill-current")} />
-                    <span className="font-medium">Like {likers.length > 0 && `(${likers.length})`}</span>
+                    <ThumbsUp
+                      className={cn("h-4 w-4", isLiked && "fill-current")}
+                    />
+                    <span className="font-medium">
+                      Like {likers.length > 0 && `(${likers.length})`}
+                    </span>
                   </Button>
 
                   <Button

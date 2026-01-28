@@ -19,16 +19,25 @@ export function Hero() {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8">
-            Mentor-X kết nối các chuyên gia ngành nghề với những người đam mê phát triển sự nghiệp.
-            Tìm người hướng dẫn hoàn hảo và thúc đẩy sự nghiệp của bạn ngay hôm nay.
+            Mentor-X kết nối các chuyên gia ngành nghề với những người đam mê
+            phát triển sự nghiệp. Tìm người hướng dẫn hoàn hảo và thúc đẩy sự
+            nghiệp của bạn ngay hôm nay.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Button size="lg" className="gap-2" onClick={() => navigate({ to: "/mentors" })}>
+            <Button
+              size="lg"
+              className="gap-2"
+              onClick={() => navigate({ to: "/mentors" })}
+            >
               Tìm người hướng dẫn
               <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button size="lg" variant="outline">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate({ to: "/become-mentor" })}
+            >
               Trở thành người hướng dẫn
             </Button>
           </div>

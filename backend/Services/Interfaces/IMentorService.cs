@@ -9,8 +9,10 @@ namespace backend.Services.Interfaces
         Task<List<SkillDTO>> GetMentorSkills();
         Task<MentorDetailResponseDTO?> GetMentorByUserId(Guid userId, Guid? currentUserId = null);
         Task<MentorProfileResponseDTO?> GetMentorProfileByUserId(Guid userId);
-        Task<bool> RegisterMentor(Guid userId, MentorRegistrationRequestDTO request);
+        Task<bool> RegisterMentor(MentorRegistrationRequestDTO request);
         Task<bool> UpdateMentorProfile(Guid userId, MentorUpdateRequestDTO request);
+        Task<List<MentorListItemDTO>> GetPendingMentors();
+        Task<bool> ApproveMentor(Guid mentorId);
     }
 }
 

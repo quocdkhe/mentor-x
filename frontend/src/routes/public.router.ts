@@ -36,6 +36,14 @@ const mentorProfileRoute = createRoute({
   }),
 }).lazy(() => import("@/pages/public/mentor-profile").then((d) => d.Route));
 
+const becomeMentorRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: "/become-mentor",
+  head: () => ({
+    meta: [{ title: "MentorX - Trở thành Mentor" }],
+  }),
+}).lazy(() => import("@/pages/public/become-mentor").then((d) => d.Route));
+
 const forumListingRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: "/forum",
@@ -65,6 +73,7 @@ const publicRouteTree = publicLayoutRoute.addChildren([
   forumListingRoute,
   mentorListingRoute,
   mentorProfileRoute,
+  becomeMentorRoute,
   topicDetailRoute,
   unauthorizedRoute,
 ]);

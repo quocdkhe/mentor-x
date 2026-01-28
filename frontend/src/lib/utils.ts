@@ -91,3 +91,10 @@ export function convertDateToUTC(date: Date): string {
   const dateISOString = dateAtNoon.toISOString();
   return dateISOString;
 }
+
+export function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+}
