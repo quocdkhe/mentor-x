@@ -21,7 +21,6 @@ public class MentorRegistrationRequestDTO
     public int YearsOfExperience { get; set; }
 
     [Required]
-    [MaxLength(3)]
     public List<string> Skills { get; set; } = new List<string>();
 
     public MentorRegistrationUserInfo? User { get; set; }
