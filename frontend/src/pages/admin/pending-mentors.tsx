@@ -95,7 +95,11 @@ function PendingMentors() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={mentor.avatar} alt={mentor.name} />
+                        <AvatarImage
+                          src={mentor.avatar}
+                          alt={mentor.name}
+                          className="object-cover"
+                        />
                         <AvatarFallback>
                           <User className="h-5 w-5" />
                         </AvatarFallback>
