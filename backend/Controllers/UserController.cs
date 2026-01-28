@@ -44,7 +44,6 @@ namespace backend.Controllers
         }
 
         [HttpPut("profile")]
-        [Authorize(Roles = Roles.User + "," + Roles.Mentor)]
         public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateProfileDTO dto)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
