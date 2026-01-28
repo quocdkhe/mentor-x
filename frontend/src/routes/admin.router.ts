@@ -30,6 +30,14 @@ const profileRoute = createRoute({
   }),
 }).lazy(() => import("@/pages/user/edit-profile").then((d) => d.AdminRoute));
 
-const adminRouteTree = adminLayoutRoute.addChildren([userManagementRoute, profileRoute]);
+const pendingMentorsRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: "/pending-mentors",
+  head: () => ({
+    meta: [{ title: "MentorX - Duyệt Mentor" }],
+  }),
+}).lazy(() => import("@/pages/admin/pending-mentors").then((d) => d.Route));
+
+const adminRouteTree = adminLayoutRoute.addChildren([userManagementRoute, profileRoute, pendingMentorsRoute]);
 
 export { adminRouteTree };

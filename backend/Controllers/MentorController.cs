@@ -76,28 +76,40 @@ namespace backend.Controllers
 
 
         [HttpPost("register")]
-        [Authorize]
         public async Task<IActionResult> RegisterMentor([FromBody] MentorRegistrationRequestDTO request)
         {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdStr))
-            {
-                return Unauthorized(new { message = "User ID not found in token." });
-            }
-
-            if (!Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized(new { message = "Invalid User ID format." });
-            }
 
             try
             {
-                await _mentorService.RegisterMentor(userId, request);
-                return Ok(new { message = "Registered successfully" });
+                await _mentorService.RegisterMentor(request);
+                return Ok(new { message = "Registered successfully. Please wait for admin approval." });
             }
             catch (Exception ex)
             {
                 // In production, probably shouldn't return exact exception message
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("pending")]
+        [Authorize(Roles = Roles.Admin)]
+        public async Task<ActionResult<List<MentorListItemDTO>>> GetPendingMentors()
+        {
+            var mentors = await _mentorService.GetPendingMentors();
+            return Ok(mentors);
+        }
+
+        [HttpPost("{id}/approve")]
+        [Authorize(Roles = Roles.Admin)]
+        public async Task<IActionResult> ApproveMentor(Guid id)
+        {
+            try
+            {
+                await _mentorService.ApproveMentor(id);
+                return Ok(new { message = "Mentor approved successfully" });
+            }
+            catch (Exception ex)
+            {
                 return BadRequest(new { message = ex.Message });
             }
         }

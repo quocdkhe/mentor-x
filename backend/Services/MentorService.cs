@@ -163,49 +163,74 @@ namespace backend.Services
             return profileResponse;
         }
 
-        public async Task<bool> RegisterMentor(Guid userId, MentorRegistrationRequestDTO request)
+        public async Task<bool> RegisterMentor(MentorRegistrationRequestDTO request)
         {
-            var user = await _context.Users
-                .Include(u => u.MentorProfile)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+            // Check if email or phone already exists
+            if (request.User == null) throw new Exception("User info required");
+            
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == request.User.Email);
 
-            if (user == null)
-                throw new Exception("User not found");
+            if (existingUser != null)
+            {
+                if (existingUser.Email == request.User.Email)
+                    throw new Exception("Email already exists");
+            }
 
-            if (user.MentorProfile != null)
-                throw new Exception("User is already a mentor");
+            // Create new User
+            var newUser = new User
+            {
+                Name = request.User.Name,
+                Email = request.User.Email,
+                Phone = request.User.Phone,
+                Avatar = request.User.Avatar,
+                Password = PasswordHashing.HashPassword(request.User.Password),
+                Role = UserRole.User, // Default to Mentee until approved
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
-            // Role update
-            user.Role = UserRole.Mentor;
+            _context.Users.Add(newUser);
+            await _context.SaveChangesAsync(); // Save to get the new UserId
 
             // Skills
             var skills = new List<Skill>();
             foreach (var skillName in request.Skills)
             {
-                var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Name == skillName);
+                var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id.ToString() == skillName || s.Name == skillName);
                 if (skill == null)
                 {
-                    skill = new Skill { Name = skillName.ToUpper() };
-                    _context.Skills.Add(skill);
+                     if (Guid.TryParse(skillName, out var skillId))
+                     {
+                         skill = await _context.Skills.FindAsync(skillId);
+                     }
                 }
-                skills.Add(skill);
+                
+                if (skill != null)
+                {
+                    skills.Add(skill);
+                }
             }
 
-            // Profile
+            // Create MentorProfile linked to new User
             var mentorProfile = new MentorProfile
             {
-                UserId = userId,
+                UserId = newUser.Id,
                 Biography = request.Biography,
                 PricePerHour = request.PricePerHour,
                 MentorSkills = skills,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 AvgRating = 0,
-                TotalRatings = 0
+                TotalRatings = 0,
+                Company = request.Company,
+                Position = request.Position,
+                YearsOfExperience = request.YearsOfExperience,
+                Status = "pending" // Set status to pending
             };
 
             _context.MentorProfiles.Add(mentorProfile);
-            await _context.SaveChangesAsync(); // Saves both user role update and new mentor profile
+            await _context.SaveChangesAsync(); 
             return true;
         }
 
@@ -288,6 +313,54 @@ namespace backend.Services
             var mentor = await _context.MentorProfiles
                 .FirstOrDefaultAsync(m => m.UserId == userId);
             return mentor?.Id;
+        }
+
+        public async Task<List<MentorListItemDTO>> GetPendingMentors()
+        {
+            var items = await _context.MentorProfiles
+                .AsNoTracking()
+                .Where(m => m.Status == "pending")
+                .Include(m => m.User)
+                .Include(m => m.MentorSkills)
+                .Select(m => new MentorListItemDTO
+                {
+                    Id = m.Id,
+                    UserId = m.UserId,
+                    Name = m.User.Name,
+                    Avatar = m.User.Avatar,
+                    Biography = m.Biography,
+                    Skills = m.MentorSkills.Select(s => s.Name).ToList(),
+                    AvgRating = m.AvgRating,
+                    TotalRatings = m.TotalRatings,
+                    PricePerHour = m.PricePerHour,
+                    Position = m.Position,
+                    Company = m.Company,
+                    YearsOfExperience = m.YearsOfExperience,
+                    HasMet = false
+                })
+                .ToListAsync();
+
+            return items;
+        }
+
+        public async Task<bool> ApproveMentor(Guid mentorProfileId)
+        {
+            var mentorProfile = await _context.MentorProfiles
+                .Include(m => m.User)
+                .FirstOrDefaultAsync(m => m.Id == mentorProfileId);
+
+            if (mentorProfile == null)
+                throw new Exception("Mentor profile not found");
+
+            if (mentorProfile.Status == "approved")
+                return true; 
+
+            mentorProfile.Status = "approved";
+            mentorProfile.User.Role = UserRole.Mentor; // Update user role to Mentor
+            mentorProfile.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

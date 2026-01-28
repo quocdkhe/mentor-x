@@ -1,5 +1,5 @@
 import * as React from "react";
-import { User, Users } from "lucide-react";
+import { CheckCheckIcon, User, Users } from "lucide-react";
 
 import { NavMain } from "@/components/dashboard/nav-main.tsx";
 import { NavUser } from "@/components/dashboard/nav-user.tsx";
@@ -18,6 +18,11 @@ const navMain = [
     title: "Quản lí người dùng ",
     url: "/admin/user-management" as const,
     icon: Users,
+  },
+  {
+    title: "Duyệt Mentor",
+    url: "/admin/pending-mentors" as const,
+    icon: CheckCheckIcon,
   },
   {
     title: "Tài khoản của tôi",
