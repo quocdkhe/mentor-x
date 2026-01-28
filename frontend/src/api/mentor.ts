@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "./api";
 import type { MentorInfo, MentorProfile, Skill } from "@/types/mentor";
