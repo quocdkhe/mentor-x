@@ -16,6 +16,7 @@ import {
   Clock,
   Info,
   X,
+  Check,
 } from "lucide-react";
 import { cn, convertDateToUTC } from "@/lib/utils";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -26,15 +27,6 @@ import { Spinner } from "@/components/ui/spinner";
 import type { MentorInfo } from "@/types/mentor";
 import type { TimeBlockDto } from "@/types/appointment";
 import { BookingSlotsSkeleton } from "@/components/skeletons/booking-slots.skeleton";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   Carousel,
   CarouselContent,
@@ -52,8 +44,71 @@ interface BookingDrawerProps {
 
 const SLOT_DURATION = 15; // minutes
 
+type BookingStep = "booking" | "payment" | "completed";
+
+// Step Progress Component
+function StepProgress({ currentStep }: { currentStep: BookingStep }) {
+  const steps = [
+    { id: "booking", label: "Đặt lịch", number: 1 },
+    { id: "payment", label: "Thanh toán", number: 2 },
+    { id: "completed", label: "Hoàn tất", number: 3 },
+  ];
+
+  const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
+
+  return (
+    <div className="flex items-center justify-center gap-2 px-6 py-4 border-b bg-background">
+      {steps.map((step, index) => {
+        const isCompleted = index < currentStepIndex;
+        const isCurrent = step.id === currentStep;
+
+        return (
+          <div key={step.id} className="flex items-center">
+            {/* Step Circle */}
+            <div className="flex flex-col items-center">
+              <div
+                className={cn(
+                  "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all",
+                  isCompleted && "bg-primary text-primary-foreground",
+                  isCurrent &&
+                    "bg-primary text-primary-foreground ring-4 ring-primary/20",
+                  !isCompleted &&
+                    !isCurrent &&
+                    "bg-muted text-muted-foreground",
+                )}
+              >
+                {isCompleted ? <Check className="w-4 h-4" /> : step.number}
+              </div>
+              <span
+                className={cn(
+                  "text-xs mt-1 font-medium",
+                  isCurrent && "text-primary",
+                  !isCurrent && "text-muted-foreground",
+                )}
+              >
+                {step.label}
+              </span>
+            </div>
+
+            {/* Divider Line */}
+            {index < steps.length - 1 && (
+              <div
+                className={cn(
+                  "w-12 h-0.5 mx-2 mb-4",
+                  index < currentStepIndex ? "bg-primary" : "bg-muted",
+                )}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
   // State
+  const [currentStep, setCurrentStep] = useState<BookingStep>("booking");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [startRange, setStartRange] = useState<{
@@ -64,7 +119,6 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
   const [endRange, setEndRange] = useState<{ date: Date; time: string } | null>(
     null,
   );
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Fetch mentor schedules for the selected date
   const { data: scheduleData, isLoading: isLoadingSchedules } =
@@ -360,72 +414,221 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
         toast.success(data.message);
         queryClient.invalidateQueries({ queryKey: ["appointments"] });
         queryClient.invalidateQueries({ queryKey: ["mentor-schedules"] });
-        // Reset selection
-        setStartRange(null);
-        setEndRange(null);
-        // Close confirmation dialog and main drawer
-        setShowConfirmDialog(false);
-        onClose();
+        // Move to completed step
+        setCurrentStep("completed");
       },
       onError: (err) => {
         toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
-        setShowConfirmDialog(false);
       },
     });
   };
 
-  return (
-    <Drawer
-      open={isOpen}
-      onOpenChange={onClose}
-      direction="right"
-      dismissible={false}
-    >
-      <DrawerContent className="inset-0 max-h-screen h-screen w-screen flex flex-col">
-        <VisuallyHidden.Root>
-          <DrawerTitle>Đặt lịch với {mentor.name}</DrawerTitle>
-          <DrawerDescription>
-            Chọn thời gian phù hợp để đặt lịch
-          </DrawerDescription>
-        </VisuallyHidden.Root>
+  // Handle proceed to payment
+  const handleProceedToPayment = () => {
+    if (startRange && endRange) {
+      setCurrentStep("payment");
+    }
+  };
 
-        {/* Header - Fixed */}
-        <DrawerHeader className="p-6 border-b flex flex-row items-center justify-between bg-card z-20 shrink-0 shadow-sm">
-          <div className="flex gap-4 items-center">
-            <Avatar className="h-12 w-12 border-2 border-primary/10">
-              <AvatarImage src={mentor.avatar} />
-              <AvatarFallback>{mentor.name[0]}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="font-bold text-lg">
-                <span className="hidden md:inline">Đặt lịch với </span>
-                {mentor.name}
-              </h2>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>
-                  <span className="hidden md:inline">
-                    Giá trung bình 1 giờ:{" "}
-                  </span>
-                  {new Intl.NumberFormat("vi-VN").format(mentor.pricePerHour)}{" "}
-                  VND
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1 text-orange-400 font-medium">
-                  {mentor.avgRating.toFixed(1)} ⭐
-                </span>
+  // Handle close and reset
+  const handleClose = () => {
+    setCurrentStep("booking");
+    setStartRange(null);
+    setEndRange(null);
+    onClose();
+  };
+
+  // Render Payment Screen
+  const renderPaymentScreen = () => {
+    if (!startRange || !endRange) return null;
+
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <div className="grid md:grid-cols-2 gap-6 p-6">
+          {/* Left: Session Info */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg mb-4 text-muted-foreground uppercase">
+              Thông tin buổi học
+            </h3>
+
+            <div className="flex items-center gap-4 mb-4">
+              <Avatar className="h-16 w-16 border-2 border-primary/10">
+                <AvatarImage src={mentor.avatar} />
+                <AvatarFallback>{mentor.name[0]}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h4 className="font-semibold text-lg">{mentor.name}</h4>
+                <p className="text-sm text-muted-foreground">
+                  {`${mentor.position} @ ${mentor.company}`}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <CalendarIcon className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Thời gian</p>
+                  <p className="font-medium">
+                    {startRange.time} - {endRange.time},{" "}
+                    {new Intl.DateTimeFormat("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    }).format(startRange.date)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Thời lượng</p>
+                  <p className="font-medium">{duration} phút</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 pt-3 border-t">
+                <div className="w-5 h-5 flex items-center justify-center text-primary">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tổng cộng</p>
+                  <p className="font-bold text-xl text-primary">
+                    {new Intl.NumberFormat("vi-VN").format(
+                      Math.round((duration / 60) * mentor.pricePerHour),
+                    )}{" "}
+                    đ
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-2">
+              <Info className="w-4 h-4 text-blue-500 mt-0.5" />
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                Buổi học sẽ được xác nhận sau khi có thông nhận được thanh toán
+                của bạn.
+              </p>
+            </div>
+          </div>
+
+          {/* Right: QR Code */}
+          <div className="flex flex-col items-center justify-center bg-teal-600/10 rounded-lg p-8 border-2 border-dashed border-teal-600/30">
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
+              {/* QR Code placeholder */}
+              <div className="w-48 h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded">
+                <span className="text-sm text-muted-foreground">QR Code</span>
+              </div>
+            </div>
+            <p className="text-sm font-medium mb-1">VIETQR</p>
+            <h3 className="font-bold text-xl mb-2">Quét mã để thanh toán</h3>
+            <p className="text-center text-2xl font-bold text-primary mb-2">
+              {new Intl.NumberFormat("vi-VN").format(
+                Math.round((duration / 60) * mentor.pricePerHour),
+              )}{" "}
+              đ
+            </p>
+            <p className="text-xs text-center text-muted-foreground max-w-sm">
+              Sử dụng ứng dụng ngân hàng hoặc ví điện tử để quét mã QR và thanh
+              toán chính xác số tiền trên.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render Completed Screen
+  const renderCompletedScreen = () => {
+    if (!startRange || !endRange) return null;
+
+    return (
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-md w-full text-center space-y-6">
+          {/* Success Icon */}
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-bold">Đặt lịch thành công!</h2>
+          <p className="text-muted-foreground">
+            Buổi học của bạn đã được xác nhận và thêm vào lịch. Email xác nhận
+            đã được gửi.
+          </p>
+
+          {/* Session Details */}
+          <div className="bg-muted/50 rounded-lg p-4 space-y-3 text-left">
+            <h4 className="font-semibold text-sm text-muted-foreground uppercase mb-3">
+              Chi tiết buổi học
+            </h4>
+
+            <div className="flex items-center gap-3">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={mentor.avatar} />
+                <AvatarFallback>{mentor.name[0]}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold">Mentor</p>
+                <p className="text-sm text-muted-foreground">{mentor.name}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 pt-2 border-t">
+              <CalendarIcon className="w-5 h-5 text-primary" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Ngày</p>
+                <p className="font-medium">
+                  {new Intl.DateTimeFormat("vi-VN", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "numeric",
+                  }).format(startRange.date)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Clock className="w-5 h-5 text-primary" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Thời gian</p>
+                <p className="font-medium">
+                  {startRange.time} - {endRange.time}
+                </p>
               </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full"
-            onClick={onClose}
-          >
-            <X className="w-5 h-5" />
-          </Button>
-        </DrawerHeader>
 
+          <Button className="w-full" size="lg" onClick={handleClose}>
+            Xem lịch học của tôi
+          </Button>
+
+          <Button variant="ghost" className="w-full" onClick={handleClose}>
+            Quay lại trang chủ
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Render Booking Screen
+  const renderBookingScreen = () => {
+    return (
+      <>
         {/* Content Area - Flex Column */}
         <div className="flex flex-col flex-1 overflow-hidden">
           {/* Calendar Strip - Sticky behavior but handled via structure */}
@@ -659,17 +862,17 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Button
                 variant="outline"
-                onClick={onClose}
+                onClick={handleClose}
                 className="flex-1 sm:flex-none"
               >
                 Hủy
               </Button>
               <Button
                 className="flex-1 sm:flex-none min-w-[140px]"
-                disabled={!startRange || !endRange || bookingMutation.isPending}
-                onClick={() => setShowConfirmDialog(true)}
+                disabled={!startRange || !endRange}
+                onClick={handleProceedToPayment}
               >
-                Xác nhận đặt lịch
+                Tiếp tục
               </Button>
             </div>
           </div>
@@ -682,73 +885,97 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
             </p>
           </div>
         </DrawerFooter>
-      </DrawerContent>
+      </>
+    );
+  };
 
-      {/* Confirmation Dialog */}
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận đặt lịch</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                Bạn có chắc chắn muốn đặt lịch với{" "}
-                <span className="font-semibold">{mentor.name}</span>?
-              </p>
-              {startRange && endRange && (
-                <div className="mt-3 p-3 bg-muted rounded-lg space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Thời gian:</span>
-                    <span className="font-medium">
-                      {startRange.time} - {endRange.time}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Ngày:</span>
-                    <span className="font-medium capitalize">
-                      {new Intl.DateTimeFormat("vi-VN", {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      }).format(startRange.date)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Thời lượng:</span>
-                    <span className="font-medium">{duration} phút</span>
-                  </div>
-                  <div className="flex justify-between border-t pt-2 mt-2">
-                    <span className="text-muted-foreground">Tổng chi phí:</span>
-                    <span className="font-bold text-primary">
-                      {new Intl.NumberFormat("vi-VN").format(
-                        Math.round((duration / 60) * mentor.pricePerHour),
-                      )}{" "}
-                      VND
-                    </span>
-                  </div>
-                </div>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={bookingMutation.isPending}>
-              Hủy
-            </AlertDialogCancel>
-            <Button
-              onClick={handleConfirmBooking}
-              disabled={bookingMutation.isPending}
-            >
-              {bookingMutation.isPending ? (
-                <>
-                  <Spinner /> Đang xử lý...
-                </>
-              ) : (
-                "Xác nhận"
-              )}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+  return (
+    <Drawer
+      open={isOpen}
+      onOpenChange={handleClose}
+      direction="right"
+      dismissible={false}
+    >
+      <DrawerContent className="inset-0 max-h-screen h-screen w-screen flex flex-col">
+        <VisuallyHidden.Root>
+          <DrawerTitle>Đặt lịch với {mentor.name}</DrawerTitle>
+          <DrawerDescription>
+            Chọn thời gian phù hợp để đặt lịch
+          </DrawerDescription>
+        </VisuallyHidden.Root>
+
+        {/* Header - Fixed */}
+        <DrawerHeader className="p-6 border-b flex flex-row items-center justify-between bg-card z-20 shrink-0 shadow-sm">
+          <div className="flex gap-4 items-center">
+            <Avatar className="h-12 w-12 border-2 border-primary/10">
+              <AvatarImage src={mentor.avatar} />
+              <AvatarFallback>{mentor.name[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="font-bold text-lg">
+                <span className="hidden md:inline">Đặt lịch với </span>
+                {mentor.name}
+              </h2>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  <span className="hidden md:inline">
+                    Giá trung bình 1 giờ:{" "}
+                  </span>
+                  {new Intl.NumberFormat("vi-VN").format(mentor.pricePerHour)}{" "}
+                  VND
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1 text-orange-400 font-medium">
+                  {mentor.avgRating.toFixed(1)} ⭐
+                </span>
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={handleClose}
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </DrawerHeader>
+
+        {/* Step Progress */}
+        <StepProgress currentStep={currentStep} />
+
+        {/* Render content based on current step */}
+        {currentStep === "booking" && renderBookingScreen()}
+        {currentStep === "payment" && (
+          <>
+            {renderPaymentScreen()}
+            <DrawerFooter className="p-6 border-t bg-muted/30 shrink-0">
+              <div className="flex items-center gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep("booking")}
+                >
+                  Quay lại
+                </Button>
+                <Button
+                  onClick={handleConfirmBooking}
+                  disabled={bookingMutation.isPending}
+                  className="min-w-[180px]"
+                >
+                  {bookingMutation.isPending ? (
+                    <>
+                      <Spinner /> Đang xử lý...
+                    </>
+                  ) : (
+                    "Xác nhận thanh toán"
+                  )}
+                </Button>
+              </div>
+            </DrawerFooter>
+          </>
+        )}
+        {currentStep === "completed" && renderCompletedScreen()}
+      </DrawerContent>
     </Drawer>
   );
 }
