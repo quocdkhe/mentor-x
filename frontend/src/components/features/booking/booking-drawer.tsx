@@ -35,6 +35,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import { useNavigate } from "@tanstack/react-router";
 
 interface BookingDrawerProps {
   isOpen: boolean;
@@ -71,10 +72,10 @@ function StepProgress({ currentStep }: { currentStep: BookingStep }) {
                   "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all",
                   isCompleted && "bg-primary text-primary-foreground",
                   isCurrent &&
-                    "bg-primary text-primary-foreground ring-4 ring-primary/20",
+                  "bg-primary text-primary-foreground ring-4 ring-primary/20",
                   !isCompleted &&
-                    !isCurrent &&
-                    "bg-muted text-muted-foreground",
+                  !isCurrent &&
+                  "bg-muted text-muted-foreground",
                 )}
               >
                 {isCompleted ? <Check className="w-4 h-4" /> : step.number}
@@ -125,6 +126,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
     useGetMentorSchedules(convertDateToUTC(selectedDate), mentor.userId);
   const bookingMutation = useBooking();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Extract blocks and booked slots from schedule data
   const timeBlocks = useMemo(() => scheduleData?.blocks ?? [], [scheduleData]);
@@ -442,6 +444,17 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
   const renderPaymentScreen = () => {
     if (!startRange || !endRange) return null;
 
+    const amount = Math.round((duration / 60) * mentor.pricePerHour);
+    const dateStr = new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(startRange.date);
+    const addInfo = `${mentor.name} ${startRange.time} - ${endRange.time} ${dateStr}`;
+    const qrUrl = `https://img.vietqr.io/image/tpbank-00000117197-compact2.jpg?amount=${amount}&addInfo=${encodeURIComponent(
+      addInfo,
+    )}&accountName=mentor%20x`;
+
     return (
       <div className="flex-1 overflow-y-auto">
         <div className="grid md:grid-cols-2 gap-6 p-6">
@@ -453,7 +466,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
 
             <div className="flex items-center gap-4 mb-4">
               <Avatar className="h-16 w-16 border-2 border-primary/10">
-                <AvatarImage src={mentor.avatar} />
+                <AvatarImage src={mentor.avatar} className="object-cover" />
                 <AvatarFallback>{mentor.name[0]}</AvatarFallback>
               </Avatar>
               <div>
@@ -527,24 +540,14 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
 
           {/* Right: QR Code */}
           <div className="flex flex-col items-center justify-center bg-teal-600/10 rounded-lg p-8 border-2 border-dashed border-teal-600/30">
-            <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-              {/* QR Code placeholder */}
-              <div className="w-48 h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded">
-                <span className="text-sm text-muted-foreground">QR Code</span>
-              </div>
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-4 flex items-center justify-center overflow-hidden">
+              <img
+                src={qrUrl}
+                alt="Mã QR thanh toán"
+                className="w-55 h-68 object-cover scale-x-125 scale-y-120"
+              />
             </div>
-            <p className="text-sm font-medium mb-1">VIETQR</p>
-            <h3 className="font-bold text-xl mb-2">Quét mã để thanh toán</h3>
-            <p className="text-center text-2xl font-bold text-primary mb-2">
-              {new Intl.NumberFormat("vi-VN").format(
-                Math.round((duration / 60) * mentor.pricePerHour),
-              )}{" "}
-              đ
-            </p>
-            <p className="text-xs text-center text-muted-foreground max-w-sm">
-              Sử dụng ứng dụng ngân hàng hoặc ví điện tử để quét mã QR và thanh
-              toán chính xác số tiền trên.
-            </p>
+
           </div>
         </div>
       </div>
@@ -579,7 +582,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
 
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={mentor.avatar} />
+                <AvatarImage src={mentor.avatar} className="object-cover" />
                 <AvatarFallback>{mentor.name[0]}</AvatarFallback>
               </Avatar>
               <div>
@@ -613,12 +616,17 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
             </div>
           </div>
 
-          <Button className="w-full" size="lg" onClick={handleClose}>
+          <Button className="w-full" size="lg" onClick={() => {
+            handleClose();
+            navigate({
+              to: "/user/schedules",
+            });
+          }}>
             Xem lịch học của tôi
           </Button>
 
           <Button variant="ghost" className="w-full" onClick={handleClose}>
-            Quay lại trang chủ
+            Đóng
           </Button>
         </div>
       </div>

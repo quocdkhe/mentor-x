@@ -182,7 +182,7 @@ function MenteeSchedulesPage() {
           onError: (error: AxiosError<{ message?: string }>) => {
             toast.error(
               error.response?.data?.message ||
-                "Đã xảy ra lỗi, vui lòng thử lại.",
+              "Đã xảy ra lỗi, vui lòng thử lại.",
             );
             // Close dialog on error as well
             setConfirmDialog({
@@ -393,6 +393,7 @@ function MenteeSchedulesPage() {
                     <AvatarImage
                       src={appointment.mentor.avatar || undefined}
                       alt={appointment.mentor.name}
+                      className="object-cover"
                     />
                     <AvatarFallback>
                       {appointment.mentor.name.substring(0, 2).toUpperCase()}
@@ -567,11 +568,10 @@ function MenteeSchedulesPage() {
                     className="transition-all hover:scale-110"
                   >
                     <Star
-                      className={`h-8 w-8 ${
-                        star <= reviewData.rating
+                      className={`h-8 w-8 ${star <= reviewData.rating
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-300"
-                      }`}
+                        }`}
                     />
                   </button>
                 ))}
