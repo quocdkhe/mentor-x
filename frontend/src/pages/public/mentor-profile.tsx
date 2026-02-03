@@ -33,12 +33,11 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { USER_ROLES } from "@/types/user";
-import type { AxiosError } from "axios";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-// import { useGetAvailability } from "@/api/availability";
+import { useGetAvailability } from "@/api/availability";
 
 const MentorProfilePage = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -48,7 +47,7 @@ const MentorProfilePage = () => {
       : getRouteApi("/public/mentors/$mentorId");
   const { mentorId } = route.useParams();
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
-  // const { data: availabilites, isLoading: isLoadingAvailabilities } = useGetAvailability(mentorId);
+  const { data: availabilites, isLoading: isLoadingAvailabilities } = useGetAvailability(mentorId);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [reviewPage, setReviewPage] = useState(1);
   const { data: reviewsData, isLoading: isLoadingReviews } =
@@ -68,7 +67,7 @@ const MentorProfilePage = () => {
           queryKey: ["mentor-reviews", mentorId],
         });
       },
-      onError: (err: AxiosError<{ message?: string }>) => {
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Có lỗi xảy ra");
       },
     });
@@ -221,12 +220,18 @@ const MentorProfilePage = () => {
 
             {/* Tabs */}
             <Tabs defaultValue="about" className="w-full">
-              <TabsList className="w-full grid grid-cols-2 h-11">
+              <TabsList className="w-full grid grid-cols-3 h-11">
                 <TabsTrigger
                   value="about"
                   className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20"
                 >
                   Về tôi
+                </TabsTrigger>
+                <TabsTrigger
+                  value="availability"
+                  className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20"
+                >
+                  Lịch rảnh
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
@@ -264,38 +269,96 @@ const MentorProfilePage = () => {
                           ))}
                         </div>
                       </div>
-
-                      {/* Availability Schedule */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-4 text-primary">
-                          <CalendarClock className="w-5 h-5" />
-                          <h3 className="font-bold">Lịch rảnh</h3>
-                        </div>
-                        {/* <ul className="space-y-2 text-sm text-muted-foreground max-w-md">
-                          {availabilites && availabilites.filter((a) => a.isActive).length > 0 ? (
-                            availabilites
-                              ?.filter((availability) => availability.isActive)
-                              .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-                              .map((availability, index) => {
-                                // Map day numbers to Vietnamese names (0=Sunday, 1=Monday, etc.)
-                                const dayNameVi = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-
-                                // Trim seconds from time format (13:00:00 -> 13:00)
-                                const formatTime = (time: string) => time.substring(0, 5);
-
-                                return (
-                                  <li key={index} className="flex justify-between items-center">
-                                    <span className="font-medium text-foreground">{dayNameVi[availability.dayOfWeek]}</span>
-                                    <span className="text-muted-foreground">{formatTime(availability.startTime)} - {formatTime(availability.endTime)}</span>
-                                  </li>
-                                );
-                              })
-                          ) : (
-                            <li className="text-muted-foreground italic">Chưa có lịch rảnh</li>
-                          )}
-                        </ul> */}
-                      </div>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Availability Tab Content */}
+              <TabsContent value="availability" className="mt-6">
+                <Card className="rounded-2xl shadow-sm border">
+                  <CardContent className="p-6 sm:p-8">
+                    <h2 className="text-xl font-bold mb-6">Lịch rảnh trong tuần</h2>
+                    {isLoadingAvailabilities ? (
+                      <div className="space-y-4">
+                        {Array.from({ length: 7 }).map((_, idx) => (
+                          <div key={idx} className="animate-pulse flex items-center gap-4">
+                            <div className="h-6 w-24 bg-muted rounded" />
+                            <div className="flex gap-2 flex-1">
+                              <div className="h-8 w-32 bg-muted rounded-full" />
+                              <div className="h-8 w-32 bg-muted rounded-full" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : !availabilites || availabilites.filter((a) => a.isActive).length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">
+                        Chưa có lịch rảnh.
+                      </p>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Map day numbers to Vietnamese names (0=Sunday, 1=Monday, etc.) */}
+                        {(() => {
+                          const dayNameVi = [
+                            "Chủ Nhật",
+                            "Thứ Hai",
+                            "Thứ Ba",
+                            "Thứ Tư",
+                            "Thứ Năm",
+                            "Thứ Sáu",
+                            "Thứ Bảy",
+                          ];
+
+                          // Format time (13:00:00 -> 13:00)
+                          const formatTime = (time: string) => time.substring(0, 5);
+
+                          // Group availabilities by day
+                          const availabilityByDay = new Map<number, typeof availabilites>();
+                          availabilites
+                            .filter((a) => a.isActive)
+                            .forEach((availability) => {
+                              if (!availabilityByDay.has(availability.dayOfWeek)) {
+                                availabilityByDay.set(availability.dayOfWeek, []);
+                              }
+                              availabilityByDay.get(availability.dayOfWeek)!.push(availability);
+                            });
+
+                          // Sort days (Monday first)
+                          const sortedDays = Array.from(availabilityByDay.keys()).sort(
+                            (a, b) => {
+                              // Convert Sunday (0) to 7 for proper sorting
+                              const adjustedA = a === 0 ? 7 : a;
+                              const adjustedB = b === 0 ? 7 : b;
+                              return adjustedA - adjustedB;
+                            },
+                          );
+
+                          return sortedDays.map((dayOfWeek) => (
+                            <div
+                              key={dayOfWeek}
+                              className="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b last:border-b-0"
+                            >
+                              <div className="w-24 shrink-0">
+                                <span className="font-medium text-foreground">
+                                  {dayNameVi[dayOfWeek]}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {availabilityByDay.get(dayOfWeek)!.map((slot, idx) => (
+                                  <Badge
+                                    key={idx}
+                                    className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-medium hover:bg-primary/20"
+                                  >
+                                    {formatTime(slot.startTime)} -{" "}
+                                    {formatTime(slot.endTime)}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -378,11 +441,10 @@ const MentorProfilePage = () => {
                                     {Array.from({ length: 5 }).map((_, idx) => (
                                       <Star
                                         key={idx}
-                                        className={`h-4 w-4 ${
-                                          idx < review.rating
-                                            ? "fill-orange-400 text-orange-400"
-                                            : "text-gray-300"
-                                        }`}
+                                        className={`h-4 w-4 ${idx < review.rating
+                                          ? "fill-orange-400 text-orange-400"
+                                          : "text-gray-300"
+                                          }`}
                                       />
                                     ))}
                                   </div>
