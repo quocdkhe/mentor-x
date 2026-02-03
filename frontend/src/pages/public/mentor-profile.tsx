@@ -24,7 +24,6 @@ import {
   Briefcase,
   Clock,
   Brain,
-  CalendarClock,
   ArrowLeft,
   LogIn,
   ThumbsUp,
