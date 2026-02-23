@@ -33,8 +33,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <GraduationCap className="h-8 w-8" />
-          <span className="text-xl font-bold">Mentor-X</span>
+          <img src="/logo.png" alt="Mentor-X Logo" className="h-36 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
