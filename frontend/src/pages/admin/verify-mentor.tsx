@@ -8,7 +8,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
-import { useGetMentorCard, useToggleVerifyMentor } from "@/api/mentor";
+import { useGetAllMentors, useToggleVerifyMentor } from "@/api/mentor";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -29,7 +29,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 function VerifyMentorPage() {
   const queryClient = useQueryClient();
-  const { data, isLoading } = useGetMentorCard();
+  const { data, isLoading } = useGetAllMentors();
   const toggleVerifyMutation = useToggleVerifyMentor();
   const [selectedMentor, setSelectedMentor] = React.useState<MentorInfo | null>(
     null,

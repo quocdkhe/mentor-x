@@ -16,11 +16,13 @@ export function useGetSkills() {
   });
 }
 
-export function useGetMentorCard() {
+export function useGetAllMentors() {
   return useQuery<PaginationDto<MentorInfo>, AxiosError<Message>>({
     queryKey: ["mentors"],
     queryFn: async (): Promise<PaginationDto<MentorInfo>> => {
-      const res = await api.get<PaginationDto<MentorInfo>>("/mentors");
+      const res = await api.get<PaginationDto<MentorInfo>>(
+        "/mentors?page=1&pageSize=1000",
+      );
       return res.data;
     },
     staleTime: 1000 * 60 * 10,
