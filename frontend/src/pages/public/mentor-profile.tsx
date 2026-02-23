@@ -27,6 +27,7 @@ import {
   ArrowLeft,
   LogIn,
   ThumbsUp,
+  CheckCircle2,
 } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -46,7 +47,8 @@ const MentorProfilePage = () => {
       : getRouteApi("/public/mentors/$mentorId");
   const { mentorId } = route.useParams();
   const { data: mentor, isLoading, error } = useGetMentorProfile(mentorId);
-  const { data: availabilites, isLoading: isLoadingAvailabilities } = useGetAvailability(mentorId);
+  const { data: availabilites, isLoading: isLoadingAvailabilities } =
+    useGetAvailability(mentorId);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [reviewPage, setReviewPage] = useState(1);
   const { data: reviewsData, isLoading: isLoadingReviews } =
@@ -164,9 +166,14 @@ const MentorProfilePage = () => {
                   <div className="flex-1 text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row justify-between items-start">
                       <div>
-                        <h1 className="text-3xl font-bold mb-1">
-                          {mentor.name}
-                        </h1>
+                        <div className="flex flex-row items-center gap-2">
+                          <h1 className="text-3xl font-bold mb-1">
+                            {mentor.name}
+                          </h1>
+                          {mentor.isVerified && (
+                            <CheckCircle2 className="w-5 h-5 text-primary" />
+                          )}
+                        </div>
                         <p className="text-lg text-muted-foreground font-medium">
                           {mentor.position} tại {mentor.company}
                         </p>
@@ -198,6 +205,20 @@ const MentorProfilePage = () => {
                         <Clock className="w-4 h-4" />
                         Phản hồi trong 2 giờ
                       </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-4">
+                      {mentor.isVerified && (
+                        <Badge
+                          variant="secondary"
+                          className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1.5 px-3 py-1 rounded-full"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span className="text-xs font-semibold">
+                            Được kiểm duyệt bởi MentorX
+                          </span>
+                        </Badge>
+                      )}
                     </div>
 
                     {/* Rating */}
@@ -277,11 +298,16 @@ const MentorProfilePage = () => {
               <TabsContent value="availability" className="mt-6">
                 <Card className="rounded-2xl shadow-sm border">
                   <CardContent className="p-6 sm:p-8">
-                    <h2 className="text-xl font-bold mb-6">Lịch rảnh trong tuần</h2>
+                    <h2 className="text-xl font-bold mb-6">
+                      Lịch rảnh trong tuần
+                    </h2>
                     {isLoadingAvailabilities ? (
                       <div className="space-y-4">
                         {Array.from({ length: 7 }).map((_, idx) => (
-                          <div key={idx} className="animate-pulse flex items-center gap-4">
+                          <div
+                            key={idx}
+                            className="animate-pulse flex items-center gap-4"
+                          >
                             <div className="h-6 w-24 bg-muted rounded" />
                             <div className="flex gap-2 flex-1">
                               <div className="h-8 w-32 bg-muted rounded-full" />
@@ -290,7 +316,8 @@ const MentorProfilePage = () => {
                           </div>
                         ))}
                       </div>
-                    ) : !availabilites || availabilites.filter((a) => a.isActive).length === 0 ? (
+                    ) : !availabilites ||
+                      availabilites.filter((a) => a.isActive).length === 0 ? (
                       <p className="text-muted-foreground text-center py-8">
                         Chưa có lịch rảnh.
                       </p>
@@ -309,28 +336,39 @@ const MentorProfilePage = () => {
                           ];
 
                           // Format time (13:00:00 -> 13:00)
-                          const formatTime = (time: string) => time.substring(0, 5);
+                          const formatTime = (time: string) =>
+                            time.substring(0, 5);
 
                           // Group availabilities by day
-                          const availabilityByDay = new Map<number, typeof availabilites>();
+                          const availabilityByDay = new Map<
+                            number,
+                            typeof availabilites
+                          >();
                           availabilites
                             .filter((a) => a.isActive)
                             .forEach((availability) => {
-                              if (!availabilityByDay.has(availability.dayOfWeek)) {
-                                availabilityByDay.set(availability.dayOfWeek, []);
+                              if (
+                                !availabilityByDay.has(availability.dayOfWeek)
+                              ) {
+                                availabilityByDay.set(
+                                  availability.dayOfWeek,
+                                  [],
+                                );
                               }
-                              availabilityByDay.get(availability.dayOfWeek)!.push(availability);
+                              availabilityByDay
+                                .get(availability.dayOfWeek)!
+                                .push(availability);
                             });
 
                           // Sort days (Monday first)
-                          const sortedDays = Array.from(availabilityByDay.keys()).sort(
-                            (a, b) => {
-                              // Convert Sunday (0) to 7 for proper sorting
-                              const adjustedA = a === 0 ? 7 : a;
-                              const adjustedB = b === 0 ? 7 : b;
-                              return adjustedA - adjustedB;
-                            },
-                          );
+                          const sortedDays = Array.from(
+                            availabilityByDay.keys(),
+                          ).sort((a, b) => {
+                            // Convert Sunday (0) to 7 for proper sorting
+                            const adjustedA = a === 0 ? 7 : a;
+                            const adjustedB = b === 0 ? 7 : b;
+                            return adjustedA - adjustedB;
+                          });
 
                           return sortedDays.map((dayOfWeek) => (
                             <div
@@ -343,15 +381,17 @@ const MentorProfilePage = () => {
                                 </span>
                               </div>
                               <div className="flex flex-wrap gap-2">
-                                {availabilityByDay.get(dayOfWeek)!.map((slot, idx) => (
-                                  <Badge
-                                    key={idx}
-                                    className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-medium hover:bg-primary/20"
-                                  >
-                                    {formatTime(slot.startTime)} -{" "}
-                                    {formatTime(slot.endTime)}
-                                  </Badge>
-                                ))}
+                                {availabilityByDay
+                                  .get(dayOfWeek)!
+                                  .map((slot, idx) => (
+                                    <Badge
+                                      key={idx}
+                                      className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-medium hover:bg-primary/20"
+                                    >
+                                      {formatTime(slot.startTime)} -{" "}
+                                      {formatTime(slot.endTime)}
+                                    </Badge>
+                                  ))}
                               </div>
                             </div>
                           ));
@@ -440,10 +480,11 @@ const MentorProfilePage = () => {
                                     {Array.from({ length: 5 }).map((_, idx) => (
                                       <Star
                                         key={idx}
-                                        className={`h-4 w-4 ${idx < review.rating
-                                          ? "fill-orange-400 text-orange-400"
-                                          : "text-gray-300"
-                                          }`}
+                                        className={`h-4 w-4 ${
+                                          idx < review.rating
+                                            ? "fill-orange-400 text-orange-400"
+                                            : "text-gray-300"
+                                        }`}
                                       />
                                     ))}
                                   </div>

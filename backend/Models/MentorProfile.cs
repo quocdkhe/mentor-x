@@ -12,8 +12,9 @@ public partial class MentorProfile
     public DateTime UpdatedAt { get; set; }
 
     public string? Company { get; set; }
-    public int YearsOfExperience  { get; set; }
+    public int YearsOfExperience { get; set; }
     public string? Position { get; set; }
+    public bool IsVerified { get; set; }
 
     public string Status { get; set; } = null;
     public virtual User User { get; set; } = null!;

@@ -30,7 +30,7 @@ export function useGetMentorCard() {
 export function useInfiniteGetMentorCard(
   pageSize: number = 12,
   searchTerm?: string,
-  skillId?: string
+  skillId?: string,
 ) {
   return useInfiniteQuery<PaginationDto<MentorInfo>, AxiosError<Message>>({
     queryKey: ["mentors", "infinite", searchTerm, skillId],
@@ -88,7 +88,7 @@ export interface MentorRegistrationRequest {
     email: string;
     password: string;
     avatar: string;
-  }
+  };
 }
 
 export function useRegisterMentor() {
@@ -110,7 +110,10 @@ export function usePathUpdateMentorProfile() {
 }
 
 export function useGetPendingMentors() {
-  return useQuery<PaginationDto<MentorInfo> | MentorInfo[], AxiosError<Message>>({
+  return useQuery<
+    PaginationDto<MentorInfo> | MentorInfo[],
+    AxiosError<Message>
+  >({
     queryKey: ["pending-mentors"],
     queryFn: async () => {
       const res = await api.get<MentorInfo[]>("/mentors/pending");
@@ -123,6 +126,21 @@ export function useApproveMentor() {
   return useMutation<Message, AxiosError<Message>, string>({
     mutationFn: async (id): Promise<Message> => {
       const res = await api.post<Message>(`/mentors/${id}/approve`);
+      return res.data;
+    },
+  });
+}
+
+export function useToggleVerifyMentor() {
+  return useMutation<
+    Message,
+    AxiosError<Message>,
+    { isVerified: boolean; mentorId: string }
+  >({
+    mutationFn: async ({ isVerified, mentorId }): Promise<Message> => {
+      const res = await api.patch<Message>(`/mentors/${mentorId}/verify`, {
+        isVerified,
+      });
       return res.data;
     },
   });

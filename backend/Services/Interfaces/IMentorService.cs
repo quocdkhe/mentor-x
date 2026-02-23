@@ -13,6 +13,7 @@ namespace backend.Services.Interfaces
         Task<bool> UpdateMentorProfile(Guid userId, MentorUpdateRequestDTO request);
         Task<List<MentorListItemDTO>> GetPendingMentors();
         Task<bool> ApproveMentor(Guid mentorId);
+        Task UpdateVerifiedMentorStatus(bool isVerified, Guid mentorId);
     }
 }
 

@@ -28,6 +28,7 @@ export interface MentorInfo {
   yearsOfExperience: number;
   hasMet: boolean;
   meetingHours: number;
+  isVerified: boolean;
 }
 
 export interface MentorProfile {
