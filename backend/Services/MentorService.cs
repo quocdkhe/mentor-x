@@ -63,6 +63,7 @@ namespace backend.Services
                 Position = m.Position,
                 Company = m.Company,
                 YearsOfExperience = m.YearsOfExperience,
+                IsVerified = m.IsVerified,
                 HasMet = userId.HasValue && _context.Appointments.Any(a => a.MenteeId == userId.Value
                     && a.MentorId == m.UserId && a.Status == AppointmentStatusEnum.Completed)
             })
@@ -106,8 +107,8 @@ namespace backend.Services
             if (currentUserId.HasValue)
             {
                 var completedAppointments = await _context.Appointments
-                    .Where(a => a.MenteeId == currentUserId.Value 
-                        && a.MentorId == mentor.UserId 
+                    .Where(a => a.MenteeId == currentUserId.Value
+                        && a.MentorId == mentor.UserId
                         && a.Status == AppointmentStatusEnum.Completed)
                     .ToListAsync();
 
@@ -129,7 +130,8 @@ namespace backend.Services
                 Position = mentor.Position,
                 Company = mentor.Company,
                 YearsOfExperience = mentor.YearsOfExperience,
-                MeetingHours = meetingHours
+                MeetingHours = meetingHours,
+                IsVerified = mentor.IsVerified
             };
             return mentorDetail;
         }
@@ -167,7 +169,7 @@ namespace backend.Services
         {
             // Check if email or phone already exists
             if (request.User == null) throw new Exception("User info required");
-            
+
             var existingUser = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == request.User.Email);
 
@@ -200,12 +202,12 @@ namespace backend.Services
                 var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id.ToString() == skillName || s.Name == skillName);
                 if (skill == null)
                 {
-                     if (Guid.TryParse(skillName, out var skillId))
-                     {
-                         skill = await _context.Skills.FindAsync(skillId);
-                     }
+                    if (Guid.TryParse(skillName, out var skillId))
+                    {
+                        skill = await _context.Skills.FindAsync(skillId);
+                    }
                 }
-                
+
                 if (skill != null)
                 {
                     skills.Add(skill);
@@ -230,7 +232,7 @@ namespace backend.Services
             };
 
             _context.MentorProfiles.Add(mentorProfile);
-            await _context.SaveChangesAsync(); 
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -353,7 +355,7 @@ namespace backend.Services
                 throw new Exception("Mentor profile not found");
 
             if (mentorProfile.Status == "approved")
-                return true; 
+                return true;
 
             mentorProfile.Status = "approved";
             mentorProfile.User.Role = UserRole.Mentor; // Update user role to Mentor
@@ -361,6 +363,13 @@ namespace backend.Services
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task UpdateVerifiedMentorStatus(bool isVerified, Guid mentorId)
+        {
+            var mentor = await _context.MentorProfiles.FirstOrDefaultAsync(mp => mp.User.Id == mentorId);
+            mentor.IsVerified = isVerified;
+            await _context.SaveChangesAsync();
         }
     }
 }

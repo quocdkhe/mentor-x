@@ -312,6 +312,12 @@ namespace backend.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<bool>("IsVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_verified");
+
                     b.Property<string>("Position")
                         .HasColumnType("text")
                         .HasColumnName("position");

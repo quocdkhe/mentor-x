@@ -1,12 +1,12 @@
-import { AdminSidebar } from "@/components/dashboard/admin-sidebar.tsx"
-import { Separator } from "@/components/ui/separator"
+import { AdminSidebar } from "@/components/dashboard/admin-sidebar.tsx";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import {ThemeToggle} from "@/components/theme-toggle.tsx";
-import {Outlet} from "@tanstack/react-router";
+} from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle.tsx";
+import { Outlet } from "@tanstack/react-router";
 
 export default function AdminLayout() {
   return (
@@ -24,9 +24,9 @@ export default function AdminLayout() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <Outlet/>
+          <Outlet />
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

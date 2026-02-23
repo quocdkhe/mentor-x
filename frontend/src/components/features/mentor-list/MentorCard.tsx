@@ -1,11 +1,11 @@
-import { Briefcase, Star } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import type { MentorInfo } from '@/types/mentor';
-import { Link } from '@tanstack/react-router';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/store/store';
-import { USER_ROLES } from '@/types/user';
+import { Briefcase, Star, CheckCircle2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { MentorInfo } from "@/types/mentor";
+import { Link } from "@tanstack/react-router";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
+import { USER_ROLES } from "@/types/user";
 
 interface MentorCardProps {
   mentor: MentorInfo;
@@ -16,7 +16,11 @@ export function MentorCard({ mentor }: MentorCardProps) {
 
   return (
     <Link
-      to={user?.role === USER_ROLES.USER ? "/user/mentors/$mentorId" : "/mentors/$mentorId"}
+      to={
+        user?.role === USER_ROLES.USER
+          ? "/user/mentors/$mentorId"
+          : "/mentors/$mentorId"
+      }
       params={{ mentorId: mentor.userId }}
       className="block h-full"
     >
@@ -34,9 +38,17 @@ export function MentorCard({ mentor }: MentorCardProps) {
         <div className="p-4 pt-3">
           {/* Name */}
           <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors flex items-center gap-2">
-            {mentor.name}
+            <span className="flex items-center gap-1">
+              {mentor.name}
+              {mentor.isVerified && (
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+              )}
+            </span>
             {mentor.hasMet && (
-              <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400">
+              <Badge
+                variant="secondary"
+                className="text-xs px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400"
+              >
                 Đã học
               </Badge>
             )}
@@ -46,7 +58,8 @@ export function MentorCard({ mentor }: MentorCardProps) {
           <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
             <Briefcase className="w-4 h-4 mt-0.5 shrink-0" />
             <span className="line-clamp-2">
-              <strong>{mentor.position}</strong> tại <strong>{mentor.company}</strong>
+              <strong>{mentor.position}</strong> tại{" "}
+              <strong>{mentor.company}</strong>
             </span>
           </div>
 
@@ -77,19 +90,28 @@ export function MentorCard({ mentor }: MentorCardProps) {
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <Star className="w-4 h-4 shrink-0 fill-amber-400 text-amber-400" />
             <span>
-              {mentor.avgRating.toFixed(1)} ({mentor.totalRatings} {mentor.totalRatings === 1 ? 'đánh giá' : 'đánh giá'})
+              {mentor.avgRating.toFixed(1)} ({mentor.totalRatings}{" "}
+              {mentor.totalRatings === 1 ? "đánh giá" : "đánh giá"})
             </span>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-3 pt-3 border-t">
             <div>
-              <div className="text-xs text-muted-foreground mb-1">Kinh nghiệm</div>
-              <div className="font-bold text-base">{mentor.yearsOfExperience} năm</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                Kinh nghiệm
+              </div>
+              <div className="font-bold text-base">
+                {mentor.yearsOfExperience} năm
+              </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">Giá TB/ giờ</div>
-              <div className="font-bold text-base">{mentor.pricePerHour.toLocaleString('vi-VN')}đ</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                Giá TB/ giờ
+              </div>
+              <div className="font-bold text-base">
+                {mentor.pricePerHour.toLocaleString("vi-VN")}đ
+              </div>
             </div>
           </div>
         </div>

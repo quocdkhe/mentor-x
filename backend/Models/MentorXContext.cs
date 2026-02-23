@@ -126,6 +126,8 @@ public partial class MentorXContext : DbContext
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()").HasColumnName("created_at");
 
+            entity.Property(e => e.IsVerified).HasDefaultValue(false).HasColumnName("is_verified");
+
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("updated_at");
@@ -404,8 +406,8 @@ public partial class MentorXContext : DbContext
 
             entity.Property(e => e.MeetingLink)
                 .HasColumnName("meeting_link");
-            
-            entity.Property(e=> e.GoogleCalendarLink)
+
+            entity.Property(e => e.GoogleCalendarLink)
                 .HasColumnName("google_calendar_link");
 
             entity.Property(e => e.CreatedAt)

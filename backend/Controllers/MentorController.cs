@@ -130,6 +130,14 @@ namespace backend.Controllers
             }
         }
 
+        [HttpPatch("{mentorId}/verify")]
+        [Authorize(Roles = Roles.Admin)]
+        public async Task<IActionResult> UpdateVerifiedMentorStatus([FromBody] VerifyRequestDto dto, Guid mentorId)
+        {
+            await _mentorService.UpdateVerifiedMentorStatus(dto.IsVerified, mentorId);
+            return Ok(new { message = "Xác nhận thành công" });
+        }
+
 
     }
 }
