@@ -46,7 +46,7 @@ namespace backend.Services
             var totalItems = await query.CountAsync();
 
             var items = await query
-                .OrderByDescending(m => !m.IsVerified)  // verified first, across ALL pages
+                .OrderByDescending(m => m.IsVerified)  // verified first, across ALL pages
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Include(m => m.User)
