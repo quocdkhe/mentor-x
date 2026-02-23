@@ -67,7 +67,7 @@ namespace backend.Services
                 HasMet = userId.HasValue && _context.Appointments.Any(a => a.MenteeId == userId.Value
                     && a.MentorId == m.UserId && a.Status == AppointmentStatusEnum.Completed)
             })
-            .OrderBy(m => m.IsVerified)
+            .OrderBy(m => !m.IsVerified)
             .ToListAsync();
 
             return new PaginationDto<MentorListItemDTO>

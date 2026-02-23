@@ -48,7 +48,7 @@ function VerifyMentorPage() {
           queryClient.invalidateQueries({
             queryKey: ["mentors"],
           });
-          if (selectedMentor?.id === mentorId) {
+          if (selectedMentor?.userId === mentorId) {
             setSelectedMentor((prev) =>
               prev ? { ...prev, isVerified: !currentStatus } : null,
             );
@@ -167,14 +167,20 @@ function VerifyMentorPage() {
                         onClick={() =>
                           handleToggleVerify(mentor.userId, mentor.isVerified)
                         }
-                        disabled={toggleVerifyMutation.isPending}
+                        disabled={
+                          toggleVerifyMutation.isPending &&
+                          toggleVerifyMutation.variables?.mentorId ===
+                            mentor.userId
+                        }
                         className={
                           !mentor.isVerified
                             ? "bg-green-600 hover:bg-green-700 text-white"
                             : ""
                         }
                       >
-                        {toggleVerifyMutation.isPending ? (
+                        {toggleVerifyMutation.isPending &&
+                        toggleVerifyMutation.variables?.mentorId ===
+                          mentor.userId ? (
                           <Spinner className="h-4 w-4 mr-1" />
                         ) : mentor.isVerified ? (
                           <ShieldX className="h-4 w-4 mr-1" />
@@ -288,18 +294,24 @@ function VerifyMentorPage() {
                   }
                   onClick={() => {
                     handleToggleVerify(
-                      selectedMentor.id,
+                      selectedMentor.userId,
                       selectedMentor.isVerified,
                     );
                   }}
-                  disabled={toggleVerifyMutation.isPending}
+                  disabled={
+                    toggleVerifyMutation.isPending &&
+                    toggleVerifyMutation.variables?.mentorId ===
+                      selectedMentor.userId
+                  }
                   className={
                     !selectedMentor.isVerified
                       ? "bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
                       : "w-full sm:w-auto"
                   }
                 >
-                  {toggleVerifyMutation.isPending ? (
+                  {toggleVerifyMutation.isPending &&
+                  toggleVerifyMutation.variables?.mentorId ===
+                    selectedMentor.userId ? (
                     <Spinner className="h-4 w-4 mr-1" />
                   ) : selectedMentor.isVerified ? (
                     <ShieldX className="h-4 w-4 mr-1" />
