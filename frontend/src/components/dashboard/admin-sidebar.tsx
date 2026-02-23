@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  CheckCheckIcon,
-  CheckIcon,
-  User,
-  Users,
-  VerifiedIcon,
-} from "lucide-react";
+import { CheckCheckIcon, User, Users, VerifiedIcon } from "lucide-react";
 
 import { NavMain } from "@/components/dashboard/nav-main.tsx";
 import { NavUser } from "@/components/dashboard/nav-user.tsx";
