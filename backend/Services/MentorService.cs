@@ -21,15 +21,15 @@ namespace backend.Services
         {
             var page = paginationRequest.Page < 1 ? 1 : paginationRequest.Page;
             var pageSize = paginationRequest.PageSize < 1 ? 10 : paginationRequest.PageSize;
-            var query = _context.MentorProfiles
-                .AsNoTracking();
 
-            var totalItems = await query.CountAsync();
+            // Start with approved mentors only
+            var query = _context.MentorProfiles
+                .AsNoTracking()
+                .Where(m => m.Status == "approved");
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var keyword = $"%{searchTerm}%";
-
                 query = query.Where(m =>
                     EF.Functions.ILike(m.User.Name, keyword) ||
                     EF.Functions.ILike(m.Company, keyword) ||
@@ -37,38 +37,39 @@ namespace backend.Services
                 );
             }
 
-
             if (skillId != default)
             {
                 query = query.Where(m => m.MentorSkills.Any(s => s.Id == skillId));
             }
 
+            // Count after filters so pagination is correct
+            var totalItems = await query.CountAsync();
+
             var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Where(m => m.Status == "approved")
-            .Include(m => m.User)
-            .Include(m => m.MentorSkills)
-            .Select(m => new MentorListItemDTO
-            {
-                Id = m.Id,
-                UserId = m.UserId,
-                Name = m.User.Name,
-                Avatar = m.User.Avatar,
-                Biography = m.Biography,
-                Skills = m.MentorSkills.Select(s => s.Name).ToList(),
-                AvgRating = m.AvgRating,
-                TotalRatings = m.TotalRatings,
-                PricePerHour = m.PricePerHour,
-                Position = m.Position,
-                Company = m.Company,
-                YearsOfExperience = m.YearsOfExperience,
-                IsVerified = m.IsVerified,
-                HasMet = userId.HasValue && _context.Appointments.Any(a => a.MenteeId == userId.Value
-                    && a.MentorId == m.UserId && a.Status == AppointmentStatusEnum.Completed)
-            })
-            .OrderBy(m => !m.IsVerified)
-            .ToListAsync();
+                .OrderByDescending(m => !m.IsVerified)  // verified first, across ALL pages
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Include(m => m.User)
+                .Include(m => m.MentorSkills)
+                .Select(m => new MentorListItemDTO
+                {
+                    Id = m.Id,
+                    UserId = m.UserId,
+                    Name = m.User.Name,
+                    Avatar = m.User.Avatar,
+                    Biography = m.Biography,
+                    Skills = m.MentorSkills.Select(s => s.Name).ToList(),
+                    AvgRating = m.AvgRating,
+                    TotalRatings = m.TotalRatings,
+                    PricePerHour = m.PricePerHour,
+                    Position = m.Position,
+                    Company = m.Company,
+                    YearsOfExperience = m.YearsOfExperience,
+                    IsVerified = m.IsVerified,
+                    HasMet = userId.HasValue && _context.Appointments.Any(a => a.MenteeId == userId.Value
+                        && a.MentorId == m.UserId && a.Status == AppointmentStatusEnum.Completed)
+                })
+                .ToListAsync();
 
             return new PaginationDto<MentorListItemDTO>
             {
