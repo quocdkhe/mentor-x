@@ -50,25 +50,37 @@ const MentorProfilePage = () => {
   const [activeSection, setActiveSection] = useState("about");
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: "-120px 0px -60% 0px" },
-    );
-
     const sections = ["about", "availability", "reviews"];
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
 
-    return () => observer.disconnect();
-  }, []);
+    const handleScroll = () => {
+      const navbarHeightStr = getComputedStyle(
+        document.documentElement,
+      ).getPropertyValue("--navbar-height");
+      const navbarHeight = parseInt(navbarHeightStr) || 64;
+      const offset = navbarHeight + 60 + 20; // navbar + tab height + buffer
+
+      let currentSection = activeSection;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= offset) {
+            currentSection = section;
+          }
+        }
+      }
+
+      if (currentSection !== activeSection) {
+        setActiveSection(currentSection);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Check on initial load
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [activeSection]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
