@@ -46,11 +46,20 @@ const verifyMentorsRoute = createRoute({
   }),
 }).lazy(() => import("@/pages/admin/verify-mentor").then((d) => d.Route));
 
+const paymentStatusRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: "/payment-status",
+  head: () => ({
+    meta: [{ title: "MentorX - Trạng thái thanh toán" }],
+  }),
+}).lazy(() => import("@/pages/admin/payment-status").then((d) => d.Route));
+
 const adminRouteTree = adminLayoutRoute.addChildren([
   userManagementRoute,
   profileRoute,
   pendingMentorsRoute,
   verifyMentorsRoute,
+  paymentStatusRoute,
 ]);
 
 export { adminRouteTree };
