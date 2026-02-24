@@ -16,6 +16,7 @@ namespace backend.Services.Interfaces
         Task<ServiceResult<Message>> AcceptAppointment(Guid mentorId, Guid appointmentId);
         Task<ServiceResult<Message>> CancelAppointment(Guid userId, Guid appointmentId); // userId can be mentorId or menteeId, depending on who is cancelling
         Task<ServiceResult<Message>> CompleteAppointment(Guid mentorId, Guid appointmentId);
+        Task<ServiceResult<Message>> DeleteAppointment(Guid userId, Guid appointmentId); // userId can be mentorId or menteeId, depending on who is deleting
 
     }
 }

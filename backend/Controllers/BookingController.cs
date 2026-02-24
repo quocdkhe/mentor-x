@@ -95,4 +95,17 @@ public class BookingController : ControllerBase
         }
         return Ok(result.Data);
     }
+
+    [HttpDelete("appointments/{appointmentId}")]
+    [Authorize(Roles = Roles.User)]
+    public async Task<ActionResult<Message>> DeleteAppointment(Guid appointmentId)
+    {
+        var menteeId = User.GetUserId();
+        var result = await _bookingService.DeleteAppointment(menteeId, appointmentId);
+        if (!result.Success)
+        {
+            return BadRequest(new Message(result.Message));
+        }
+        return Ok(result.Data);
+    }
 }
