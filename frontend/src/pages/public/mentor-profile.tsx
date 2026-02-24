@@ -55,7 +55,6 @@ const MentorProfilePage = () => {
     useGetMentorReviews(mentorId, reviewPage, 5);
   const { mutate: toggleUpvote } = useToggleUpvote();
   const queryClient = useQueryClient();
-  const navigator = useNavigate();
 
   const handleToggleUpvote = (reviewId: string) => {
     if (!user) {
@@ -552,30 +551,14 @@ const MentorProfilePage = () => {
                   </div>
 
                   {/* Action Buttons - using primary color */}
-                  {user ? (
-                    user.role === USER_ROLES.USER && (
-                      <div className="space-y-3">
-                        <Button
-                          className="w-full gap-2"
-                          onClick={() => setIsBookingOpen(true)}
-                        >
-                          <Calendar className="w-5 h-5" />
-                          Đặt lịch
-                        </Button>
-                        <Button variant="outline" className="w-full gap-2">
-                          <MessageCircle className="w-5 h-5" />
-                          Gửi tin nhắn
-                        </Button>
-                      </div>
-                    )
-                  ) : (
+                  {(!user || user.role === USER_ROLES.USER) && (
                     <div className="space-y-3">
                       <Button
                         className="w-full gap-2"
-                        onClick={() => navigator({ to: "/login" })}
+                        onClick={() => setIsBookingOpen(true)}
                       >
-                        <LogIn className="w-5 h-5" />
-                        Đăng nhập để đặt lịch
+                        <Calendar className="w-5 h-5" />
+                        Đặt lịch
                       </Button>
                     </div>
                   )}
