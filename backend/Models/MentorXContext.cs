@@ -127,7 +127,7 @@ public partial class MentorXContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()").HasColumnName("created_at");
 
             entity.Property(e => e.IsVerified).HasDefaultValue(false).HasColumnName("is_verified");
-            entity.Property(e => e.BackAccountNumber).HasDefaultValue("").HasColumnName("bank_account_number");
+            entity.Property(e => e.BankAccountNumber).HasDefaultValue("").HasColumnName("bank_account_number");
             entity.Property(e => e.BankName).HasDefaultValue("").HasColumnName("bank_name");
 
             entity.Property(e => e.UpdatedAt)

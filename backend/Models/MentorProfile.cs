@@ -14,7 +14,7 @@ public partial class MentorProfile
     public int YearsOfExperience { get; set; }
     public string? Position { get; set; }
     public bool IsVerified { get; set; }
-    public string BackAccountNumber { get; set; } = null!;
+    public string BankAccountNumber { get; set; } = null!;
     public string BankName { get; set; } = null!;
     public string Status { get; set; } = null!;
     public virtual User User { get; set; } = null!;

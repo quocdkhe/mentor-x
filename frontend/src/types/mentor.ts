@@ -45,6 +45,8 @@ export interface MentorProfile {
   position: string;
   company: string;
   yearsOfExperience: number;
+  bankName: string;
+  bankAccountNumber: string;
 }
 
 export interface Skill {
