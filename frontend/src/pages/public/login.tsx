@@ -27,6 +27,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { setUser } from "@/store/auth.slice";
 import { useGoogleLogin } from "@react-oauth/google";
 import { USER_ROLES, type UserRole } from "@/types/user.ts";
+import HeroAuth from "@/components/landing/hero-auth";
 
 const formSchema = z.object({
   email: z.email("Vui lòng nhập địa chỉ email hợp lệ"),
@@ -240,43 +241,8 @@ function LoginPage() {
         </Card>
       </div>
 
-      <div className="hidden md:flex w-1/2 relative items-center justify-center p-16">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url(https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=1920)",
-          }}
-        />
-        <div className="absolute inset-0 bg-black/50 dark:bg-black/70" />
-        <div className="relative z-10 max-w-lg space-y-8 text-white">
-          <div className="space-y-4">
-            <h2 className="text-4xl font-bold">
-              Kết nối với những người cố vấn giúp bạn phát triển nhanh chóng
-            </h2>
-            <p className="text-lg">
-              Tham gia cùng hàng nghìn chuyên gia đang tìm kiếm sự hướng dẫn, mở
-              rộng mạng lưới và khai phá tiềm năng thông qua các mối quan hệ cố
-              vấn ý nghĩa.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <div className="text-3xl font-bold">10K+</div>
-              <div className="text-sm opacity-90">Cố vấn hoạt động</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-bold">50K+</div>
-              <div className="text-sm opacity-90">Câu chuyện thành công</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-bold">95%</div>
-              <div className="text-sm opacity-90">Tỷ lệ hài lòng</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* hero section for auth form */}
+      <HeroAuth />
     </div>
   );
 }
