@@ -36,6 +36,9 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { useNavigate } from "@tanstack/react-router";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
+import { USER_ROLES } from "@/types/user";
 
 interface BookingDrawerProps {
   isOpen: boolean;
@@ -72,10 +75,10 @@ function StepProgress({ currentStep }: { currentStep: BookingStep }) {
                   "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all",
                   isCompleted && "bg-primary text-primary-foreground",
                   isCurrent &&
-                  "bg-primary text-primary-foreground ring-4 ring-primary/20",
+                    "bg-primary text-primary-foreground ring-4 ring-primary/20",
                   !isCompleted &&
-                  !isCurrent &&
-                  "bg-muted text-muted-foreground",
+                    !isCurrent &&
+                    "bg-muted text-muted-foreground",
                 )}
               >
                 {isCompleted ? <Check className="w-4 h-4" /> : step.number}
@@ -127,6 +130,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
   const bookingMutation = useBooking();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.auth.user);
 
   // Extract blocks and booked slots from schedule data
   const timeBlocks = useMemo(() => scheduleData?.blocks ?? [], [scheduleData]);
@@ -547,7 +551,6 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
                 className="w-55 h-68 object-cover scale-x-125 scale-y-120"
               />
             </div>
-
           </div>
         </div>
       </div>
@@ -616,12 +619,16 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
             </div>
           </div>
 
-          <Button className="w-full" size="lg" onClick={() => {
-            handleClose();
-            navigate({
-              to: "/user/schedules",
-            });
-          }}>
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={() => {
+              handleClose();
+              navigate({
+                to: "/user/schedules",
+              });
+            }}
+          >
             Xem lịch học của tôi
           </Button>
 
@@ -875,13 +882,25 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
               >
                 Hủy
               </Button>
-              <Button
-                className="flex-1 sm:flex-none min-w-[140px]"
-                disabled={!startRange || !endRange}
-                onClick={handleProceedToPayment}
-              >
-                Tiếp tục
-              </Button>
+              {user && user.role === USER_ROLES.USER ? (
+                <Button
+                  className="flex-1 sm:flex-none min-w-[140px]"
+                  disabled={!startRange || !endRange}
+                  onClick={handleProceedToPayment}
+                >
+                  Tiếp tục
+                </Button>
+              ) : (
+                <Button
+                  onClick={() =>
+                    navigate({
+                      to: "/login",
+                    })
+                  }
+                >
+                  Đăng nhập để đặt lịch
+                </Button>
+              )}
             </div>
           </div>
 
