@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -45,6 +45,28 @@ export default function SimpleNavbar() {
   const dispatch = useAppDispatch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const queryClient = useQueryClient();
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!headerRef.current) return;
+
+    const updateHeight = () => {
+      const height = headerRef.current?.getBoundingClientRect().height;
+      if (height) {
+        document.documentElement.style.setProperty(
+          "--navbar-height",
+          `${height}px`,
+        );
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(headerRef.current);
+
+    updateHeight();
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -63,7 +85,10 @@ export default function SimpleNavbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
+    >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Left: Logo and Nav */}
         <div className="flex items-center gap-6">

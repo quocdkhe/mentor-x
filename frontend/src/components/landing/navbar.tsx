@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -18,6 +18,28 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoading } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!headerRef.current) return;
+
+    const updateHeight = () => {
+      const height = headerRef.current?.getBoundingClientRect().height;
+      if (height) {
+        document.documentElement.style.setProperty(
+          "--navbar-height",
+          `${height}px`,
+        );
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(headerRef.current);
+
+    updateHeight();
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const navigationBasedOnRole = () => {
     if (user?.role === USER_ROLES.ADMIN) {
@@ -30,7 +52,10 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
+    >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
           <img src="/logo.png" alt="Mentor-X Logo" className="h-36 w-auto" />

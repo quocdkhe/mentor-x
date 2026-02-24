@@ -1,22 +1,15 @@
-import {
-  createLazyRoute,
-  getRouteApi,
-  Link,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createLazyRoute, getRouteApi, Link } from "@tanstack/react-router";
 import { useGetMentorProfile } from "@/api/mentor";
 import { useGetMentorReviews, useToggleUpvote } from "@/api/review";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingDrawer } from "@/components/features/booking/booking-drawer";
 import { ApiPagination } from "@/components/api-pagination";
 import { MentorProfileSkeleton } from "@/components/skeletons/mentor-profile.skeleton";
 import {
   Calendar,
-  MessageCircle,
   CheckCircle,
   Info,
   Star,
@@ -25,11 +18,10 @@ import {
   Clock,
   Brain,
   ArrowLeft,
-  LogIn,
   ThumbsUp,
   CheckCircle2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { USER_ROLES } from "@/types/user";
@@ -55,6 +47,42 @@ const MentorProfilePage = () => {
     useGetMentorReviews(mentorId, reviewPage, 5);
   const { mutate: toggleUpvote } = useToggleUpvote();
   const queryClient = useQueryClient();
+  const [activeSection, setActiveSection] = useState("about");
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-120px 0px -60% 0px" },
+    );
+
+    const sections = ["about", "availability", "reviews"];
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const navbarHeightStr = getComputedStyle(
+        document.documentElement,
+      ).getPropertyValue("--navbar-height");
+      const navbarHeight = parseInt(navbarHeightStr) || 64;
+      const tabNavHeight = 60;
+      const offset = navbarHeight + tabNavHeight;
+      const y = element.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
 
   const handleToggleUpvote = (reviewId: string) => {
     if (!user) {
@@ -237,31 +265,48 @@ const MentorProfilePage = () => {
               </CardContent>
             </Card>
 
-            {/* Tabs */}
-            <Tabs defaultValue="about" className="w-full">
-              <TabsList className="w-full grid grid-cols-3 h-11">
-                <TabsTrigger
-                  value="about"
-                  className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20"
+            {/* Navigation */}
+            <div
+              className="sticky z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 py-2 -mx-2 px-2"
+              style={{ top: "var(--navbar-height, 64px)" }}
+            >
+              <div className="w-full grid grid-cols-3 h-11 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+                <button
+                  onClick={() => scrollToSection("about")}
+                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
+                    activeSection === "about"
+                      ? "bg-primary/10 text-primary shadow-sm dark:bg-primary/20 border-primary/20"
+                      : "hover:text-foreground text-muted-foreground"
+                  }`}
                 >
                   Về tôi
-                </TabsTrigger>
-                <TabsTrigger
-                  value="availability"
-                  className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20"
+                </button>
+                <button
+                  onClick={() => scrollToSection("availability")}
+                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
+                    activeSection === "availability"
+                      ? "bg-primary/10 text-primary shadow-sm dark:bg-primary/20 border-primary/20"
+                      : "hover:text-foreground text-muted-foreground"
+                  }`}
                 >
                   Lịch rảnh
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reviews"
-                  className="w-full data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:border-primary/20"
+                </button>
+                <button
+                  onClick={() => scrollToSection("reviews")}
+                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
+                    activeSection === "reviews"
+                      ? "bg-primary/10 text-primary shadow-sm dark:bg-primary/20 border-primary/20"
+                      : "hover:text-foreground text-muted-foreground"
+                  }`}
                 >
                   Đánh giá
-                </TabsTrigger>
-              </TabsList>
+                </button>
+              </div>
+            </div>
 
-              {/* About Tab Content */}
-              <TabsContent value="about" className="mt-6">
+            <div className="space-y-8 mt-6">
+              {/* About Section */}
+              <div id="about" className="scroll-mt-32">
                 <Card className="rounded-2xl shadow-sm border">
                   <CardContent className="p-6 sm:p-8">
                     <h2 className="text-xl font-bold mb-4">Về tôi</h2>
@@ -291,10 +336,10 @@ const MentorProfilePage = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </div>
 
-              {/* Availability Tab Content */}
-              <TabsContent value="availability" className="mt-6">
+              {/* Availability Section */}
+              <div id="availability" className="scroll-mt-32">
                 <Card className="rounded-2xl shadow-sm border">
                   <CardContent className="p-6 sm:p-8">
                     <h2 className="text-xl font-bold mb-6">
@@ -399,10 +444,10 @@ const MentorProfilePage = () => {
                     )}
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </div>
 
-              {/* Reviews Tab Content */}
-              <TabsContent value="reviews" className="mt-6">
+              {/* Reviews Section */}
+              <div id="reviews" className="scroll-mt-32">
                 <Card className="rounded-2xl shadow-sm border">
                   <CardContent className="p-6 sm:p-8">
                     <h2 className="text-xl font-bold mb-6">Đánh giá</h2>
@@ -527,13 +572,16 @@ const MentorProfilePage = () => {
                     )}
                   </CardContent>
                 </Card>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
           </div>
 
           {/* Right Sidebar - Booking */}
           <div className="lg:col-span-3 space-y-6">
-            <div className="sticky top-8 space-y-6">
+            <div
+              className="sticky space-y-6"
+              style={{ top: "calc(var(--navbar-height, 64px) + 1rem)" }}
+            >
               {/* Pricing and Booking Card */}
               <Card className="rounded-2xl shadow-lg border">
                 <CardContent className="p-6 sm:p-8">
