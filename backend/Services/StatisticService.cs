@@ -1,4 +1,3 @@
-using System;
 using backend.Models;
 using backend.Models.DTOs.Mentor;
 using backend.Services.Interfaces;
@@ -23,25 +22,27 @@ public class StatisticService : IStatisticService
 
         if (mentorId != null)
         {
-            query = query.Where(a => a.MentorId == mentorId && a.Status == AppointmentStatusEnum.Completed);
+            query = query.Where(a => a.MentorId == mentorId);
         }
 
-        return await query.Select(a => new PaymentStatusDto
-        {
-            AppointmentId = a.Id,
-            MentorName = a.Mentor.Name,
-            MentorEmail = a.Mentor.Email,
-            MentorAvatar = a.Mentor.Avatar,
-            MenteeName = a.Mentee.Name,
-            MenteeEmail = a.Mentee.Email,
-            MenteeAvatar = a.Mentee.Avatar,
-            PricePerHour = a.Mentor.MentorProfile.PricePerHour,
-            StartAt = a.StartAt,
-            EndAt = a.EndAt,
-            IsPaid = a.IsPaid,
-            BankAccountNumber = a.Mentor.MentorProfile.BankAccountNumber,
-            BankName = a.Mentor.MentorProfile.BankName
-        }).ToListAsync();
+        return await query
+            .Where(a => a.Status == AppointmentStatusEnum.Completed)
+            .Select(a => new PaymentStatusDto
+            {
+                AppointmentId = a.Id,
+                MentorName = a.Mentor.Name,
+                MentorEmail = a.Mentor.Email,
+                MentorAvatar = a.Mentor.Avatar,
+                MenteeName = a.Mentee.Name,
+                MenteeEmail = a.Mentee.Email,
+                MenteeAvatar = a.Mentee.Avatar,
+                PricePerHour = a.Mentor.MentorProfile.PricePerHour,
+                StartAt = a.StartAt,
+                EndAt = a.EndAt,
+                IsPaid = a.IsPaid,
+                BankAccountNumber = a.Mentor.MentorProfile.BankAccountNumber,
+                BankName = a.Mentor.MentorProfile.BankName
+            }).ToListAsync();
     }
 
     public async Task MarkAppointmentIsPaid(Guid appointmentId)
