@@ -102,7 +102,7 @@ export function useRegisterMentor() {
   });
 }
 
-export function usePathUpdateMentorProfile() {
+export function usePatchUpdateMentorProfile() {
   return useMutation<Message, AxiosError<Message>, MentorProfile>({
     mutationFn: async (data): Promise<Message> => {
       const res = await api.patch<Message>(`/mentors/profile`, data);

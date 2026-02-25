@@ -161,7 +161,9 @@ namespace backend.Services
                 Skills = mentor.MentorSkills.Select(s => s.Id).ToList(),
                 Company = mentor.Company,
                 Position = mentor.Position,
-                YearsOfExperience = mentor.YearsOfExperience
+                YearsOfExperience = mentor.YearsOfExperience,
+                BankAccountNumber = mentor.BankAccountNumber,
+                BankName = mentor.BankName
             };
 
             return profileResponse;
@@ -289,6 +291,12 @@ namespace backend.Services
 
             if (!string.IsNullOrWhiteSpace(request.Position))
                 mentorProfile.Position = request.Position;
+
+            if (!string.IsNullOrWhiteSpace(request.BankAccountNumber))
+                mentorProfile.BankAccountNumber = request.BankAccountNumber;
+
+            if (!string.IsNullOrWhiteSpace(request.BankName))
+                mentorProfile.BankName = request.BankName;
 
             // Update Skills if provided
             if (request.Skills != null && request.Skills.Count > 0)

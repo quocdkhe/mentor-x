@@ -139,16 +139,19 @@ namespace backend.Services
 
         public async Task<ServiceResult<List<MentorAppointmentDto>>> GetMentorAppointments(Guid mentorId, DateTime? date)
         {
-            if (date == null)
-            {
-                return ServiceResult<List<MentorAppointmentDto>>.Fail("DateTime là bắt buộc");
-            }
-            var startOfDay = date?.Date;
-            var endOfDay = startOfDay?.AddDays(1);
-
-            var appointments = await _context.Appointments
+            var query = _context.Appointments
                 .Include(a => a.Mentee)
-                .Where(a => a.MentorId == mentorId && a.StartAt >= startOfDay && a.StartAt < endOfDay)
+                .Where(a => a.MentorId == mentorId);
+
+            if (date.HasValue)
+            {
+                var startOfDay = date.Value.Date;
+                var endOfDay = startOfDay.AddDays(1);
+                query = query.Where(a => a.StartAt >= startOfDay && a.StartAt < endOfDay);
+            }
+
+            var appointments = await query
+                .OrderByDescending(a => a.CreatedAt)
                 .Select(a => new MentorAppointmentDto
                 {
                     AppointmentId = a.Id,
@@ -172,17 +175,20 @@ namespace backend.Services
 
         public async Task<ServiceResult<List<MenteeAppointmentDto>>> GetMenteeAppointments(Guid menteeId, DateTime? date)
         {
-            if (date == null)
-            {
-                return ServiceResult<List<MenteeAppointmentDto>>.Fail("DateTime là bắt buộc");
-            }
-            var startOfDay = date?.Date;
-            var endOfDay = startOfDay?.AddDays(1);
-
-            var appointments = await _context.Appointments
+            var query = _context.Appointments
                 .Include(a => a.Mentor)
                 .ThenInclude(m => m.MentorProfile)
-                .Where(a => a.MenteeId == menteeId && a.StartAt >= startOfDay && a.StartAt < endOfDay)
+                .Where(a => a.MenteeId == menteeId);
+
+            if (date.HasValue)
+            {
+                var startOfDay = date.Value.Date;
+                var endOfDay = startOfDay.AddDays(1);
+                query = query.Where(a => a.StartAt >= startOfDay && a.StartAt < endOfDay);
+            }
+
+            var appointments = await query
+                .OrderByDescending(a => a.CreatedAt)
                 .Select(a => new MenteeAppointmentDto
                 {
                     AppointmentId = a.Id,
@@ -301,6 +307,19 @@ namespace backend.Services
             _context.Appointments.Update(appointment);
             _context.SaveChanges();
             return Task.FromResult(ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã bị hủy")));
+        }
+
+        public async Task<ServiceResult<Message>> DeleteAppointment(Guid menteeId, Guid appointmentId)
+        {
+            var appointment = await _context.Appointments.FirstOrDefaultAsync(a =>
+                a.Id == appointmentId && a.MenteeId == menteeId);
+            if (appointment == null)
+            {
+                return ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn");
+            }
+            _context.Appointments.Remove(appointment);
+            await _context.SaveChangesAsync();
+            return ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã bị xóa"));
         }
     }
 }

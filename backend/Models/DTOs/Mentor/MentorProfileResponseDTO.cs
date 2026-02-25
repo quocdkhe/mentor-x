@@ -11,6 +11,8 @@ namespace backend.Models.DTOs.Mentor
         public string? Company { get; set; }
         public int YearsOfExperience { get; set; }
         public string? Position { get; set; }
+        public string BankAccountNumber { get; set; } = null!;
+        public string BankName { get; set; } = null!;
     }
 
 }

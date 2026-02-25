@@ -2,7 +2,7 @@ import { createLazyRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Calendar as CalendarIcon, Video, CalendarDays, CheckCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Video, CalendarDays, CheckCircle, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
@@ -78,12 +78,12 @@ const StatusBadge = ({ status }: { status: AppointmentStatusEnum }) => {
 };
 
 const Schedules = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch appointments from API for the selected date (or today)
-  const { data: appointmentsData = [], isLoading } = useMentorGetAppointments(convertDateToUTC(date || new Date()));
+  // Fetch appointments from API for the selected date (or all if no date)
+  const { data: appointmentsData = [], isLoading } = useMentorGetAppointments(date ? convertDateToUTC(date) : undefined);
 
   const [statusFilter, setStatusFilter] = useState<AppointmentStatusEnum | "all">("all");
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -122,7 +122,7 @@ const Schedules = () => {
     if (confirmDialog.newStatus && confirmDialog.appointmentId) {
       const onSuccessHandler = (data: { message: string }) => {
         // Invalidate queries to refresh the data
-        queryClient.invalidateQueries({ queryKey: ["mentor-appointments", convertDateToUTC(date || new Date())] });
+        queryClient.invalidateQueries({ queryKey: ["mentor-appointments", date ? convertDateToUTC(date) : undefined] });
         toast.success(data.message);
         // Close dialog after successful API call
         setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
@@ -176,31 +176,44 @@ const Schedules = () => {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           {/* Left: Date Picker */}
-          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-            <PopoverTrigger asChild>
+          <div className="flex items-center gap-1">
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[200px] justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PP", { locale: vi }) : <span>Chọn ngày</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(newDate) => {
+                    setDate(newDate);
+                    setCalendarOpen(false);
+                  }}
+                  locale={vi}
+                />
+              </PopoverContent>
+            </Popover>
+            {date && (
               <Button
-                variant={"outline"}
-                className={cn(
-                  "w-[200px] justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                onClick={() => setDate(undefined)}
+                aria-label="Xóa ngày"
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PP", { locale: vi }) : <span>Chọn ngày</span>}
+                <X className="h-4 w-4" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(newDate) => {
-                  setDate(newDate);
-                  setCalendarOpen(false);
-                }}
-                locale={vi}
-              />
-            </PopoverContent>
-          </Popover>
+            )}
+          </div>
 
           {/* Right: Status Tabs */}
           <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={(value) => setStatusFilter(value as AppointmentStatusEnum | "all")}>
@@ -224,31 +237,44 @@ const Schedules = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         {/* Left: Date Picker */}
-        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger asChild>
+        <div className="flex items-center gap-1">
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-[200px] justify-start text-left font-normal",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PP", { locale: vi }) : <span>Chọn ngày</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(newDate) => {
+                  setDate(newDate);
+                  setCalendarOpen(false); // Close calendar when date is selected
+                }}
+                locale={vi}
+              />
+            </PopoverContent>
+          </Popover>
+          {date && (
             <Button
-              variant={"outline"}
-              className={cn(
-                "w-[200px] justify-start text-left font-normal",
-                !date && "text-muted-foreground"
-              )}
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              onClick={() => setDate(undefined)}
+              aria-label="Xóa ngày"
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PP", { locale: vi }) : <span>Chọn ngày</span>}
+              <X className="h-4 w-4" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(newDate) => {
-                setDate(newDate);
-                setCalendarOpen(false); // Close calendar when date is selected
-              }}
-              locale={vi}
-            />
-          </PopoverContent>
-        </Popover>
+          )}
+        </div>
 
         {/* Right: Status Tabs */}
         <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={(value) => setStatusFilter(value as AppointmentStatusEnum | "all")}>

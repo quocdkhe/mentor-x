@@ -49,8 +49,8 @@ import ProfileTextEditor, {
 } from "@/components/features/edit-profile/text-editor";
 import {
   useGetSkills,
-  usePathUpdateMentorProfile,
   useGetCurrentMentorProfile,
+  usePatchUpdateMentorProfile,
 } from "@/api/mentor";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppDispatch } from "@/store/hooks";
@@ -89,6 +89,8 @@ const formSchema = z.object({
     .number()
     .min(0, "Số năm kinh nghiệm phải từ 0 trở lên")
     .max(50, "Số năm kinh nghiệm phải nhỏ hơn 50"),
+  bankName: z.string().min(2, "Tên ngân hàng là bắt buộc"),
+  bankAccountNumber: z.string().min(5, "Số tài khoản là bắt buộc"),
 });
 
 function ProfileEdit() {
@@ -97,7 +99,7 @@ function ProfileEdit() {
   const uploadFileMutation = useUploadFile();
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const { data: availableSkills = [] } = useGetSkills();
-  const updateProfileMutation = usePathUpdateMentorProfile();
+  const updateProfileMutation = usePatchUpdateMentorProfile();
   const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
 
@@ -128,6 +130,8 @@ function ProfileEdit() {
       position: "",
       company: "",
       yearsOfExperience: 0,
+      bankName: "",
+      bankAccountNumber: "",
     },
   });
 
@@ -460,6 +464,54 @@ function ProfileEdit() {
                           />
                         </FormControl>
                         <FormDescription>Công ty hoặc tổ chức</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-border" />
+
+              {/* Payment Info */}
+              <div>
+                <h2 className="font-semibold text-foreground mb-4 text-xl">
+                  Thông tin thanh toán
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="bankName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tên Ngân Hàng</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Ví dụ: Vietcombank, Techcombank..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Ngân hàng để nhận tiền thanh toán
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="bankAccountNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Số Tài Khoản</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="0123456789"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>Số tài khoản ngân hàng của bạn</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

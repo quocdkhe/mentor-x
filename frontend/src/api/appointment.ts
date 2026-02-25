@@ -18,7 +18,7 @@ export function useBooking() {
   });
 }
 
-export function useMentorGetAppointments(dateISOString: string) {
+export function useMentorGetAppointments(dateISOString?: string) {
   return useQuery<MentorAppointmentDto[], AxiosError<Message>>({
     queryKey: ["mentor-appointments", dateISOString],
     queryFn: async () => {
@@ -35,7 +35,7 @@ export function useMentorGetAppointments(dateISOString: string) {
   });
 }
 
-export function useMenteeGetAppointments(dateISOString: string) {
+export function useMenteeGetAppointments(dateISOString?: string) {
   return useQuery<MenteeAppointmentDto[], AxiosError<Message>>({
     queryKey: ["mentee-appointments", dateISOString],
     queryFn: async () => {
@@ -99,6 +99,17 @@ export function useCompleteAppointment() {
       const res = await api.post<Message>(
         `/appointments/${appointmentId}/complete`,
         {},
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useDeleteAppointment() {
+  return useMutation<Message, AxiosError<Message>, string>({
+    mutationFn: async (appointmentId: string): Promise<Message> => {
+      const res = await api.delete<Message>(
+        `/appointments/${appointmentId}`,
       );
       return res.data;
     },

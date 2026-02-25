@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CheckCheckIcon, User, Users, VerifiedIcon } from "lucide-react";
+import { CheckCheckIcon, DollarSign, User, Users, VerifiedIcon } from "lucide-react";
 
 import { NavMain } from "@/components/dashboard/nav-main.tsx";
 import { NavUser } from "@/components/dashboard/nav-user.tsx";
@@ -14,6 +14,11 @@ import { AppTitle } from "@/components/dashboard/app-title.tsx";
 
 // This is sample data.
 const navMain = [
+  {
+    title: "Trạng thái thanh toán",
+    url: "/admin/payment-status" as const,
+    icon: DollarSign,
+  },
   {
     title: "Quản lí người dùng ",
     url: "/admin/user-management" as const,

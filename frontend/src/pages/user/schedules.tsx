@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   useMenteeGetAppointments,
-  useCancelAppointment,
+  useDeleteAppointment,
 } from "@/api/appointment";
 import { useCreateReview } from "@/api/review";
 import type { AppointmentStatusEnum } from "@/types/appointment";
@@ -113,18 +113,18 @@ const statusItems = [
 ];
 
 function MenteeSchedulesPage() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch appointments from API for the selected date (or today)
+  // Fetch appointments from API for the selected date (or all if no date)
   const { data: appointmentsData = [], isLoading } = useMenteeGetAppointments(
-    convertDateToUTC(date || new Date()),
+    date ? convertDateToUTC(date) : undefined,
   );
 
   // Initialize the cancel appointment mutation
   const { mutate: cancelAppointment, isPending: isCancelling } =
-    useCancelAppointment();
+    useDeleteAppointment();
 
   // Initialize the create review mutation
   const { mutate: createReview, isPending: isSubmittingReview } =
@@ -166,7 +166,7 @@ function MenteeSchedulesPage() {
             queryClient.invalidateQueries({
               queryKey: [
                 "mentee-appointments",
-                convertDateToUTC(date || new Date()),
+                date ? convertDateToUTC(date) : undefined,
               ],
             });
             toast.success(data.message);
@@ -230,7 +230,7 @@ function MenteeSchedulesPage() {
           queryClient.invalidateQueries({
             queryKey: [
               "mentee-appointments",
-              convertDateToUTC(date || new Date()),
+              date ? convertDateToUTC(date) : undefined,
             ],
           });
 
@@ -271,35 +271,48 @@ function MenteeSchedulesPage() {
     <div className="container mx-auto pt-6 pb-20 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         {/* Left: Date Picker */}
-        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger asChild>
+        <div className="flex items-center gap-1">
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-[200px] justify-start text-left font-normal",
+                  !date && "text-muted-foreground",
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? (
+                  format(date, "PP", { locale: vi })
+                ) : (
+                  <span>Chọn ngày</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(newDate) => {
+                  setDate(newDate);
+                  setCalendarOpen(false);
+                }}
+                locale={vi}
+              />
+            </PopoverContent>
+          </Popover>
+          {date && (
             <Button
-              variant={"outline"}
-              className={cn(
-                "w-[200px] justify-start text-left font-normal",
-                !date && "text-muted-foreground",
-              )}
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              onClick={() => setDate(undefined)}
+              aria-label="Xóa ngày"
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? (
-                format(date, "PP", { locale: vi })
-              ) : (
-                <span>Chọn ngày</span>
-              )}
+              <X className="h-4 w-4" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(newDate) => {
-                setDate(newDate);
-                setCalendarOpen(false);
-              }}
-              locale={vi}
-            />
-          </PopoverContent>
-        </Popover>
+          )}
+        </div>
 
         {/* Right: Status Filter - Select on Mobile, Tabs on Desktop */}
         <div className="md:hidden w-full">
@@ -569,8 +582,8 @@ function MenteeSchedulesPage() {
                   >
                     <Star
                       className={`h-8 w-8 ${star <= reviewData.rating
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
                         }`}
                     />
                   </button>

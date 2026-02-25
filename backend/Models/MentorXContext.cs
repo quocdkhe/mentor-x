@@ -127,6 +127,8 @@ public partial class MentorXContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()").HasColumnName("created_at");
 
             entity.Property(e => e.IsVerified).HasDefaultValue(false).HasColumnName("is_verified");
+            entity.Property(e => e.BankAccountNumber).HasDefaultValue("").HasColumnName("bank_account_number");
+            entity.Property(e => e.BankName).HasDefaultValue("").HasColumnName("bank_name");
 
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("now()")
@@ -409,6 +411,10 @@ public partial class MentorXContext : DbContext
 
             entity.Property(e => e.GoogleCalendarLink)
                 .HasColumnName("google_calendar_link");
+
+            entity.Property(e => e.IsPaid)
+                .HasDefaultValue(false)
+                .HasColumnName("is_paid");
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")
