@@ -28,6 +28,7 @@ public class StatisticService : IStatisticService
 
         return await query.Select(a => new PaymentStatusDto
         {
+            AppointmentId = a.Id,
             MentorName = a.Mentor.Name,
             MentorEmail = a.Mentor.Email,
             MentorAvatar = a.Mentor.Avatar,
@@ -41,5 +42,15 @@ public class StatisticService : IStatisticService
             BankAccountNumber = a.Mentor.MentorProfile.BankAccountNumber,
             BankName = a.Mentor.MentorProfile.BankName
         }).ToListAsync();
+    }
+
+    public async Task MarkAppointmentIsPaid(Guid appointmentId)
+    {
+        var appointment = await _context.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
+        if (appointment != null)
+        {
+            appointment.IsPaid = true;
+            await _context.SaveChangesAsync();
+        }
     }
 }

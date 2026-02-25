@@ -1,5 +1,5 @@
 import type { PaymentStatus } from "@/types/statistic";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./api";
 import type { AxiosError } from "axios";
 import type { Message } from "@/types/common";
@@ -14,6 +14,14 @@ export const useGetListPaymentStatus = (mentorId: string) => {
 				},
 			});
 			return res.data;
+		},
+	});
+}
+
+export const useMarkAppointmentIsPaid = () => {
+	return useMutation<void, AxiosError<Message>, { appointmentId: string }>({
+		mutationFn: async ({ appointmentId }) => {
+			await api.patch(`statistics/mark-paid/${appointmentId}`);
 		},
 	});
 }

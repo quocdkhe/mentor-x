@@ -1,5 +1,5 @@
-
 export interface PaymentStatus {
+    appointmentId: string;
     mentorName: string;
     mentorEmail: string;
     mentorAvatar: string;

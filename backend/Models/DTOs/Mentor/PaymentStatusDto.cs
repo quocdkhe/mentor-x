@@ -4,6 +4,7 @@ namespace backend.Models.DTOs.Mentor;
 
 public class PaymentStatusDto
 {
+    public Guid AppointmentId { get; set; }
     public string MentorName { get; set; } = string.Empty;
     public string MentorEmail { get; set; } = string.Empty;
     public string MentorAvatar { get; set; } = string.Empty;

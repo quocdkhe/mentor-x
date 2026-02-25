@@ -21,5 +21,12 @@ namespace backend.Controllers
             var result = await _statisticService.GetAllPaymentStatus(mentorId);
             return Ok(result);
         }
+
+        [HttpPatch("statistics/mark-paid/{appointmentId}")]
+        public async Task<ActionResult> MarkAppointmentIsPaid(Guid appointmentId)
+        {
+            await _statisticService.MarkAppointmentIsPaid(appointmentId);
+            return Ok();
+        }
     }
 }
