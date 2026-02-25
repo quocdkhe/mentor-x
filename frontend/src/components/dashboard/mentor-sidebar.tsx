@@ -1,6 +1,8 @@
 import * as React from "react"
 import {
   Calendar,
+  Clock,
+  DollarSign,
   User,
 } from "lucide-react"
 
@@ -18,6 +20,11 @@ import { AppTitle } from "@/components/dashboard/app-title.tsx";
 // This is sample data.
 const navMain = [
   {
+    title: "Thanh toán",
+    url: "/mentor/payment-status" as const,
+    icon: DollarSign,
+  },
+  {
     title: "Quản lý lịch",
     url: "/mentor/schedules" as const,
     icon: Calendar,
@@ -25,13 +32,14 @@ const navMain = [
   {
     title: "Lên lịch khả dụng",
     url: "/mentor/set-availabilities" as const,
-    icon: Calendar,
+    icon: Clock,
   },
   {
     title: "Chỉnh sửa thông tin",
     url: "/mentor/edit-form" as const,
     icon: User,
   },
+
 ]
 
 export function MentorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

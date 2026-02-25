@@ -40,9 +40,18 @@ const schedulesRoute = createRoute({
   }),
 }).lazy(() => import("@/pages/mentor/schedules").then((d) => d.Route));
 
+const mentorPaymentStatusRoute = createRoute({
+  getParentRoute: () => mentorLayoutRoute,
+  path: "/payment-status",
+  head: () => ({
+    meta: [{ title: "MentorX - Lịch hẹn Mentor" }],
+  }),
+}).lazy(() => import("@/pages/mentor/mentor-payment-status").then((d) => d.Route));
+
 const mentorRouteTree = mentorLayoutRoute.addChildren([
   editProfileRoute,
   setAvailabilitiesRoute,
   schedulesRoute,
+  mentorPaymentStatusRoute,
 ]);
 export { mentorRouteTree };

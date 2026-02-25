@@ -12,6 +12,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { format, differenceInMinutes } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -186,16 +197,37 @@ export default function PaymentStatus() {
 
                     {/* Action */}
                     <TableCell>
-                      <Button
-                        variant={payment.isPaid ? "outline" : "default"}
-                        size="sm"
-                        disabled={payment.isPaid || markPaidMutation.isPending}
-                        onClick={() => handleMarkPaid(payment.appointmentId)}
-                      >
-                        {payment.isPaid
-                          ? "Đã thanh toán"
-                          : "Đánh dấu đã thanh toán"}
-                      </Button>
+                      {payment.isPaid ? (
+                        <Button variant="outline" size="sm" disabled>
+                          Đã thanh toán
+                        </Button>
+                      ) : (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              disabled={markPaidMutation.isPending}
+                            >
+                              Đánh dấu đã thanh toán
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Xác nhận thanh toán</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Bạn có chắc chắn muốn đánh dấu khoản thanh toán này là đã thanh toán? Hành động này không thể hoàn tác.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Hủy</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleMarkPaid(payment.appointmentId)}>
+                                Xác nhận
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
