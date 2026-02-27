@@ -4,6 +4,6 @@ namespace backend.Services.Interfaces
 {
     public interface IPaymentService
     {
-        Task VerifyPayment(BookingRequestDto dto);
+        Task<bool> VerifyPayment(BookingRequestDto dto);
     }
 }

@@ -11,9 +11,11 @@ public class BookingController : ControllerBase
 {
 
     private readonly IBookingService _bookingService;
-    public BookingController(IBookingService bookingService)
+    private readonly IPaymentService _paymentService;
+    public BookingController(IBookingService bookingService, IPaymentService paymentService)
     {
         _bookingService = bookingService;
+        _paymentService = paymentService;
     }
 
     [HttpPost("appointments")]
@@ -21,6 +23,13 @@ public class BookingController : ControllerBase
     public async Task<ActionResult<Message>> BookAnAppointment([FromBody] BookingRequestDto dto)
     {
         var userId = User.GetUserId();
+
+        var isPaid = await _paymentService.VerifyPayment(dto);
+        if (!isPaid)
+        {
+            return BadRequest(new Message("Vui lòng hãy thanh toán. Nếu bạn đã thanh toán, hãy liên hệ Admin để " +
+                                          "được trợ giúp"));
+        }
         var result = await _bookingService.BookAnAppointment(userId, dto);
         if (!result.Success)
         {

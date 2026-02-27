@@ -1,50 +1,31 @@
 ﻿using backend.Models.DTOs.Booking;
-
+using System.Globalization;
+using System.Text;
 namespace backend.Utils
 {
     public static class GeneratePaymentCode
     {
-        private static ulong Fnv1a64(string input)
+        public static string RemoveDiacritics(string text)
         {
-            const ulong offsetBasis = 14695981039346656037;
-            const ulong prime = 1099511628211;
-
-            ulong hash = offsetBasis;
-            foreach (char c in input)
-            {
-                hash ^= c;
-                hash *= prime;
-            }
-
-            return hash;
-        }
-        private static string ShortFromGuid(Guid guid, int length = 8)
-        {
-            const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-            ulong value = Fnv1a64(guid.ToString("N"));
-            var result = new Stack<char>();
-
-            while (value > 0)
-            {
-                result.Push(chars[(int)(value % 36)]);
-                value /= 36;
-            }
-
-            return new string(result.ToArray())
-                .PadLeft(length, '0')
-                .Substring(0, length);
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            return string.Concat(normalized
+                .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark))
+                .Normalize(NormalizationForm.FormC)
+                .Replace("đ", "d")
+                .Replace("Đ", "D");
         }
 
-        private static string GenerateAddInfo(BookingRequestDto dto)
+        public static string GenerateAddInfo(BookingRequestDto dto, string mentorName)
         {
-            var shortMentorId = ShortFromGuid(dto.MentorId);
+            // Convert to Indochina Time (UTC+7)
+            var startAtLocal = dto.StartAt.AddHours(7);
+            var endAtLocal = dto.EndAt.AddHours(7);
 
-            string startTime = dto.StartAt.ToString("HHmm");
-            string endTime = dto.EndAt.ToString("HHmm");
-            string date = dto.StartAt.ToString("ddMMyyyy");
+            string startTime = startAtLocal.ToString("HHmm");
+            string endTime = endAtLocal.ToString("HHmm");
+            string date = startAtLocal.ToString("ddMMyyyy");
 
-            return $"MENTORX{shortMentorId}{startTime}{endTime}{date}";
+            return $"MENTORX {RemoveDiacritics(mentorName)} {startTime} {endTime} {date}";
         }
     }
 }

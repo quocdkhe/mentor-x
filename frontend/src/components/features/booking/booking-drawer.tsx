@@ -75,10 +75,10 @@ function StepProgress({ currentStep }: { currentStep: BookingStep }) {
                   "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all",
                   isCompleted && "bg-primary text-primary-foreground",
                   isCurrent &&
-                    "bg-primary text-primary-foreground ring-4 ring-primary/20",
+                  "bg-primary text-primary-foreground ring-4 ring-primary/20",
                   !isCompleted &&
-                    !isCurrent &&
-                    "bg-muted text-muted-foreground",
+                  !isCurrent &&
+                  "bg-muted text-muted-foreground",
                 )}
               >
                 {isCompleted ? <Check className="w-4 h-4" /> : step.number}
@@ -446,20 +446,6 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
 
   // Render Payment Screen
   const renderPaymentScreen = () => {
-    function fnv1a64(input: string) {
-      let hash = BigInt("0xcbf29ce484222325"); // offset basis
-      const prime = BigInt("0x100000001b3");
-
-      for (let i = 0; i < input.length; i++) {
-        hash ^= BigInt(input.charCodeAt(i));
-        hash = (hash * prime) & BigInt("0xFFFFFFFFFFFFFFFF");
-      }
-
-      return hash;
-    }
-    function shortFromGuid(guid: string, len = 8) {
-      return fnv1a64(guid).toString(36).toUpperCase().slice(0, len);
-    }
     if (!startRange || !endRange) return null;
 
     const amount = Math.round((duration / 60) * mentor.pricePerHour);
@@ -468,9 +454,10 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
       month: "2-digit",
       year: "numeric",
     }).format(startRange.date);
-    const addInfo = `MENTORX${shortFromGuid(mentor.userId)}${startRange.time.split(":").join("")}${endRange.time.split(":").join("")}${dateStr.split("/").join("")}`;
-    console.log(addInfo);
-    const qrUrl = `https://img.vietqr.io/image/tpbank-00000117197-compact2.jpg?amount=${amount}&addInfo=${addInfo}&accountName=mentor%20x`;
+    const addInfo = `MENTORX ${mentor.name} ${startRange.time} ${endRange.time} ${dateStr}`;
+    const qrUrl = `https://img.vietqr.io/image/tpbank-00000117197-compact2.jpg?amount=${amount}&addInfo=${encodeURIComponent(
+      addInfo,
+    )}&accountName=mentor%20x`;
 
     return (
       <div className="flex-1 overflow-y-auto">
