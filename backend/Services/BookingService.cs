@@ -122,6 +122,7 @@ namespace backend.Services
             {
                 return ServiceResult<Message>.Fail("Lịch đặt bị trùng với lịch khác, vui lòng thử lại");
             }
+            
 
             await _context.Appointments.AddAsync(
                 new Appointment

@@ -75,10 +75,10 @@ function StepProgress({ currentStep }: { currentStep: BookingStep }) {
                   "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all",
                   isCompleted && "bg-primary text-primary-foreground",
                   isCurrent &&
-                    "bg-primary text-primary-foreground ring-4 ring-primary/20",
+                  "bg-primary text-primary-foreground ring-4 ring-primary/20",
                   !isCompleted &&
-                    !isCurrent &&
-                    "bg-muted text-muted-foreground",
+                  !isCurrent &&
+                  "bg-muted text-muted-foreground",
                 )}
               >
                 {isCompleted ? <Check className="w-4 h-4" /> : step.number}
@@ -454,7 +454,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
       month: "2-digit",
       year: "numeric",
     }).format(startRange.date);
-    const addInfo = `${mentor.name} ${startRange.time} - ${endRange.time} ${dateStr}`;
+    const addInfo = `MENTORX ${mentor.name} ${startRange.time} ${endRange.time} ${dateStr}`;
     const qrUrl = `https://img.vietqr.io/image/tpbank-00000117197-compact2.jpg?amount=${amount}&addInfo=${encodeURIComponent(
       addInfo,
     )}&accountName=mentor%20x`;
