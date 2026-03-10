@@ -39,6 +39,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { USER_ROLES } from "@/types/user";
+import { shortVietnameseName } from "@/utils/short-name-converter";
 
 interface BookingDrawerProps {
   isOpen: boolean;
@@ -454,7 +455,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
       month: "2-digit",
       year: "numeric",
     }).format(startRange.date);
-    const addInfo = `MENTORX ${mentor.name} ${startRange.time} ${endRange.time} ${dateStr}`;
+    const addInfo = `MENTORX ${shortVietnameseName(mentor.name)} ${startRange.time} ${endRange.time} ${dateStr}`;
     const qrUrl = `https://img.vietqr.io/image/tpbank-00000117197-compact2.jpg?amount=${amount}&addInfo=${encodeURIComponent(
       addInfo,
     )}&accountName=mentor%20x`;

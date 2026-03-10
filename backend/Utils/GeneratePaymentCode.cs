@@ -14,6 +14,16 @@ namespace backend.Utils
                 .Replace("đ", "d")
                 .Replace("Đ", "D");
         }
+        private static string ShortName(string name)
+        {
+            name = RemoveDiacritics(name);
+
+            var w = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var last = char.ToUpper(w[^1][0]) + w[^1][1..];
+            var init = "";
+            for (int i = 0; i < w.Length - 1; i++) init += char.ToUpper(w[i][0]);
+            return last + init;
+        }
 
         public static string GenerateAddInfo(BookingRequestDto dto, string mentorName)
         {
@@ -25,7 +35,7 @@ namespace backend.Utils
             string endTime = endAtLocal.ToString("HHmm");
             string date = startAtLocal.ToString("ddMMyyyy");
 
-            return $"MENTORX {RemoveDiacritics(mentorName)} {startTime} {endTime} {date}";
+            return $"MENTORX {ShortName(mentorName)} {startTime} {endTime} {date}";
         }
     }
 }
