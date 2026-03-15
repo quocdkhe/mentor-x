@@ -29,6 +29,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -43,6 +45,8 @@ import type { AppointmentStatusEnum } from "@/types/appointment";
 import SchedulesTableSkeleton from "@/components/skeletons/schedules-table.skeleton";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 
 // --- Types & Interfaces ---
 interface ScheduleItem {
@@ -81,7 +85,7 @@ const Schedules = () => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const queryClient = useQueryClient();
-
+  const user = useSelector((state: RootState) => state.auth.user);
   // Fetch appointments from API for the selected date (or all if no date)
   const { data: appointmentsData = [], isLoading } = useMentorGetAppointments(date ? convertDateToUTC(date) : undefined);
 
@@ -93,6 +97,7 @@ const Schedules = () => {
     title: string;
     description: string;
   }>({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+  const [appointmentLinks, setAppointmentLinks] = useState<{ googleMeetLink: string, googleCalendarLink: string }>({ googleMeetLink: "", googleCalendarLink: "" });
 
   // Initialize the appointment mutations
   const { mutate: acceptAppointment, isPending: isAccepting } = useAcceptAppointments();
@@ -126,18 +131,26 @@ const Schedules = () => {
         toast.success(data.message);
         // Close dialog after successful API call
         setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+        setAppointmentLinks({ googleMeetLink: "", googleCalendarLink: "" });
       };
 
       const onErrorHandler = (error: AxiosError<{ message?: string }>) => {
         toast.error(error.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.");
         // Close dialog on error as well
         setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+        setAppointmentLinks({ googleMeetLink: "", googleCalendarLink: "" });
       };
 
       // Call the appropriate API based on the status
       switch (confirmDialog.newStatus) {
         case "Confirmed":
-          acceptAppointment(confirmDialog.appointmentId, {
+          acceptAppointment({
+            appointmentId: confirmDialog.appointmentId,
+            acceptAppointmentDto: {
+              googleMeetLink: user?.isGoogleAuthenticated ? null : (appointmentLinks.googleMeetLink || null),
+              googleCalendarLink: user?.isGoogleAuthenticated ? null : (appointmentLinks.googleCalendarLink || null),
+            }
+          }, {
             onSuccess: onSuccessHandler,
             onError: onErrorHandler,
           });
@@ -376,7 +389,6 @@ const Schedules = () => {
                           size="sm"
                           variant="outline"
                           className="gap-2 border-green-500 text-green-600 hover:bg-green-50 dark:border-green-600 dark:text-green-500 dark:hover:bg-green-950/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={new Date() < new Date(schedule.endAt)}
                           onClick={() => openConfirmDialog(
                             schedule.appointmentId,
                             "Completed",
@@ -417,12 +429,45 @@ const Schedules = () => {
       </div>
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" })}>
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => {
+        if (!open) {
+          setConfirmDialog({ open: false, appointmentId: "", newStatus: null, title: "", description: "" });
+          setAppointmentLinks({ googleMeetLink: "", googleCalendarLink: "" });
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
             <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
           </AlertDialogHeader>
+          {confirmDialog.newStatus === "Confirmed" && !user?.isGoogleAuthenticated && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="meetLink" className="text-right text-sm">
+                  Google Meet Link
+                </Label>
+                <Input
+                  id="meetLink"
+                  value={appointmentLinks.googleMeetLink}
+                  onChange={(e) => setAppointmentLinks(prev => ({ ...prev, googleMeetLink: e.target.value }))}
+                  className="col-span-3"
+                  placeholder="https://meet.google.com/..."
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="calendarLink" className="text-right text-sm">
+                  Calendar Link
+                </Label>
+                <Input
+                  id="calendarLink"
+                  value={appointmentLinks.googleCalendarLink}
+                  onChange={(e) => setAppointmentLinks(prev => ({ ...prev, googleCalendarLink: e.target.value }))}
+                  className="col-span-3"
+                  placeholder="https://calendar.google.com/..."
+                />
+              </div>
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isProcessing}>
               Hủy

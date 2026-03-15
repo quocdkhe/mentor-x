@@ -63,3 +63,8 @@ export interface MentorScheduleDto {
   blocks: TimeBlockDto[];
   bookedSlots: BookedSlotDto[];
 }
+
+export interface AcceptAppointmentDto {
+  googleMeetLink: string | null;
+  googleCalendarLink: string | null;
+}

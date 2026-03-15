@@ -68,10 +68,10 @@ public class BookingController : ControllerBase
 
     [HttpPost("appointments/{appointmentId}/accept")]
     [Authorize(Roles = Roles.Mentor)]
-    public async Task<ActionResult<Message>> AcceptAppointment(Guid appointmentId)
+    public async Task<ActionResult<Message>> AcceptAppointment(Guid appointmentId ,[FromBody] AcceptAppointmentDto dto)
     {
         var mentorId = User.GetUserId();
-        var result = await _bookingService.AcceptAppointment(mentorId, appointmentId);
+        var result = await _bookingService.AcceptAppointment(mentorId, appointmentId, dto);
         if (!result.Success)
         {
             return BadRequest(new Message(result.Message));

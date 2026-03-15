@@ -39,7 +39,8 @@ namespace backend.Controllers
                 Id = currentUser.Id,
                 Name = currentUser.Name,
                 Phone = currentUser.Phone,
-                Role = currentUser.Role
+                Role = currentUser.Role,
+                IsGoogleAuthenticated = currentUser.GoogleAccount != null
             };
         }
 

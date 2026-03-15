@@ -471,7 +471,8 @@ public partial class MentorXContext : DbContext
                 .HasColumnName("updated_at");
 
             entity.HasOne(d => d.User)
-                .WithOne()
+                .WithOne(u => u.GoogleAccount)
+                .IsRequired(false)
                 .HasForeignKey<GoogleAccount>(d => d.UserId)
                 .HasConstraintName("fk_google_accounts_user");
         });
