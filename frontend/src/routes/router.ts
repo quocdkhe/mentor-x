@@ -56,11 +56,12 @@ export const router = createRouter({
 });
 
 // Track route changes for Google Analytics (production only)
+// Track route changes for Google Analytics (production only)
 if (import.meta.env.PROD) {
   router.subscribe("onLoad", ({ toLocation }) => {
     if (typeof window !== "undefined" && window.gtag) {
       window.gtag("config", "G-F9PXCSV1E3", {
-        page_path: toLocation.pathname + toLocation.search,
+        page_path: toLocation.pathname, // path name only
       });
     }
   });
