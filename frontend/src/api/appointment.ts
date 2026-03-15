@@ -1,4 +1,5 @@
 import type {
+  AcceptAppointmentDto,
   BookingRequest,
   MenteeAppointmentDto,
   MentorAppointmentDto,
@@ -70,11 +71,11 @@ export function useGetMentorSchedules(dateISOString: string, mentorId: string) {
 }
 
 export function useAcceptAppointments() {
-  return useMutation<Message, AxiosError<Message>, string>({
-    mutationFn: async (appointmentId: string): Promise<Message> => {
+  return useMutation<Message, AxiosError<Message>, { appointmentId: string, acceptAppointmentDto: AcceptAppointmentDto }>({
+    mutationFn: async ({ appointmentId, acceptAppointmentDto }): Promise<Message> => {
       const res = await api.post<Message>(
         `/appointments/${appointmentId}/accept`,
-        {},
+        acceptAppointmentDto,
       );
       return res.data;
     },

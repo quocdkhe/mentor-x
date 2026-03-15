@@ -26,7 +26,9 @@ namespace backend.Services
 
         public async Task<User?> GetUserById(Guid Id)
         {
-            var entity = _context.Users.FirstOrDefault(u => u.Id == Id);
+            var entity = _context.Users
+                .Include(u => u.GoogleAccount)
+                .FirstOrDefault(u => u.Id == Id);
             if (entity == null)
             {
                 return null;

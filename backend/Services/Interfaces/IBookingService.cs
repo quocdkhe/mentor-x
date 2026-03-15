@@ -13,7 +13,7 @@ namespace backend.Services.Interfaces
         Task<ServiceResult<List<MentorAppointmentDto>>> GetMentorAppointments(Guid mentorId, DateTime? date);
         Task<ServiceResult<List<MenteeAppointmentDto>>> GetMenteeAppointments(Guid menteeId, DateTime? date);
         Task<ServiceResult<MentorScheduleDto>> GetMentorSchedule(Guid mentorId, DateTime? date);
-        Task<ServiceResult<Message>> AcceptAppointment(Guid mentorId, Guid appointmentId);
+        Task<ServiceResult<Message>> AcceptAppointment(Guid mentorId, Guid appointmentId, AcceptAppointmentDto dto);
         Task<ServiceResult<Message>> CancelAppointment(Guid userId, Guid appointmentId); // userId can be mentorId or menteeId, depending on who is cancelling
         Task<ServiceResult<Message>> CompleteAppointment(Guid mentorId, Guid appointmentId);
         Task<ServiceResult<Message>> DeleteAppointment(Guid userId, Guid appointmentId); // userId can be mentorId or menteeId, depending on who is deleting

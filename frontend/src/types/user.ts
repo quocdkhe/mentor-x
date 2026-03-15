@@ -5,6 +5,7 @@ export interface UserResponseDTO {
   email: string;
   avatar?: string;
   role: UserRole;
+  isGoogleAuthenticated: boolean;
 }
 
 export interface AdminCreateUser {

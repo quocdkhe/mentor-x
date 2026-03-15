@@ -248,7 +248,7 @@ namespace backend.Services
             });
         }
 
-        public async Task<ServiceResult<Message>> AcceptAppointment(Guid mentorId, Guid appointmentId)
+        public async Task<ServiceResult<Message>> AcceptAppointment(Guid mentorId, Guid appointmentId, AcceptAppointmentDto dto)
         {
             var appointment = _context.Appointments
                 .Include(a => a.Mentor)
@@ -260,24 +260,32 @@ namespace backend.Services
                 return ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn");
             }
 
-            try
+            if (dto.GoogleCalendarLink != null && dto.GoogleMeetLink != null)
             {
-                // Create meeting link and google calendar event
-                string accessToken = await _googleOAuthService.GetGoogleAccessToken(mentorId);
-                GoogleMeetingResult googleMeetingResult = await
-                    _googleCalendarService.CreateMeetingAsync(accessToken, appointment.StartAt,
-                        appointment.EndAt, appointment.Mentor.Email, appointment.Mentee.Email);
-                appointment.MeetingLink = googleMeetingResult.MeetLink;
-                appointment.GoogleCalendarLink = googleMeetingResult.CalendarLink;
-                appointment.Status = AppointmentStatusEnum.Confirmed;
+                appointment.MeetingLink = dto.GoogleCalendarLink;
+                appointment.GoogleCalendarLink = dto.GoogleCalendarLink;
             }
-            catch (Exception ex)
+            else
             {
-                return ServiceResult<Message>.Fail(ex.Message);
+                try
+                {
+                    // Create meeting link and google calendar event
+                    string accessToken = await _googleOAuthService.GetGoogleAccessToken(mentorId);
+                    GoogleMeetingResult googleMeetingResult = await
+                        _googleCalendarService.CreateMeetingAsync(accessToken, appointment.StartAt,
+                            appointment.EndAt, appointment.Mentor.Email, appointment.Mentee.Email);
+                    appointment.MeetingLink = googleMeetingResult.MeetLink;
+                    appointment.GoogleCalendarLink = googleMeetingResult.CalendarLink;
+                }
+                catch (Exception ex)
+                {
+                    return ServiceResult<Message>.Fail(ex.Message);
+                }
             }
-
+            
+            appointment.Status = AppointmentStatusEnum.Confirmed;
             _context.Appointments.Update(appointment);
-            _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã được chấp nhận"));
         }
