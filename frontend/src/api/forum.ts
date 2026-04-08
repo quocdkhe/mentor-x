@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./api";
 import type { AxiosError } from "axios";
-import type { Message } from "@/types/common";
+import type { ErrorMessage, Message } from "@/types/common";
 import type {
   CreatePost,
   CreateTopic,
@@ -12,11 +12,11 @@ import type {
 import type { PaginationDto } from "@/types/pagination";
 
 export function useGetTopicPagination(page: number, pageSize: number) {
-  return useQuery<PaginationDto<ForumTopic>, AxiosError<Message>>({
+  return useQuery<PaginationDto<ForumTopic>, AxiosError<ErrorMessage>>({
     queryKey: ["forum-topics", page, pageSize],
     queryFn: async (): Promise<PaginationDto<ForumTopic>> => {
       const res = await api.get<PaginationDto<ForumTopic>>(
-        `/forum/topics?page=${page}&pageSize=${pageSize}`
+        `/forum/topics?page=${page}&pageSize=${pageSize}`,
       );
       return res.data;
     },
@@ -27,13 +27,13 @@ export function useGetTopicPagination(page: number, pageSize: number) {
 export function useGetAllPostsByTopicId(
   topicId: string,
   page: number,
-  pageSize: number
+  pageSize: number,
 ) {
-  return useQuery<PaginationDto<Post>, AxiosError<Message>>({
+  return useQuery<PaginationDto<Post>, AxiosError<ErrorMessage>>({
     queryKey: ["forum-topic-posts", topicId, page, pageSize],
     queryFn: async (): Promise<PaginationDto<Post>> => {
       const res = await api.get<PaginationDto<Post>>(
-        `/forum/topics/${topicId}/posts?page=${page}&pageSize=${pageSize}`
+        `/forum/topics/${topicId}/posts?page=${page}&pageSize=${pageSize}`,
       );
       return res.data;
     },
@@ -42,7 +42,7 @@ export function useGetAllPostsByTopicId(
 }
 
 export function useGetTopicById(topicId: string) {
-  return useQuery<ForumTopic, AxiosError<Message>>({
+  return useQuery<ForumTopic, AxiosError<ErrorMessage>>({
     queryKey: ["forum-topic", topicId],
     queryFn: async (): Promise<ForumTopic> => {
       const res = await api.get<ForumTopic>(`/forum/topics/${topicId}`);
@@ -53,7 +53,7 @@ export function useGetTopicById(topicId: string) {
 }
 
 export function useCreateTopic() {
-  return useMutation<Message, AxiosError<Message>, CreateTopic>({
+  return useMutation<Message, AxiosError<ErrorMessage>, CreateTopic>({
     mutationFn: async (topic: CreateTopic): Promise<Message> => {
       const res = await api.post<Message>(`/forum/topics`, topic);
       return res.data;
@@ -62,11 +62,11 @@ export function useCreateTopic() {
 }
 
 export function useCreatePost(topicId: string) {
-  return useMutation<TotalPostCount, AxiosError<Message>, CreatePost>({
+  return useMutation<TotalPostCount, AxiosError<ErrorMessage>, CreatePost>({
     mutationFn: async (post: CreatePost): Promise<TotalPostCount> => {
       const res = await api.post<TotalPostCount>(
         `/forum/topics/${topicId}/posts`,
-        post
+        post,
       );
       return res.data;
     },
@@ -74,7 +74,7 @@ export function useCreatePost(topicId: string) {
 }
 
 export function useLikeOrDislikePost(postId: string) {
-  return useMutation<Message, AxiosError<Message>>({
+  return useMutation<Message, AxiosError<ErrorMessage>>({
     mutationFn: async (): Promise<Message> => {
       const res = await api.patch<Message>(`/forum/topics/posts/${postId}`);
       return res.data;
@@ -83,7 +83,7 @@ export function useLikeOrDislikePost(postId: string) {
 }
 
 export function useDeletePost() {
-  return useMutation<Message, AxiosError<Message>, string>({
+  return useMutation<Message, AxiosError<ErrorMessage>, string>({
     mutationFn: async (postId: string): Promise<Message> => {
       const res = await api.delete<Message>(`/forum/topics/posts/${postId}`);
       return res.data;
@@ -94,7 +94,7 @@ export function useDeletePost() {
 export function useUpdatePost() {
   return useMutation<
     Message,
-    AxiosError<Message>,
+    AxiosError<ErrorMessage>,
     { postId: string; post: CreatePost }
   >({
     mutationFn: async ({

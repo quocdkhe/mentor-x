@@ -5,15 +5,15 @@ namespace backend.Services.Interfaces
 {
     public interface IReviewService
     {
-        Task<ServiceResult<Message>> CreateReviewAsync(Guid menteeId, CreateReviewRequestDTO dto);
+        Task<Message> CreateReviewAsync(Guid menteeId, CreateReviewRequestDTO dto);
         
-        Task<ServiceResult<PaginationDto<MentorReviewResponseDTO>>> GetMentorReviews(
+        Task<PaginationDto<MentorReviewResponseDTO>> GetMentorReviews(
             Guid mentorId, 
             int page, 
             int pageSize, 
             Guid? currentUserId = null
         );
 
-        Task<ServiceResult<Message>> ToggleUpvoteAsync(Guid reviewId, Guid userId);
+        Task<Message> ToggleUpvoteAsync(Guid reviewId, Guid userId);
     }
 }

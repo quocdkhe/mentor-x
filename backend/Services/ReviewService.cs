@@ -1,3 +1,4 @@
+using backend.Middleware.Exceptions;
 using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Review;
@@ -15,7 +16,7 @@ namespace backend.Services
             _context = context;
         }
 
-        public async Task<ServiceResult<Message>> ToggleUpvoteAsync(Guid reviewId, Guid userId)
+        public async Task<Message> ToggleUpvoteAsync(Guid reviewId, Guid userId)
         {
             var review = await _context.MentorReviews
                 .Include(r => r.Upvoters)
@@ -23,13 +24,13 @@ namespace backend.Services
 
             if (review == null)
             {
-                return ServiceResult<Message>.Fail("Không tìm thấy đánh giá");
+                throw new NotFoundException("Không tìm thấy đánh giá");
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
             {
-                return ServiceResult<Message>.Fail("Không tìm thấy người dùng");
+                throw new NotFoundException("Không tìm thấy người dùng");
             }
 
             var existingUpvote = review.Upvoters.FirstOrDefault(u => u.Id == userId);
@@ -39,18 +40,18 @@ namespace backend.Services
                 // Remove upvote
                 review.Upvoters.Remove(existingUpvote);
                 await _context.SaveChangesAsync();
-                return ServiceResult<Message>.Ok(new Message("Đã bỏ thích đánh giá"));
+                return new Message("Đã bỏ thích đánh giá");
             }
             else
             {
                 // Add upvote
                 review.Upvoters.Add(user);
                 await _context.SaveChangesAsync();
-                return ServiceResult<Message>.Ok(new Message("Đã thích đánh giá"));
+                return new Message("Đã thích đánh giá");
             }
         }
 
-        public async Task<ServiceResult<Message>> CreateReviewAsync(Guid menteeId, CreateReviewRequestDTO dto)
+        public async Task<Message> CreateReviewAsync(Guid menteeId, CreateReviewRequestDTO dto)
         {
             // Validate appointment exists and belongs to the mentee
             var appointment = await _context.Appointments
@@ -58,13 +59,13 @@ namespace backend.Services
 
             if (appointment == null)
             {
-                return ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn hoặc bạn không có quyền đánh giá cuộc hẹn này");
+                throw new NotFoundException("Không tìm thấy cuộc hẹn hoặc bạn không có quyền đánh giá cuộc hẹn này");
             }
 
             // Validate appointment status is Completed
             if (appointment.Status != AppointmentStatusEnum.Completed)
             {
-                return ServiceResult<Message>.Fail("Chỉ có thể đánh giá sau khi cuộc hẹn đã hoàn thành");
+                throw new BadRequestException("Chỉ có thể đánh giá sau khi cuộc hẹn đã hoàn thành");
             }
 
             // Check if review already exists for this appointment
@@ -73,7 +74,7 @@ namespace backend.Services
 
             if (existingReview != null)
             {
-                return ServiceResult<Message>.Fail("Bạn đã đánh giá cuộc hẹn này rồi");
+                throw new ConflictException("Bạn đã đánh giá cuộc hẹn này rồi");
             }
 
             // Create new review
@@ -109,10 +110,10 @@ namespace backend.Services
                 await _context.SaveChangesAsync();
             }
 
-            return ServiceResult<Message>.Ok(new Message("Đánh giá của bạn đã được gửi thành công"));
+            return new Message("Đánh giá của bạn đã được gửi thành công");
         }
 
-        public async Task<ServiceResult<PaginationDto<MentorReviewResponseDTO>>> GetMentorReviews(
+        public async Task<PaginationDto<MentorReviewResponseDTO>> GetMentorReviews(
             Guid mentorId,
             int page,
             int pageSize,
@@ -152,14 +153,14 @@ namespace backend.Services
 
             var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-            return ServiceResult<PaginationDto<MentorReviewResponseDTO>>.Ok(new PaginationDto<MentorReviewResponseDTO>
+            return new PaginationDto<MentorReviewResponseDTO>
             {
                 Items = reviews,
                 CurrentPage = page,
                 PageSize = pageSize,
                 TotalItems = totalItems,
                 TotalPages = totalPages
-            });
+            };
         }
     }
 }

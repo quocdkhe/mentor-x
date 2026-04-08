@@ -53,20 +53,15 @@ namespace backend.Controllers
                 return Unauthorized();
             }
 
-            bool updated = await _userService.UpdateUserProfile(userId, dto);
-            return updated ? Ok(new Message("Cập nhật thông tin thành công")) : BadRequest(new Message("Cập nhật thông tin thất bại"));
+            await _userService.UpdateUserProfile(userId, dto);
+            return Ok(new Message("Cập nhật thông tin thành công"));
         }
 
         [HttpPost("")]
         [Authorize(Roles = Roles.Admin)]
         public async Task<ActionResult<Message>> CreateUser([FromBody] AdminCreateUserDTO dto)
         {
-            var result = await _userService.CreateUser(dto);
-            if (!result.Success)
-            {
-                return BadRequest(new Message("Tạo người dùng thất bại"));
-            }
-
+            await _userService.CreateUser(dto);
             return Ok(new Message("Tạo người dùng thành công"));
         }
 
@@ -82,11 +77,7 @@ namespace backend.Controllers
         [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDTO dto)
         {
-            var result = await _userService.UpdateRole(dto);
-            if (!result.Success)
-            {
-                return BadRequest(new Message("Cập nhật vai trò thất bại"));
-            }
+            await _userService.UpdateRole(dto);
             return Ok(new Message("Cập nhật vai trò thành công"));
         }
 

@@ -1,3 +1,4 @@
+using backend.Middleware.Exceptions;
 using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Forum;
@@ -16,17 +17,17 @@ public class ForumService : IForumService
         _context = context;
     }
     
-    public async Task<ServiceResult<Message>> CreateNewTopic(ForumTopic topic)
+    public async Task<Message> CreateNewTopic(ForumTopic topic)
     {
         if (!await _context.Users.AnyAsync(e => e.Id == topic.UserId))
         {
-            return ServiceResult<Message>.Fail("Không tìm thấy người dùng");
+            throw new NotFoundException("Không tìm thấy người dùng");
         }
         
         var result = await _context.ForumTopics.AddAsync(topic);
         await _context.SaveChangesAsync(); 
         
-        return ServiceResult<Message>.Ok(new Message("Tạo chủ đề thành công"));
+        return new Message("Tạo chủ đề thành công");
     }
     
     public async Task<PaginationDto<ForumTopicDto>> GetAllTopicPagination(
@@ -112,16 +113,16 @@ public class ForumService : IForumService
         };
     }
 
-    public async Task<ServiceResult<TotalPostCountDto>> CreateNewPost(ForumPost post)
+    public async Task<TotalPostCountDto> CreateNewPost(ForumPost post)
     {
         if (!await _context.Users.AnyAsync(e => e.Id == post.UserId))
         {
-            return ServiceResult<TotalPostCountDto>.Fail("Không tìm thấy người dùng");
+            throw new NotFoundException("Không tìm thấy người dùng");
         }
 
         if (!await _context.ForumTopics.AnyAsync(t => t.Id == post.ForumTopicId))
         {
-            return ServiceResult<TotalPostCountDto>.Fail("Không tìm thấy chủ đề");
+            throw new NotFoundException("Không tìm thấy chủ đề");
         }
         
         var result = await _context.ForumPosts.AddAsync(post);
@@ -132,10 +133,10 @@ public class ForumService : IForumService
             .Where(p => p.ForumTopicId == post.ForumTopicId)
             .CountAsync();
         
-        return ServiceResult<TotalPostCountDto>.Ok(new TotalPostCountDto(newTotalCount));
+        return new TotalPostCountDto(newTotalCount);
     }
 
-    public async Task<ServiceResult<ForumTopicDto>> GetTopicById(Guid id)
+    public async Task<ForumTopicDto> GetTopicById(Guid id)
     {
         var query = _context.ForumTopics
             .AsNoTracking();
@@ -156,15 +157,18 @@ public class ForumService : IForumService
                     Avatar = t.User.Avatar
                 }
             }).FirstOrDefaultAsync();
-        return result != null ? 
-            ServiceResult<ForumTopicDto>.Ok(result) : ServiceResult<ForumTopicDto>.Fail("Không tìm thấy topic");
+        
+        if (result == null)
+            throw new NotFoundException("Không tìm thấy topic");
+            
+        return result;
     }
 
-    public async Task<ServiceResult<Message>> LikePost(Guid postId, Guid userId)
+    public async Task<Message> LikePost(Guid postId, Guid userId)
     {
         if (!await _context.Users.AnyAsync(u => u.Id == userId))
         {
-            return ServiceResult<Message>.Fail("Không tìm thấy người dùng");
+            throw new NotFoundException("Không tìm thấy người dùng");
         }
 
         var post = await _context.ForumPosts
@@ -173,7 +177,7 @@ public class ForumService : IForumService
 
         if (post == null)
         {
-            return ServiceResult<Message>.Fail("Không tìm thấy bài viết");
+            throw new NotFoundException("Không tìm thấy bài viết");
         }
 
         var existingUser = post.Likers.FirstOrDefault(u => u.Id == userId);
@@ -191,32 +195,32 @@ public class ForumService : IForumService
 
         await _context.SaveChangesAsync();
 
-        return ServiceResult<Message>.Ok(new Message("ok"));
+        return new Message("ok");
     }
 
-    public async Task<ServiceResult<Message>> DeletePost(Guid postId)
+    public async Task<Message> DeletePost(Guid postId)
     {
         var post = new ForumPost { Id = postId };
 
         if (!await _context.ForumPosts.AnyAsync(p => p.Id == postId))
         {
-            return ServiceResult<Message>.Fail("Không tìm thấy post");
+            throw new NotFoundException("Không tìm thấy post");
         }
         
         _context.ForumPosts.Attach(post);
         _context.ForumPosts.Remove(post);
         await _context.SaveChangesAsync();
 
-        return ServiceResult<Message>.Ok(new Message("ok"));
+        return new Message("ok");
     }
 
-    public async Task<ServiceResult<Message>> UpdatePostContent(Guid postId, string newContent)
+    public async Task<Message> UpdatePostContent(Guid postId, string newContent)
     {
         var post = await _context.ForumPosts.FindAsync(postId);
 
         if (post == null)
         {
-            return ServiceResult<Message>.Fail("Không tìm thấy post");
+            throw new NotFoundException("Không tìm thấy post");
         }
 
         post.Content = newContent;
@@ -224,7 +228,7 @@ public class ForumService : IForumService
 
         await _context.SaveChangesAsync();
 
-        return ServiceResult<Message>.Ok(new Message("Cập nhật bài viết thành công"));
+        return new Message("Cập nhật bài viết thành công");
     }
 
 

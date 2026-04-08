@@ -1,4 +1,5 @@
-﻿using backend.Models;
+﻿using backend.Middleware.Exceptions;
+using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Booking;
 using backend.Models.DTOs.Mentor;
@@ -36,7 +37,7 @@ namespace backend.Services
             return availabilities;
         }
 
-        public async Task<ServiceResult<Message>> UpdateAvailabilities(
+        public async Task<Message> UpdateAvailabilities(
             Guid mentorId,
             List<AvailabilityResponseDTO> availabilities)
         {
@@ -53,7 +54,7 @@ namespace backend.Services
                 {
                     if (sorted[i].EndTime > sorted[i + 1].StartTime)
                     {
-                        return ServiceResult<Message>.Fail(
+                        throw new BadRequestException(
                             $"Giờ bị gối nhau trong cùng {group.Key}"
                         );
                     }
@@ -66,7 +67,7 @@ namespace backend.Services
                 // 1 Start < End
                 if (dto.StartTime >= dto.EndTime)
                 {
-                    return ServiceResult<Message>.Fail(
+                    throw new BadRequestException(
                         "StartTime phải nhỏ hơn EndTime"
                     );
                 }
@@ -74,7 +75,7 @@ namespace backend.Services
                 // 2️ Bội số 15 phút
                 if (dto.StartTime.Minutes % 15 != 0 || dto.EndTime.Minutes % 15 != 0)
                 {
-                    return ServiceResult<Message>.Fail(
+                    throw new BadRequestException(
                         "Giờ phải là bội số của 15 phút (vd: 09:15, 09:30)"
                     );
                 }
@@ -105,12 +106,10 @@ namespace backend.Services
             await _context.Availabilities.AddRangeAsync(newAvailabilities);
             await _context.SaveChangesAsync();
 
-            return ServiceResult<Message>.Ok(new Message(
-                "Cập nhật availability thành công")
-            );
+            return new Message("Cập nhật availability thành công");
         }
 
-        public async Task<ServiceResult<Message>> BookAnAppointment(Guid menteeId, BookingRequestDto dto)
+        public async Task<Message> BookAnAppointment(Guid menteeId, BookingRequestDto dto)
         {
             var isDuplicate = await _context.Appointments.AnyAsync(a =>
                 a.MentorId == dto.MentorId &&
@@ -120,7 +119,7 @@ namespace backend.Services
 
             if (isDuplicate)
             {
-                return ServiceResult<Message>.Fail("Lịch đặt bị trùng với lịch khác, vui lòng thử lại");
+                throw new ConflictException("Lịch đặt bị trùng với lịch khác, vui lòng thử lại");
             }
             
 
@@ -135,10 +134,10 @@ namespace backend.Services
                     UpdatedAt = DateTime.UtcNow
                 });
             await _context.SaveChangesAsync();
-            return ServiceResult<Message>.Ok(new Message("Đặt lịch thành công, vui lòng chuyển đến trang lịch học của tôi"));
+            return new Message("Đặt lịch thành công, vui lòng chuyển đến trang lịch học của tôi");
         }
 
-        public async Task<ServiceResult<List<MentorAppointmentDto>>> GetMentorAppointments(Guid mentorId, DateTime? date)
+        public async Task<List<MentorAppointmentDto>> GetMentorAppointments(Guid mentorId, DateTime? date)
         {
             var query = _context.Appointments
                 .Include(a => a.Mentee)
@@ -171,10 +170,10 @@ namespace backend.Services
                 })
                 .ToListAsync();
 
-            return ServiceResult<List<MentorAppointmentDto>>.Ok(appointments);
+            return appointments;
         }
 
-        public async Task<ServiceResult<List<MenteeAppointmentDto>>> GetMenteeAppointments(Guid menteeId, DateTime? date)
+        public async Task<List<MenteeAppointmentDto>> GetMenteeAppointments(Guid menteeId, DateTime? date)
         {
             var query = _context.Appointments
                 .Include(a => a.Mentor)
@@ -211,14 +210,14 @@ namespace backend.Services
                 })
                 .ToListAsync();
 
-            return ServiceResult<List<MenteeAppointmentDto>>.Ok(appointments);
+            return appointments;
         }
 
-        public async Task<ServiceResult<MentorScheduleDto>> GetMentorSchedule(Guid mentorId, DateTime? date)
+        public async Task<MentorScheduleDto> GetMentorSchedule(Guid mentorId, DateTime? date)
         {
             if (date == null)
             {
-                return ServiceResult<MentorScheduleDto>.Fail("DateTime là bắt buộc");
+                throw new BadRequestException("DateTime là bắt buộc");
             }
             WeekDayEnum day = (WeekDayEnum)date?.DayOfWeek;
             List<TimeBlockDto> blocks = await _context.Availabilities
@@ -241,14 +240,14 @@ namespace backend.Services
                     EndAt = a.EndAt
                 }).ToListAsync();
 
-            return ServiceResult<MentorScheduleDto>.Ok(new MentorScheduleDto
+            return new MentorScheduleDto
             {
                 Blocks = blocks,
                 BookedSlots = bookedSlots
-            });
+            };
         }
 
-        public async Task<ServiceResult<Message>> AcceptAppointment(Guid mentorId, Guid appointmentId, AcceptAppointmentDto dto)
+        public async Task<Message> AcceptAppointment(Guid mentorId, Guid appointmentId, AcceptAppointmentDto dto)
         {
             var appointment = _context.Appointments
                 .Include(a => a.Mentor)
@@ -257,7 +256,7 @@ namespace backend.Services
                 a.Id == appointmentId && a.MentorId == mentorId);
             if (appointment == null)
             {
-                return ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn");
+                throw new NotFoundException("Không tìm thấy cuộc hẹn");
             }
 
             if (dto.GoogleCalendarLink != null && dto.GoogleMeetLink != null)
@@ -279,7 +278,7 @@ namespace backend.Services
                 }
                 catch (Exception ex)
                 {
-                    return ServiceResult<Message>.Fail(ex.Message);
+                    throw new BadRequestException($"Không thể tạo cuộc họp: {ex.Message}");
                 }
             }
             
@@ -287,48 +286,48 @@ namespace backend.Services
             _context.Appointments.Update(appointment);
             await _context.SaveChangesAsync();
 
-            return ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã được chấp nhận"));
+            return new Message("Cuộc hẹn đã được chấp nhận");
         }
 
-        public Task<ServiceResult<Message>> CompleteAppointment(Guid mentorId, Guid appointmentId)
+        public Task<Message> CompleteAppointment(Guid mentorId, Guid appointmentId)
         {
             var appointment = _context.Appointments.FirstOrDefault(a =>
                 a.Id == appointmentId && a.MentorId == mentorId);
             if (appointment == null)
             {
-                return Task.FromResult(ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn"));
+                throw new NotFoundException("Không tìm thấy cuộc hẹn");
             }
             appointment.Status = AppointmentStatusEnum.Completed;
             _context.Appointments.Update(appointment);
             _context.SaveChanges();
-            return Task.FromResult(ServiceResult<Message>.Ok(new Message("Thành công")));
+            return Task.FromResult(new Message("Thành công"));
         }
 
-        public Task<ServiceResult<Message>> CancelAppointment(Guid userId, Guid appointmentId)
+        public Task<Message> CancelAppointment(Guid userId, Guid appointmentId)
         {
             var appointment = _context.Appointments.FirstOrDefault(a =>
                 a.Id == appointmentId);
             if (appointment == null || (appointment.MentorId != userId && appointment.MenteeId != userId))
             {
-                return Task.FromResult(ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn"));
+                throw new NotFoundException("Không tìm thấy cuộc hẹn");
             }
             appointment.Status = AppointmentStatusEnum.Cancelled;
             _context.Appointments.Update(appointment);
             _context.SaveChanges();
-            return Task.FromResult(ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã bị hủy")));
+            return Task.FromResult(new Message("Cuộc hẹn đã bị hủy"));
         }
 
-        public async Task<ServiceResult<Message>> DeleteAppointment(Guid menteeId, Guid appointmentId)
+        public async Task<Message> DeleteAppointment(Guid menteeId, Guid appointmentId)
         {
             var appointment = await _context.Appointments.FirstOrDefaultAsync(a =>
                 a.Id == appointmentId && a.MenteeId == menteeId);
             if (appointment == null)
             {
-                return ServiceResult<Message>.Fail("Không tìm thấy cuộc hẹn");
+                throw new NotFoundException("Không tìm thấy cuộc hẹn");
             }
             _context.Appointments.Remove(appointment);
             await _context.SaveChangesAsync();
-            return ServiceResult<Message>.Ok(new Message("Cuộc hẹn đã bị xóa"));
+            return new Message("Cuộc hẹn đã bị xóa");
         }
     }
 }

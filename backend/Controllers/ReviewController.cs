@@ -22,13 +22,7 @@ public class ReviewController : ControllerBase
     {
         var menteeId = User.GetUserId();
         var result = await _reviewService.CreateReviewAsync(menteeId, dto);
-
-        if (!result.Success)
-        {
-            return BadRequest(new Message(result.Message));
-        }
-
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpGet("mentors/{mentorId}/reviews")]
@@ -45,13 +39,7 @@ public class ReviewController : ControllerBase
         }
 
         var result = await _reviewService.GetMentorReviews(mentorId, page, pageSize, userId);
-
-        if (!result.Success)
-        {
-            return BadRequest(new Message(result.Message));
-        }
-
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpPost("reviews/{reviewId}/upvote")]
@@ -60,12 +48,6 @@ public class ReviewController : ControllerBase
     {
         var userId = User.GetUserId();
         var result = await _reviewService.ToggleUpvoteAsync(reviewId, userId);
-
-        if (!result.Success)
-        {
-            return BadRequest(new Message(result.Message));
-        }
-
-        return Ok(result.Data);
+        return Ok(result);
     }
 }

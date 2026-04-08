@@ -1,5 +1,6 @@
 //using backend.Configurations;
 using backend.Configurations;
+using backend.Middleware;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +48,7 @@ app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
 
 app.Run();

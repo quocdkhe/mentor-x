@@ -6,12 +6,11 @@ namespace backend.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<ServiceResult<bool>> CreateUser(AdminCreateUserDTO dto);
+        Task CreateUser(AdminCreateUserDTO dto);
         Task<List<UserResponseDTO>> GetAllUsers();
-        Task<ServiceResult<bool>> UpdateRole(UpdateRoleDTO dto);
+        Task UpdateRole(UpdateRoleDTO dto);
         Task<User?> GetUserByEmail(string Email);
         Task<User?> GetUserById(Guid Id);
-        Task<bool> UpdateUserProfile(Guid userId, UserUpdateProfileDTO dto);
+        Task UpdateUserProfile(Guid userId, UserUpdateProfileDTO dto);
     }
-
 }

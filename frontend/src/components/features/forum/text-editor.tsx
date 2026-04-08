@@ -8,7 +8,7 @@ import {
 import { Editor } from "@tinymce/tinymce-react";
 import type { AxiosError, AxiosProgressEvent } from "axios";
 import api from "@/api/api"; // Your API path
-import type { Message } from "@/types/common"; // Your types
+import type { ErrorMessage, Message } from "@/types/common"; // Your types
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider"; // Import your hook
 import { useCreatePost } from "@/api/forum";
@@ -127,17 +127,17 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
             if (res.data?.message) resolve(res.data.message);
             else reject("Invalid response from server");
           })
-          .catch((error: AxiosError<Message>) => {
+          .catch((error: AxiosError<ErrorMessage>) => {
             reject(
               "Image upload failed: " +
-                (error.response?.data?.message || error.message),
+              (error.response?.data?.message || error.message),
             );
           });
       });
     };
     return (
       <>
-        <div className="relative min-h-[400px]">
+        <div className="relative min-h-100">
           {isEditing && (
             <div className="mb-4 bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-yellow-700 dark:text-yellow-200 p-4 rounded shadow-sm animate-in fade-in duration-300">
               <p className="font-bold text-lg">Đang sửa bài viết</p>

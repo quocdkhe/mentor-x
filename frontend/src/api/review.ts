@@ -1,5 +1,5 @@
 import type { CreateReviewRequest, MentorReviewResponse } from "@/types/review";
-import type { Message } from "@/types/common";
+import type { ErrorMessage, Message } from "@/types/common";
 import type { PaginationDto } from "@/types/pagination";
 import type { AxiosError } from "axios";
 import {
@@ -10,7 +10,7 @@ import {
 import api from "./api";
 
 export function useCreateReview() {
-  return useMutation<Message, AxiosError<Message>, CreateReviewRequest>({
+  return useMutation<Message, AxiosError<ErrorMessage>, CreateReviewRequest>({
     mutationFn: async (
       reviewRequest: CreateReviewRequest,
     ): Promise<Message> => {
@@ -25,7 +25,10 @@ export function useGetMentorReviews(
   page: number = 1,
   pageSize: number = 5,
 ) {
-  return useQuery<PaginationDto<MentorReviewResponse>, AxiosError<Message>>({
+  return useQuery<
+    PaginationDto<MentorReviewResponse>,
+    AxiosError<ErrorMessage>
+  >({
     queryKey: ["mentor-reviews", mentorId, page, pageSize],
     queryFn: async () => {
       const res = await api.get<PaginationDto<MentorReviewResponse>>(
@@ -41,9 +44,14 @@ export function useGetMentorReviews(
 }
 
 export function useToggleUpvote<TContext = unknown>(
-  options?: UseMutationOptions<Message, AxiosError<Message>, string, TContext>,
+  options?: UseMutationOptions<
+    Message,
+    AxiosError<ErrorMessage>,
+    string,
+    TContext
+  >,
 ) {
-  return useMutation<Message, AxiosError<Message>, string, TContext>({
+  return useMutation<Message, AxiosError<ErrorMessage>, string, TContext>({
     mutationFn: async (reviewId: string): Promise<Message> => {
       const res = await api.post<Message>(`/reviews/${reviewId}/upvote`);
       return res.data;

@@ -31,12 +31,8 @@ namespace backend.Controllers
         public async Task<ActionResult<Message>> UpdateAvailabilities([FromBody] List<AvailabilityResponseDTO> availabilities)
         {
             var userId = User.GetUserId();
-            var serviceResult = await _bookingService.UpdateAvailabilities(userId, availabilities);
-            if (!serviceResult.Success)
-            {
-                return BadRequest(new { message = serviceResult.Message });
-            }
-            return Ok(new { message = "Cập nhật lịch khả dụng thành công" });
+            var result = await _bookingService.UpdateAvailabilities(userId, availabilities);
+            return Ok(result);
         }
     }
 }

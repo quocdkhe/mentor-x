@@ -33,12 +33,7 @@ namespace backend.Controllers
                 Type = dto.Type,
             };
             var result = await _forumService.CreateNewTopic(newTopic);
-            if (!result.Success)
-            {
-                return BadRequest(new Message(result.Message));
-            }
-
-            return Ok(result.Data);
+            return Ok(result);
         }
         
         [HttpGet("topics")]
@@ -66,23 +61,14 @@ namespace backend.Controllers
             };
         
             var result = await _forumService.CreateNewPost(newPost);
-            if (!result.Success)
-            {
-                return BadRequest(new Message(result.Message));
-            }
-        
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         [HttpGet("topics/{topicId}")]
         public async Task<ActionResult<ForumTopic>> GetPostById(Guid topicId)
         {
             var result = await _forumService.GetTopicById(topicId);
-            if (!result.Success)
-            {
-                return NotFound(new Message(result.Message));
-            }
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         [HttpPatch("topics/posts/{postId}")]
@@ -91,12 +77,7 @@ namespace backend.Controllers
         {
             var userId = User.GetUserId();
             var result = await _forumService.LikePost(postId, userId);
-            if (!result.Success)
-            {
-                return NotFound(result.Message);
-            }
-
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         [HttpDelete("topics/posts/{postId}")]
@@ -104,12 +85,7 @@ namespace backend.Controllers
         public async Task<ActionResult<Message>> DeletePost(Guid postId)
         {
             var result = await _forumService.DeletePost(postId);
-            if (!result.Success)
-            {
-                return NotFound(result.Message);
-            }
-            
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         [HttpPut("topics/posts/{postId}")]
@@ -117,11 +93,7 @@ namespace backend.Controllers
         public async Task<ActionResult<Message>> UpdatePostContent(CreatePostDto dto, Guid postId)
         {
             var result = await _forumService.UpdatePostContent(postId, dto.Content);
-            if (!result.Success)
-            {
-                return NotFound(result.Message);
-            }
-            return Ok(result.Data);
+            return Ok(result);
         }
     }
 }
