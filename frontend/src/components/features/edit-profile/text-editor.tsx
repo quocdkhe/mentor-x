@@ -8,7 +8,7 @@ import {
 import { Editor } from "@tinymce/tinymce-react";
 import type { AxiosError, AxiosProgressEvent } from "axios";
 import api from "@/api/api";
-import type { ErrorMessage } from "@/types/common";
+import type {ErrorMessage, Message} from "@/types/common";
 import { useTheme } from "@/components/theme-provider";
 import { Spinner } from "@/components/ui/spinner";
 
