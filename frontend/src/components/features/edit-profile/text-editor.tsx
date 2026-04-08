@@ -8,7 +8,7 @@ import {
 import { Editor } from "@tinymce/tinymce-react";
 import type { AxiosError, AxiosProgressEvent } from "axios";
 import api from "@/api/api";
-import type { Message } from "@/types/common";
+import type { ErrorMessage } from "@/types/common";
 import { useTheme } from "@/components/theme-provider";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -86,10 +86,10 @@ const ProfileTextEditor = forwardRef<
           if (res.data?.message) resolve(res.data.message);
           else reject("Invalid response from server");
         })
-        .catch((error: AxiosError<Message>) => {
+        .catch((error: AxiosError<ErrorMessage>) => {
           reject(
             "Image upload failed: " +
-              (error.response?.data?.message || error.message),
+            (error.response?.data?.message || error.message),
           );
         });
     });

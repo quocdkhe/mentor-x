@@ -8,7 +8,7 @@ import {
 import { Editor } from "@tinymce/tinymce-react";
 import type { AxiosError, AxiosProgressEvent } from "axios";
 import api from "@/api/api"; // Your API path
-import type { Message } from "@/types/common"; // Your types
+import type { ErrorMessage } from "@/types/common"; // Your types
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider"; // Import your hook
 import { useCreatePost } from "@/api/forum";
@@ -127,10 +127,10 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
             if (res.data?.message) resolve(res.data.message);
             else reject("Invalid response from server");
           })
-          .catch((error: AxiosError<Message>) => {
+          .catch((error: AxiosError<ErrorMessage>) => {
             reject(
               "Image upload failed: " +
-                (error.response?.data?.message || error.message),
+              (error.response?.data?.message || error.message),
             );
           });
       });

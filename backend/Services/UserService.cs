@@ -1,4 +1,5 @@
-﻿using backend.Models;
+﻿using backend.Middleware.Exceptions;
+using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.User;
 using backend.Services.Interfaces;
@@ -36,12 +37,12 @@ namespace backend.Services
             return entity;
         }
 
-        public async Task<bool> UpdateUserProfile(Guid userId, UserUpdateProfileDTO dto)
+        public async Task UpdateUserProfile(Guid userId, UserUpdateProfileDTO dto)
         {
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (currentUser == null)
             {
-                return false;
+                throw new NotFoundException("Không tìm thấy người dùng");
             }
             currentUser.Name = dto.Name;
             currentUser.Avatar = dto.Avatar;
@@ -51,15 +52,14 @@ namespace backend.Services
                 currentUser.Password = PasswordHashing.HashPassword(dto.Password);
             }
             await _context.SaveChangesAsync();
-            return true;
         }
 
-        public async Task<ServiceResult<bool>> CreateUser(AdminCreateUserDTO dto)
+        public async Task CreateUser(AdminCreateUserDTO dto)
         {
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
             if (existingUser != null)
             {
-                return ServiceResult<bool>.Fail("Email đã tồn tại.");
+                throw new ConflictException("Email đã tồn tại.");
             }
             var newUser = new User
             {
@@ -86,7 +86,6 @@ namespace backend.Services
                 _context.MentorProfiles.Add(mentorProfile);
             }
             await _context.SaveChangesAsync();
-            return ServiceResult<bool>.Ok(true, "Tạo người dùng thành công.");
         }
 
         public async Task<List<UserResponseDTO>> GetAllUsers()
@@ -104,19 +103,18 @@ namespace backend.Services
                 .ToListAsync();
         }
 
-        public async Task<ServiceResult<bool>> UpdateRole(UpdateRoleDTO dto)
+        public async Task UpdateRole(UpdateRoleDTO dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.Id);
             if (user == null)
             {
-                return ServiceResult<bool>.Fail("Người dùng không tồn tại.");
+                throw new NotFoundException("Người dùng không tồn tại.");
             }
             if (dto.Role != null)
             {
                 user.Role = dto.Role.Value;
             }
             await _context.SaveChangesAsync();
-            return ServiceResult<bool>.Ok(true, "Cập nhật vai trò thành công.");
         }
 
 

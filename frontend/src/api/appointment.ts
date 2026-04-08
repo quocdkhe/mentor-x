@@ -5,13 +5,13 @@ import type {
   MentorAppointmentDto,
   MentorScheduleDto,
 } from "@/types/appointment";
-import type { Message } from "@/types/common";
+import type { ErrorMessage, Message } from "@/types/common";
 import type { AxiosError } from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./api";
 
 export function useBooking() {
-  return useMutation<Message, AxiosError<Message>, BookingRequest>({
+  return useMutation<Message, AxiosError<ErrorMessage>, BookingRequest>({
     mutationFn: async (bookingRequest: BookingRequest): Promise<Message> => {
       const res = await api.post<Message>(`/appointments`, bookingRequest);
       return res.data;
@@ -20,7 +20,7 @@ export function useBooking() {
 }
 
 export function useMentorGetAppointments(dateISOString?: string) {
-  return useQuery<MentorAppointmentDto[], AxiosError<Message>>({
+  return useQuery<MentorAppointmentDto[], AxiosError<ErrorMessage>>({
     queryKey: ["mentor-appointments", dateISOString],
     queryFn: async () => {
       const res = await api.get<MentorAppointmentDto[]>(
@@ -37,7 +37,7 @@ export function useMentorGetAppointments(dateISOString?: string) {
 }
 
 export function useMenteeGetAppointments(dateISOString?: string) {
-  return useQuery<MenteeAppointmentDto[], AxiosError<Message>>({
+  return useQuery<MenteeAppointmentDto[], AxiosError<ErrorMessage>>({
     queryKey: ["mentee-appointments", dateISOString],
     queryFn: async () => {
       const res = await api.get<MenteeAppointmentDto[]>(
@@ -54,7 +54,7 @@ export function useMenteeGetAppointments(dateISOString?: string) {
 }
 
 export function useGetMentorSchedules(dateISOString: string, mentorId: string) {
-  return useQuery<MentorScheduleDto, AxiosError<Message>>({
+  return useQuery<MentorScheduleDto, AxiosError<ErrorMessage>>({
     queryKey: ["mentor-schedules", dateISOString, mentorId],
     queryFn: async () => {
       const res = await api.get<MentorScheduleDto>(
@@ -71,8 +71,15 @@ export function useGetMentorSchedules(dateISOString: string, mentorId: string) {
 }
 
 export function useAcceptAppointments() {
-  return useMutation<Message, AxiosError<Message>, { appointmentId: string, acceptAppointmentDto: AcceptAppointmentDto }>({
-    mutationFn: async ({ appointmentId, acceptAppointmentDto }): Promise<Message> => {
+  return useMutation<
+    Message,
+    AxiosError<ErrorMessage>,
+    { appointmentId: string; acceptAppointmentDto: AcceptAppointmentDto }
+  >({
+    mutationFn: async ({
+      appointmentId,
+      acceptAppointmentDto,
+    }): Promise<Message> => {
       const res = await api.post<Message>(
         `/appointments/${appointmentId}/accept`,
         acceptAppointmentDto,
@@ -83,7 +90,7 @@ export function useAcceptAppointments() {
 }
 
 export function useCancelAppointment() {
-  return useMutation<Message, AxiosError<Message>, string>({
+  return useMutation<Message, AxiosError<ErrorMessage>, string>({
     mutationFn: async (appointmentId: string): Promise<Message> => {
       const res = await api.post<Message>(
         `/appointments/${appointmentId}/cancel`,
@@ -95,7 +102,7 @@ export function useCancelAppointment() {
 }
 
 export function useCompleteAppointment() {
-  return useMutation<Message, AxiosError<Message>, string>({
+  return useMutation<Message, AxiosError<ErrorMessage>, string>({
     mutationFn: async (appointmentId: string): Promise<Message> => {
       const res = await api.post<Message>(
         `/appointments/${appointmentId}/complete`,
@@ -107,11 +114,9 @@ export function useCompleteAppointment() {
 }
 
 export function useDeleteAppointment() {
-  return useMutation<Message, AxiosError<Message>, string>({
+  return useMutation<Message, AxiosError<ErrorMessage>, string>({
     mutationFn: async (appointmentId: string): Promise<Message> => {
-      const res = await api.delete<Message>(
-        `/appointments/${appointmentId}`,
-      );
+      const res = await api.delete<Message>(`/appointments/${appointmentId}`);
       return res.data;
     },
   });

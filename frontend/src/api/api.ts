@@ -1,4 +1,4 @@
-import type { Message } from "@/types/common";
+import type { ErrorMessage } from "@/types/common";
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
 // Extend the Axios request config to include a retry flag
@@ -18,7 +18,7 @@ const api = axios.create({
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError<Message>) => {
+  async (error: AxiosError<ErrorMessage>) => {
     const originalRequest = error.config as CustomAxiosRequestConfig;
 
     // Check if:
@@ -51,7 +51,7 @@ api.interceptors.response.use(
 
     // If it's a 401 WITH a message, or any other error, just reject
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

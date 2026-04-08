@@ -2,11 +2,11 @@ import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "./api";
 import type { MentorInfo, MentorProfile, Skill } from "@/types/mentor";
-import type { Message } from "@/types/common";
+import type { ErrorMessage, Message } from "@/types/common";
 import type { PaginationDto } from "@/types/pagination";
 
 export function useGetSkills() {
-  return useQuery<Skill[], AxiosError<Message>>({
+  return useQuery<Skill[], AxiosError<ErrorMessage>>({
     queryKey: ["skills"],
     queryFn: async (): Promise<Skill[]> => {
       const res = await api.get<Skill[]>("/mentors/skills");
@@ -17,7 +17,7 @@ export function useGetSkills() {
 }
 
 export function useGetAllMentors() {
-  return useQuery<PaginationDto<MentorInfo>, AxiosError<Message>>({
+  return useQuery<PaginationDto<MentorInfo>, AxiosError<ErrorMessage>>({
     queryKey: ["mentors"],
     queryFn: async (): Promise<PaginationDto<MentorInfo>> => {
       const res = await api.get<PaginationDto<MentorInfo>>(
@@ -34,7 +34,7 @@ export function useInfiniteGetMentorCard(
   searchTerm?: string,
   skillId?: string,
 ) {
-  return useInfiniteQuery<PaginationDto<MentorInfo>, AxiosError<Message>>({
+  return useInfiniteQuery<PaginationDto<MentorInfo>, AxiosError<ErrorMessage>>({
     queryKey: ["mentors", "infinite", searchTerm, skillId],
     queryFn: async ({ pageParam = 1 }): Promise<PaginationDto<MentorInfo>> => {
       const res = await api.get<PaginationDto<MentorInfo>>("/mentors", {
@@ -56,7 +56,7 @@ export function useInfiniteGetMentorCard(
 }
 
 export function useGetMentorProfile(id: string) {
-  return useQuery<MentorInfo, AxiosError<Message>>({
+  return useQuery<MentorInfo, AxiosError<ErrorMessage>>({
     queryKey: ["mentor", id],
     queryFn: async (): Promise<MentorInfo> => {
       const res = await api.get<MentorInfo>(`/mentors/${id}`);
@@ -67,7 +67,7 @@ export function useGetMentorProfile(id: string) {
 }
 
 export function useGetCurrentMentorProfile() {
-  return useQuery<MentorProfile, AxiosError<Message>>({
+  return useQuery<MentorProfile, AxiosError<ErrorMessage>>({
     queryKey: ["current-mentor-profile"],
     queryFn: async (): Promise<MentorProfile> => {
       const res = await api.get<MentorProfile>("/mentors/profile");
@@ -94,7 +94,11 @@ export interface MentorRegistrationRequest {
 }
 
 export function useRegisterMentor() {
-  return useMutation<Message, AxiosError<Message>, MentorRegistrationRequest>({
+  return useMutation<
+    Message,
+    AxiosError<ErrorMessage>,
+    MentorRegistrationRequest
+  >({
     mutationFn: async (data): Promise<Message> => {
       const res = await api.post<Message>("/mentors/register", data);
       return res.data;
@@ -103,7 +107,7 @@ export function useRegisterMentor() {
 }
 
 export function usePatchUpdateMentorProfile() {
-  return useMutation<Message, AxiosError<Message>, MentorProfile>({
+  return useMutation<Message, AxiosError<ErrorMessage>, MentorProfile>({
     mutationFn: async (data): Promise<Message> => {
       const res = await api.patch<Message>(`/mentors/profile`, data);
       return res.data;
@@ -114,7 +118,7 @@ export function usePatchUpdateMentorProfile() {
 export function useGetPendingMentors() {
   return useQuery<
     PaginationDto<MentorInfo> | MentorInfo[],
-    AxiosError<Message>
+    AxiosError<ErrorMessage>
   >({
     queryKey: ["pending-mentors"],
     queryFn: async () => {
@@ -125,7 +129,7 @@ export function useGetPendingMentors() {
 }
 
 export function useApproveMentor() {
-  return useMutation<Message, AxiosError<Message>, string>({
+  return useMutation<Message, AxiosError<ErrorMessage>, string>({
     mutationFn: async (id): Promise<Message> => {
       const res = await api.post<Message>(`/mentors/${id}/approve`);
       return res.data;
@@ -136,7 +140,7 @@ export function useApproveMentor() {
 export function useToggleVerifyMentor() {
   return useMutation<
     Message,
-    AxiosError<Message>,
+    AxiosError<ErrorMessage>,
     { isVerified: boolean; mentorId: string }
   >({
     mutationFn: async ({ isVerified, mentorId }): Promise<Message> => {

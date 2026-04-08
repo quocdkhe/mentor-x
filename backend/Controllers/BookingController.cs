@@ -31,11 +31,7 @@ public class BookingController : ControllerBase
                                           "được trợ giúp"));
         }
         var result = await _bookingService.BookAnAppointment(userId, dto);
-        if (!result.Success)
-        {
-            return BadRequest(new Message(result.Message));
-        }
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpGet("/mentors/me/appointments")]
@@ -44,8 +40,7 @@ public class BookingController : ControllerBase
     {
         var mentorId = User.GetUserId();
         var result = await _bookingService.GetMentorAppointments(mentorId, date);
-        if (result.Success == false) return BadRequest(new Message(result.Message));
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpGet("/mentees/me/appointments")]
@@ -54,16 +49,14 @@ public class BookingController : ControllerBase
     {
         var menteeId = User.GetUserId();
         var result = await _bookingService.GetMenteeAppointments(menteeId, date);
-        if (result.Success == false) return BadRequest(new Message(result.Message));
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpGet("/mentors/{mentorId}/schedules")]
     public async Task<ActionResult<MentorScheduleDto>> GetMentorSchedules(Guid mentorId, [FromQuery] DateTime? date)
     {
         var result = await _bookingService.GetMentorSchedule(mentorId, date);
-        if (result.Success == false) return BadRequest(new Message(result.Message));
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpPost("appointments/{appointmentId}/accept")]
@@ -72,11 +65,7 @@ public class BookingController : ControllerBase
     {
         var mentorId = User.GetUserId();
         var result = await _bookingService.AcceptAppointment(mentorId, appointmentId, dto);
-        if (!result.Success)
-        {
-            return BadRequest(new Message(result.Message));
-        }
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpPost("appointments/{appointmentId}/cancel")]
@@ -85,11 +74,7 @@ public class BookingController : ControllerBase
     {
         var userId = User.GetUserId();
         var result = await _bookingService.CancelAppointment(userId, appointmentId);
-        if (!result.Success)
-        {
-            return BadRequest(new Message(result.Message));
-        }
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpPost("appointments/{appointmentId}/complete")]
@@ -98,11 +83,7 @@ public class BookingController : ControllerBase
     {
         var mentorId = User.GetUserId();
         var result = await _bookingService.CompleteAppointment(mentorId, appointmentId);
-        if (!result.Success)
-        {
-            return BadRequest(new Message(result.Message));
-        }
-        return Ok(result.Data);
+        return Ok(result);
     }
 
     [HttpDelete("appointments/{appointmentId}")]
@@ -111,10 +92,6 @@ public class BookingController : ControllerBase
     {
         var menteeId = User.GetUserId();
         var result = await _bookingService.DeleteAppointment(menteeId, appointmentId);
-        if (!result.Success)
-        {
-            return BadRequest(new Message(result.Message));
-        }
-        return Ok(result.Data);
+        return Ok(result);
     }
 }
