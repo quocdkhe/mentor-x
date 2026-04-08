@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { LoadingPage } from "@/components/loading-page";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const App = () => {
   const { isLoading } = useSelector((state: RootState) => state.auth);
@@ -22,7 +23,9 @@ const App = () => {
     <>
       <ThemeProvider storageKey="vite-ui-theme">
         <HeadContent />
-        <Outlet />
+        <TooltipProvider>
+          <Outlet />
+        </TooltipProvider>
         <Toaster position="top-center" richColors />
       </ThemeProvider>
     </>

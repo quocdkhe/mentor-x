@@ -1,4 +1,4 @@
-import { GraduationCap, Twitter, Linkedin, Github } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 const footerLinks = {
@@ -40,11 +40,7 @@ const footerLinks = {
   },
 };
 
-const socialLinks = [
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: Github, href: "#", label: "GitHub" },
-];
+
 
 export function Footer() {
   return (
@@ -61,16 +57,6 @@ export function Footer() {
               khai phá hết tiềm năng của họ.
             </p>
             <div className="flex gap-4">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  className="flex items-center justify-center h-10 w-10 rounded-full bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-                  aria-label={social.label}
-                >
-                  <social.icon className="h-5 w-5" />
-                </a>
-              ))}
             </div>
           </div>
 
