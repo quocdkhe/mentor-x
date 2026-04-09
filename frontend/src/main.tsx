@@ -36,7 +36,6 @@ if (import.meta.env.PROD) {
   document.head.appendChild(script2);
 }
 
-
 // Dispatch fetchCurrentUser BEFORE rendering to avoid race condition with route guards
 store.dispatch(fetchCurrentUser())
 
