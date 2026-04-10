@@ -425,7 +425,7 @@ function MenteeSchedulesPage() {
 
                 {/* Time and Date */}
                 <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-3 text-center space-y-1">
-                  <div className="text-2xl font-bold text-primary">
+                  <div className="text-2xl font-bold">
                     {format(new Date(appointment.startAt), "HH:mm")} -{" "}
                     {format(new Date(appointment.endAt), "HH:mm")}
                   </div>

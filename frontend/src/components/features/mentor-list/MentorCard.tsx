@@ -24,7 +24,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
       params={{ mentorId: mentor.userId }}
       className="block h-full"
     >
-      <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 group p-0 rounded-2xl">
+      <Card className="h-full overflow-hidden hover:shadow-xl hover:border-primary transition-all duration-300 group p-0 rounded-2xl border border-transparent">
         {/* Avatar Section */}
         <div className="relative">
           <img
@@ -37,22 +37,20 @@ export function MentorCard({ mentor }: MentorCardProps) {
         {/* Content Section */}
         <div className="p-4 pt-3">
           {/* Name */}
-          <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors flex items-center gap-2">
+          <h3 className="font-bold text-lg mb-2 transition-colors flex items-center gap-2">
             <span className="flex items-center gap-1">
               {mentor.name}
               {mentor.isVerified && (
                 <CheckCircle2 className="w-5 h-5 text-primary" />
               )}
             </span>
-            {mentor.hasMet && (
-              <Badge
-                variant="secondary"
-                className="text-xs px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400"
-              >
-                Đã học
-              </Badge>
-            )}
           </h3>
+
+          {mentor.hasMet && (
+            <Badge variant="outline" className="mb-2">
+              Đã học
+            </Badge>
+          )}
 
           {/* Position at Company */}
           <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
@@ -70,7 +68,6 @@ export function MentorCard({ mentor }: MentorCardProps) {
                 <Badge
                   key={index}
                   variant="secondary"
-                  className="text-xs px-2 py-0.5 bg-primary/10 text-primary hover:bg-primary/20"
                 >
                   {skill}
                 </Badge>
@@ -78,9 +75,9 @@ export function MentorCard({ mentor }: MentorCardProps) {
               {mentor.skills.length > 3 && (
                 <Badge
                   variant="secondary"
-                  className="text-xs px-2 py-0.5 bg-muted text-muted-foreground"
                 >
                   +{mentor.skills.length - 3}
+
                 </Badge>
               )}
             </div>
