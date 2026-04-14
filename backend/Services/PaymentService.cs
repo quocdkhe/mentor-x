@@ -65,6 +65,13 @@ namespace backend.Services
 
         public async Task<bool> VerifyPayment(BookingRequestDto dto)
         {
+            // Skip API call in development environment
+            var environment = _configuration["ASPNETCORE_ENVIRONMENT"];
+            if (environment == "Development")
+            {
+                return true;
+            }
+
             // todo: calculate price
             var mentor = await _context.MentorProfiles.Include(mp => mp.User)
                 .FirstOrDefaultAsync(mp => mp.UserId == dto.MentorId);

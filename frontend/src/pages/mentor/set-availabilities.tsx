@@ -259,7 +259,7 @@ const SetAvailabilities = () => {
                                     onCheckedChange={() =>
                                       toggleSlot(dayOfWeek, index)
                                     }
-                                    className="data-[state=checked]:bg-green-500"
+                                    className="data-[state=checked]:bg-primary"
                                   />
                                 </div>
 
@@ -349,7 +349,7 @@ const SetAvailabilities = () => {
                         <div className="pt-1">
                           <Button
                             variant="ghost"
-                            className="flex items-center gap-1.5 text-primary hover:text-primary hover:bg-primary/10 px-2 py-1 h-auto"
+                            className="flex items-center gap-1.5 hover:bg-primary/10 px-2 py-1 h-auto"
                             onClick={() => addSlot(dayOfWeek)}
                           >
                             <Plus className="h-4 w-4" />
@@ -363,7 +363,7 @@ const SetAvailabilities = () => {
                       <div className="flex-1 w-full">
                         <Button
                           variant="ghost"
-                          className="flex items-center gap-1.5 text-primary hover:text-primary hover:bg-primary/10 px-2 py-1 h-auto"
+                          className="flex items-center gap-1.5 hover:bg-primary/10 px-2 py-1 h-auto"
                           onClick={() => addSlot(dayOfWeek)}
                         >
                           <Plus className="h-4 w-4" />

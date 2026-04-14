@@ -200,6 +200,7 @@ const MentorProfilePage = () => {
                       </Avatar>
                     </div>
                   </div>
+                  
 
                   {/* Profile Info */}
                   <div className="flex-1 text-center sm:text-left">
@@ -213,6 +214,19 @@ const MentorProfilePage = () => {
                             <CheckCircle2 className="w-5 h-5 text-primary" />
                           )}
                         </div>
+
+                        <div className="flex items-center gap-1.5 mt-2 mb-2">
+                          {mentor.isVerified && (
+                            <Badge
+                              variant="secondary"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span className="text-xs font-semibold">
+                                Được kiểm duyệt bởi MentorX
+                              </span>
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-lg text-muted-foreground font-medium">
                           {mentor.position} tại {mentor.company}
                         </p>
@@ -223,13 +237,11 @@ const MentorProfilePage = () => {
 
                         {/* Study hours badge - using primary color */}
                         {user && mentor.meetingHours > 0 && (
-                          <div className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-primary shadow-sm">
-                            <Clock className="w-5 h-5" />
-                            <span className="font-bold text-sm">
-                              Bạn đã học {mentor.meetingHours.toFixed(1)} giờ
-                              cùng Mentor này
-                            </span>
-                          </div>
+                          <Badge variant="secondary" className="mt-3">
+                            <Clock className="w-4 h-4 mr-1" />
+                            Bạn đã học {mentor.meetingHours.toFixed(1)} giờ
+                            cùng Mentor này
+                          </Badge>
                         )}
                       </div>
                     </div>
@@ -245,21 +257,6 @@ const MentorProfilePage = () => {
                         Phản hồi trong 2 giờ
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-1.5 mt-4">
-                      {mentor.isVerified && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1.5 px-3 py-1 rounded-full"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span className="text-xs font-semibold">
-                            Được kiểm duyệt bởi MentorX
-                          </span>
-                        </Badge>
-                      )}
-                    </div>
-
                     {/* Rating */}
                     <div className="flex items-center justify-center sm:justify-start gap-2 mt-4">
                       <div className="flex text-orange-400">
@@ -268,7 +265,7 @@ const MentorProfilePage = () => {
                       <span className="font-bold text-lg">
                         {mentor.avgRating.toFixed(1)}
                       </span>
-                      <span className="text-muted-foreground text-sm underline cursor-pointer hover:text-primary">
+                      <span className="text-muted-foreground text-sm underline cursor-pointer">
                         ({mentor.totalRatings} đánh giá)
                       </span>
                     </div>
@@ -287,7 +284,7 @@ const MentorProfilePage = () => {
                   onClick={() => scrollToSection("about")}
                   className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
                     activeSection === "about"
-                      ? "bg-primary/10 text-primary shadow-sm dark:bg-primary/20 border-primary/20"
+                      ? "bg-primary/10 shadow-sm dark:bg-primary/20 border-primary/20"
                       : "hover:text-foreground text-muted-foreground"
                   }`}
                 >
@@ -297,7 +294,7 @@ const MentorProfilePage = () => {
                   onClick={() => scrollToSection("availability")}
                   className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
                     activeSection === "availability"
-                      ? "bg-primary/10 text-primary shadow-sm dark:bg-primary/20 border-primary/20"
+                      ? "bg-primary/10 shadow-sm dark:bg-primary/20 border-primary/20"
                       : "hover:text-foreground text-muted-foreground"
                   }`}
                 >
@@ -307,7 +304,7 @@ const MentorProfilePage = () => {
                   onClick={() => scrollToSection("reviews")}
                   className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
                     activeSection === "reviews"
-                      ? "bg-primary/10 text-primary shadow-sm dark:bg-primary/20 border-primary/20"
+                      ? "bg-primary/10 shadow-sm dark:bg-primary/20 border-primary/20"
                       : "hover:text-foreground text-muted-foreground"
                   }`}
                 >
@@ -330,18 +327,13 @@ const MentorProfilePage = () => {
                     <div className="space-y-8 pt-6 border-t">
                       {/* Skills */}
                       <div>
-                        <div className="flex items-center gap-2 mb-4 text-primary">
+                        <div className="flex items-center gap-2 mb-4">
                           <Brain className="w-5 h-5" />
                           <h3 className="font-bold">Kỹ năng</h3>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {mentor.skills.map((skill, idx) => (
-                            <Badge
-                              key={idx}
-                              className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-lg text-sm font-medium hover:bg-primary/20"
-                            >
-                              {skill}
-                            </Badge>
+                            <Badge variant="default" key={idx}>{skill}</Badge>
                           ))}
                         </div>
                       </div>
@@ -366,8 +358,8 @@ const MentorProfilePage = () => {
                           >
                             <div className="h-6 w-24 bg-muted rounded" />
                             <div className="flex gap-2 flex-1">
-                              <div className="h-8 w-32 bg-muted rounded-full" />
-                              <div className="h-8 w-32 bg-muted rounded-full" />
+                              <Badge className="h-8 w-32 bg-muted animate-pulse" />
+                              <Badge className="h-8 w-32 bg-muted animate-pulse" />
                             </div>
                           </div>
                         ))}
@@ -440,10 +432,7 @@ const MentorProfilePage = () => {
                                 {availabilityByDay
                                   .get(dayOfWeek)!
                                   .map((slot, idx) => (
-                                    <Badge
-                                      key={idx}
-                                      className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-medium hover:bg-primary/20"
-                                    >
+                                    <Badge key={idx}>
                                       {formatTime(slot.startTime)} -{" "}
                                       {formatTime(slot.endTime)}
                                     </Badge>
@@ -599,7 +588,7 @@ const MentorProfilePage = () => {
                 <CardContent className="p-6 sm:p-8">
                   {/* Price */}
                   <div className="text-center mb-8">
-                    <div className="flex items-center justify-center text-primary font-bold">
+                    <div className="flex items-center justify-center font-bold">
                       <span className="text-3xl mr-1">
                         {formatPrice(mentor.pricePerHour)}
                       </span>

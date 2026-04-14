@@ -87,7 +87,7 @@ function StepProgress({ currentStep }: { currentStep: BookingStep }) {
               <span
                 className={cn(
                   "text-xs mt-1 font-medium",
-                  isCurrent && "text-primary",
+                  isCurrent && "",
                   !isCurrent && "text-muted-foreground",
                 )}
               >
@@ -484,7 +484,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
 
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <CalendarIcon className="w-5 h-5 text-primary mt-0.5" />
+                <CalendarIcon className="w-5 h-5 mt-0.5" />
                 <div>
                   <p className="text-sm text-muted-foreground">Thời gian</p>
                   <p className="font-medium">
@@ -499,7 +499,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
               </div>
 
               <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-primary mt-0.5" />
+                <Clock className="w-5 h-5 mt-0.5" />
                 <div>
                   <p className="text-sm text-muted-foreground">Thời lượng</p>
                   <p className="font-medium">{duration} phút</p>
@@ -507,7 +507,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
               </div>
 
               <div className="flex items-start gap-3 pt-3 border-t">
-                <div className="w-5 h-5 flex items-center justify-center text-primary">
+                <div className="w-5 h-5 flex items-center justify-center">
                   <svg
                     className="w-5 h-5"
                     fill="none"
@@ -524,7 +524,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Tổng cộng</p>
-                  <p className="font-bold text-xl text-primary">
+                  <p className="font-bold text-xl">
                     {new Intl.NumberFormat("vi-VN").format(
                       Math.round((duration / 60) * mentor.pricePerHour),
                     )}{" "}
@@ -808,7 +808,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
                             "bg-primary dark:bg-primary hover:bg-primary dark:hover:bg-primary text-primary-foreground hover:text-primary-foreground border-primary shadow-md ring-2 ring-primary ring-offset-2 ring-offset-background";
                         } else if (status === "in-range") {
                           btnClass =
-                            "bg-primary/20 dark:bg-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary dark:text-primary hover:text-primary dark:hover:text-primary border-primary/30 dark:border-primary/40";
+                            "bg-primary/20 dark:bg-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary dark:text-muted-foreground dark:text-muted-foreground border-primary/30 dark:border-primary/40";
                         }
 
                         return (
@@ -842,7 +842,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
                 {duration > 0 ? `${duration} phút` : "0 phút"})
               </h4>
               <div className="flex items-center gap-2 text-xl font-bold text-foreground">
-                <Clock className="w-5 h-5 text-primary" />
+                <Clock className="w-5 h-5" />
                 {startRange ? (
                   <span>
                     {startRange.time}
@@ -866,7 +866,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
               {/* Calculate total price */}
               <div className="mt-2 text-sm">
                 <span className="text-muted-foreground">Tổng chi phí: </span>
-                <span className="font-bold text-primary">
+                <span className="font-bold">
                   {new Intl.NumberFormat("vi-VN").format(
                     Math.round((duration / 60) * mentor.pricePerHour),
                   )}{" "}
@@ -924,7 +924,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
       direction="right"
       dismissible={false}
     >
-      <DrawerContent className="inset-0 max-h-screen h-screen w-screen flex flex-col">
+      <DrawerContent fullScreen className="flex flex-col">
         <VisuallyHidden.Root>
           <DrawerTitle>Đặt lịch với {mentor.name}</DrawerTitle>
           <DrawerDescription>
