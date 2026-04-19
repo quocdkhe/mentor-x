@@ -31,7 +31,9 @@ export function ThemeProvider({
     if (stored === "dark" || stored === "light") {
       return stored;
     }
-    // Default to system preference
+    // Use defaultTheme if no stored value, then fallback to system preference
+    if (defaultTheme) return defaultTheme;
+
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";

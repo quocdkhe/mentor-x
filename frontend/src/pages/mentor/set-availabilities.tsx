@@ -37,6 +37,7 @@ const SetAvailabilities = () => {
   // Load availability data from backend when it's available
   useEffect(() => {
     if (availabilityData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSlots(availabilityData);
       setInitialSlots(availabilityData);
     }

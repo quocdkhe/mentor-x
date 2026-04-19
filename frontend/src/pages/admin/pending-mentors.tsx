@@ -62,7 +62,8 @@ function PendingMentors() {
   // Handle case where API might return PaginationDto or Array
   const mentorList = Array.isArray(mentors)
     ? mentors
-    : (mentors as any).items || [];
+    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mentors as any).items || [];
 
   return (
     <div className="space-y-6">
