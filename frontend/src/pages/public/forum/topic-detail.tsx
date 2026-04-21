@@ -23,12 +23,15 @@ import {
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { USER_ROLES } from "@/types/user";
+import { useAppDispatch } from "@/store/hooks";
+import { openLoginModal } from "@/store/modal.slice";
 
 export function TopicDetail() {
   const textEditorRef = useRef<TextEditorHandle>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
   const route = user?.role === USER_ROLES.USER ? getRouteApi('/user/forum/topic/$topicId') : getRouteApi('/public/forum/topic/$topicId');
   const { topicId } = route.useParams();
@@ -167,10 +170,8 @@ export function TopicDetail() {
           />
         ) : (
           <div className="flex items-center justify-end">
-            <Button asChild>
-              <Link to="/login">
-                Đăng nhập để bình luận
-              </Link>
+            <Button onClick={() => dispatch(openLoginModal())}>
+              Đăng nhập để bình luận
             </Button>
           </div>
         )}
