@@ -2,6 +2,7 @@ import {
   createRootRoute,
   createRouter,
   createRoute,
+  redirect,
 } from "@tanstack/react-router";
 import { userRouteTree } from "./user.router";
 import App from "@/App";
@@ -15,28 +16,24 @@ export const rootRoute = createRootRoute({
   component: App,
 });
 
-// login route
+// login route — redirect to home (login is now a modal)
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "login",
   beforeLoad: async () => {
     await redirectIfAuthenticated();
+    throw redirect({ to: "/" });
   },
-  head: () => ({
-    meta: [{ title: "MentorX - Đăng nhập" }],
-  }),
-}).lazy(() => import("@/pages/public/login").then((d) => d.Route));
+});
 
 const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "register",
   beforeLoad: async () => {
     await redirectIfAuthenticated();
+    throw redirect({ to: "/" });
   },
-  head: () => ({
-    meta: [{ title: "MentorX - Đăng ký" }],
-  }),
-}).lazy(() => import("@/pages/public/register.tsx").then((d) => d.Route));
+});
 
 const routeTree = rootRoute.addChildren([
   userRouteTree,

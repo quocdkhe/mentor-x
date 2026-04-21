@@ -55,7 +55,7 @@ export const requireAuth = async () => {
 
   if (!user) {
     throw redirect({
-      to: "/login",
+      to: "/",
     });
   }
 
@@ -72,7 +72,7 @@ export const requireRole = async (allowedRole: UserRole) => {
 
   if (!user) {
     throw redirect({
-      to: "/login",
+      to: "/",
     });
   }
 

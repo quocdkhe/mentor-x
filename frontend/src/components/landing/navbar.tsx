@@ -10,13 +10,15 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { Skeleton } from "../ui/skeleton";
 import { USER_ROLES } from "@/types/user";
+import { openLoginModal, openRegisterModal } from "@/store/modal.slice";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoading } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const headerRef = useRef<HTMLElement>(null);
 
@@ -84,11 +86,11 @@ export function Navbar() {
             <Button onClick={navigationBasedOnRole}>Trang của tôi</Button>
           ) : (
             <>
-              <Button variant="ghost">
-                <Link to="/login">Đăng nhập</Link>
+              <Button variant="ghost" onClick={() => dispatch(openLoginModal())}>
+                Đăng nhập
               </Button>
-              <Button>
-                <Link to="/register">Bắt đấu</Link>
+              <Button onClick={() => dispatch(openRegisterModal())}>
+                Bắt đấu
               </Button>
             </>
           )}
@@ -126,11 +128,11 @@ export function Navbar() {
                   <Skeleton className="h-10 w-full rounded-md" />
                 ) : user == null ? (
                   <div className="flex flex-col gap-2 mt-4">
-                    <Button variant="outline" className="w-full">
-                      <Link to="/login">Đăng nhập</Link>
+                    <Button variant="outline" className="w-full" onClick={() => { setIsOpen(false); dispatch(openLoginModal()); }}>
+                      Đăng nhập
                     </Button>
-                    <Button className="w-full">
-                      <Link to="/register">Bắt đầu</Link>
+                    <Button className="w-full" onClick={() => { setIsOpen(false); dispatch(openRegisterModal()); }}>
+                      Bắt đầu
                     </Button>
                   </div>
                 ) : (

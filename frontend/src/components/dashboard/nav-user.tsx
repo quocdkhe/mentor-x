@@ -40,7 +40,7 @@ export function NavUser() {
     logoutMutation.mutate(undefined,
       {
         onSuccess: (data) => {
-          navigate({ to: '/login' });
+          navigate({ to: '/' });
           toast.success(data.message);
           dispatch(setUser(null));
           queryClient.removeQueries({ queryKey: ["current-user"] })

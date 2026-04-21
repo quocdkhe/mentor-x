@@ -40,6 +40,8 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { USER_ROLES } from "@/types/user";
 import { shortVietnameseName } from "@/utils/short-name-converter";
+import { useAppDispatch } from "@/store/hooks";
+import { openLoginModal } from "@/store/modal.slice";
 
 interface BookingDrawerProps {
   isOpen: boolean;
@@ -130,6 +132,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
     useGetMentorSchedules(convertDateToUTC(selectedDate), mentor.userId);
   const bookingMutation = useBooking();
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
 
@@ -893,11 +896,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
                 </Button>
               ) : (
                 <Button
-                  onClick={() =>
-                    navigate({
-                      to: "/login",
-                    })
-                  }
+                  onClick={() => dispatch(openLoginModal())}
                 >
                   Đăng nhập để đặt lịch
                 </Button>

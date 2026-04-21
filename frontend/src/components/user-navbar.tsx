@@ -23,6 +23,7 @@ import { setUser } from "@/store/auth.slice";
 import { useQueryClient } from "@tanstack/react-query";
 import { GraduationCap, LogOut } from "lucide-react";
 import { getInitials } from "@/lib/utils";
+import { openLoginModal, openRegisterModal } from "@/store/modal.slice";
 
 // Hamburger icon
 const HamburgerIcon = () => (
@@ -71,7 +72,7 @@ export default function SimpleNavbar() {
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: (data) => {
-        navigate({ to: "/login" });
+        navigate({ to: "/" });
         toast.success(data.message);
         dispatch(setUser(null));
         queryClient.removeQueries({ queryKey: ["current-user"] });
@@ -181,12 +182,16 @@ export default function SimpleNavbar() {
             </div>
           ) : user == null ? (
             <>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/login">Đăng nhập</Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => dispatch(openLoginModal())}
+              >
+                Đăng nhập
               </Button>
               <Button
                 size="sm"
-                onClick={() => console.log("Get Started clicked")}
+                onClick={() => dispatch(openRegisterModal())}
               >
                 Bắt đầu
               </Button>
