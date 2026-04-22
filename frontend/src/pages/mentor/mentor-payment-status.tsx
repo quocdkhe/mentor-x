@@ -130,10 +130,15 @@ export default function MentorPaymentStatus() {
 
 										{/* Status */}
 										<TableCell>
-											{payment.isPaid ? (
+											{payment.mentorPaidAt ? (
 												<Badge variant="default">Đã thanh toán</Badge>
 											) : (
 												<Badge variant="outline">Chưa thanh toán</Badge>
+											)}
+											{payment.userPaidAt && !payment.mentorPaidAt && (
+												<p className="text-xs text-muted-foreground mt-1">
+													HV đã TT • chờ giải ngân
+												</p>
 											)}
 										</TableCell>
 									</TableRow>

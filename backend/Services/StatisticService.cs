@@ -12,12 +12,14 @@ public class StatisticService : IStatisticService
     {
         _context = context;
     }
+
     public async Task<List<PaymentStatusDto>> GetAllPaymentStatus(Guid? mentorId)
     {
         var query = _context.Appointments
             .Include(a => a.Mentor)
                 .ThenInclude(m => m.MentorProfile)
             .Include(a => a.Mentee)
+            .Include(a => a.Payment)
             .AsQueryable();
 
         if (mentorId != null)
@@ -39,19 +41,39 @@ public class StatisticService : IStatisticService
                 PricePerHour = a.Mentor.MentorProfile.PricePerHour,
                 StartAt = a.StartAt,
                 EndAt = a.EndAt,
-                IsPaid = a.IsPaid,
+                UserPaidAt = a.Payment != null ? a.Payment.UserPaidAt : null,
+                MentorPaidAt = a.Payment != null ? a.Payment.MentorPaidAt : null,
+                PaymentCode = a.Payment != null ? a.Payment.PaymentCode : null,
                 BankAccountNumber = a.Mentor.MentorProfile.BankAccountNumber,
                 BankName = a.Mentor.MentorProfile.BankName
             }).ToListAsync();
     }
 
-    public async Task MarkAppointmentIsPaid(Guid appointmentId)
+    /// <summary>Admin marks that the platform has paid out to the mentor.</summary>
+    public async Task MarkMentorPaid(Guid appointmentId)
     {
-        var appointment = await _context.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
-        if (appointment != null)
+        var payment = await _context.AppointmentPayments
+            .FirstOrDefaultAsync(p => p.AppointmentId == appointmentId);
+        if (payment != null)
         {
-            appointment.IsPaid = true;
+            payment.MentorPaidAt = DateTime.UtcNow;
+            payment.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>Records that the user (mentee) has paid. Called after Sepay verification.</summary>
+    public async Task MarkUserPaid(Guid appointmentId, string? paymentCode)
+    {
+        var payment = await _context.AppointmentPayments
+            .FirstOrDefaultAsync(p => p.AppointmentId == appointmentId);
+        if (payment != null)
+        {
+            payment.UserPaidAt = DateTime.UtcNow;
+            payment.PaymentCode = paymentCode;
+            payment.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
     }
 }
+

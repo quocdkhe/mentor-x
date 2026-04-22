@@ -22,11 +22,21 @@ namespace backend.Controllers
             return Ok(result);
         }
 
-        [HttpPatch("statistics/mark-paid/{appointmentId}")]
-        public async Task<ActionResult> MarkAppointmentIsPaid(Guid appointmentId)
+        /// <summary>Admin marks that the platform has transferred money to the mentor.</summary>
+        [HttpPatch("statistics/mark-mentor-paid/{appointmentId}")]
+        public async Task<ActionResult> MarkMentorPaid(Guid appointmentId)
         {
-            await _statisticService.MarkAppointmentIsPaid(appointmentId);
+            await _statisticService.MarkMentorPaid(appointmentId);
+            return Ok();
+        }
+
+        /// <summary>Records that the user (mentee) has paid the platform.</summary>
+        [HttpPatch("statistics/mark-user-paid/{appointmentId}")]
+        public async Task<ActionResult> MarkUserPaid(Guid appointmentId, [FromQuery] string? paymentCode)
+        {
+            await _statisticService.MarkUserPaid(appointmentId, paymentCode);
             return Ok();
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using backend.Middleware.Exceptions;
+using backend.Middleware.Exceptions;
 using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Booking;
@@ -123,17 +123,29 @@ namespace backend.Services
             }
             
 
-            await _context.Appointments.AddAsync(
-                new Appointment
-                {
-                    MenteeId = menteeId,
-                    MentorId = dto.MentorId,
-                    StartAt = dto.StartAt,
-                    EndAt = dto.EndAt,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                });
+            var appointment = new Appointment
+            {
+                MenteeId = menteeId,
+                MentorId = dto.MentorId,
+                StartAt = dto.StartAt,
+                EndAt = dto.EndAt,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _context.Appointments.AddAsync(appointment);
             await _context.SaveChangesAsync();
+
+            // Eagerly create the payment record (all nulls) so downstream queries
+            // always have a row to update without null-checks on the table side.
+            await _context.AppointmentPayments.AddAsync(new AppointmentPayment
+            {
+                AppointmentId = appointment.Id,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
             return new Message("Đặt lịch thành công, vui lòng chuyển đến trang lịch học của tôi");
         }
 

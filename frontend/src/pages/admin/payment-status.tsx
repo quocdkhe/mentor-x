@@ -1,7 +1,7 @@
 import { createLazyRoute } from "@tanstack/react-router";
 import {
   useGetListPaymentStatus,
-  useMarkAppointmentIsPaid,
+  useMarkMentorPaid,
 } from "@/api/statistic";
 import {
   Table,
@@ -35,7 +35,7 @@ export default function PaymentStatus() {
   const queryClient = useQueryClient();
   // For admin, we fetch all payment statuses by passing an empty string
   const { data: payments = [], isLoading } = useGetListPaymentStatus("");
-  const markPaidMutation = useMarkAppointmentIsPaid();
+  const markPaidMutation = useMarkMentorPaid();
 
   const calculatePayment = (
     start: string,
@@ -87,8 +87,9 @@ export default function PaymentStatus() {
               <TableHead>Học viên</TableHead>
               <TableHead>Thời gian</TableHead>
               <TableHead>Ngân hàng nhận</TableHead>
+              <TableHead>Học viên đã thanh toán</TableHead>
               <TableHead>Số tiền cần thanh toán</TableHead>
-              <TableHead>Hành động</TableHead>
+              <TableHead>Hành động (Admin → Mentor)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -186,6 +187,24 @@ export default function PaymentStatus() {
                       </div>
                     </TableCell>
 
+                    {/* User payment status */}
+                    <TableCell>
+                      <div className="flex flex-col">
+                        {payment.userPaidAt ? (
+                          <span className="text-xs font-medium text-green-600">
+                            ✓ {new Date(payment.userPaidAt).toLocaleString("vi-VN")}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Chưa thanh toán</span>
+                        )}
+                        {payment.paymentCode && (
+                          <span className="text-xs text-muted-foreground">
+                            Mã: {payment.paymentCode}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+
                     {/* Price calculation */}
                     <TableCell>
                       <div className="flex flex-col">
@@ -195,9 +214,9 @@ export default function PaymentStatus() {
                       </div>
                     </TableCell>
 
-                    {/* Action */}
+                    {/* Action: admin → mentor payout */}
                     <TableCell>
-                      {payment.isPaid ? (
+                      {payment.mentorPaidAt ? (
                         <Button variant="outline" size="sm" disabled>
                           Đã thanh toán
                         </Button>
