@@ -252,7 +252,6 @@ function MenteeSchedulesPage() {
             date ? convertDateToUTC(date) : undefined,
           ],
         });
-        queryClient.invalidateQueries({ queryKey: ["appointment-payment-detail"] });
         queryClient.invalidateQueries({ queryKey: ["payment-status"] });
         toast.success(data.message);
         setPaymentDialog({ open: false, appointmentId: "" });
