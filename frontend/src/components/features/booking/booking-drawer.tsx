@@ -488,8 +488,9 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
     if (!startRange || !endRange) return null;
 
     const amount = Math.round((duration / 60) * mentor.pricePerHour);
+    const transferInfo = paymentCode ? `MENTORX ${paymentCode}` : "";
     const qrUrl = `https://img.vietqr.io/image/tpbank-00000117197-compact2.jpg?amount=${amount}&addInfo=${encodeURIComponent(
-      paymentCode ?? "",
+      transferInfo,
     )}&accountName=mentor%20x`;
 
     return (

@@ -31,6 +31,10 @@ export function AppointmentPaymentDialog({
   isVerifying,
   onVerifyPayment,
 }: AppointmentPaymentDialogProps) {
+  const transferInfo = paymentDetail?.paymentCode
+    ? `MENTORX ${paymentDetail.paymentCode}`
+    : "";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl">
@@ -140,7 +144,7 @@ export function AppointmentPaymentDialog({
               <div className="mb-4 flex items-center justify-center overflow-hidden rounded-lg bg-white p-6 shadow-lg">
                 <img
                   src={`https://img.vietqr.io/image/tpbank-00000117197-compact2.jpg?amount=${paymentDetail.amount}&addInfo=${encodeURIComponent(
-                    paymentDetail.paymentCode,
+                    transferInfo,
                   )}&accountName=mentor%20x`}
                   alt="Mã QR thanh toán"
                   className="h-68 w-55 object-cover scale-x-125 scale-y-120"
