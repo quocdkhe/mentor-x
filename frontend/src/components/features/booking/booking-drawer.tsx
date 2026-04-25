@@ -20,7 +20,11 @@ import {
 } from "lucide-react";
 import { cn, convertDateToUTC } from "@/lib/utils";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { useBooking, useGetMentorSchedules } from "@/api/appointment";
+import {
+  useBooking,
+  useGetMentorSchedules,
+  useVerifyAppointmentPayment,
+} from "@/api/appointment";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
@@ -39,7 +43,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { USER_ROLES } from "@/types/user";
-import { shortVietnameseName } from "@/utils/short-name-converter";
 import { useAppDispatch } from "@/store/hooks";
 import { openLoginModal } from "@/store/modal.slice";
 
@@ -126,11 +129,14 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
   const [endRange, setEndRange] = useState<{ date: Date; time: string } | null>(
     null,
   );
+  const [paymentCode, setPaymentCode] = useState<string | null>(null);
+  const [appointmentId, setAppointmentId] = useState<string | null>(null);
 
   // Fetch mentor schedules for the selected date
   const { data: scheduleData, isLoading: isLoadingSchedules } =
     useGetMentorSchedules(convertDateToUTC(selectedDate), mentor.userId);
   const bookingMutation = useBooking();
+  const verifyPaymentMutation = useVerifyAppointmentPayment();
   const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -329,6 +335,13 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
 
   // Handle slot click
   const handleSlotClick = (time: string, blockIdx: number) => {
+    if (paymentCode) {
+      setPaymentCode(null);
+    }
+    if (appointmentId) {
+      setAppointmentId(null);
+    }
+
     // Determine which block logic to use
     // If startRange is set, check if we are in the same block
     if (startRange && !endRange) {
@@ -400,11 +413,9 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
     return 0;
   }, [startRange, endRange]);
 
-  // Handle confirm booking
-  const handleConfirmBooking = () => {
+  const createBookingRequest = () => {
     if (!startRange || !endRange) return;
 
-    // Create ISO datetime strings
     const startDateTime = new Date(startRange.date);
     const [startHour, startMinute] = startRange.time.split(":").map(Number);
     startDateTime.setHours(startHour, startMinute, 0, 0);
@@ -413,18 +424,57 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
     const [endHour, endMinute] = endRange.time.split(":").map(Number);
     endDateTime.setHours(endHour, endMinute, 0, 0);
 
-    const bookingRequest = {
+    return {
       mentorId: mentor.userId,
       startAt: startDateTime.toISOString(),
       endAt: endDateTime.toISOString(),
     };
+  };
+
+  // Handle proceed to payment
+  const handleProceedToPayment = () => {
+    if (paymentCode && appointmentId) {
+      setCurrentStep("payment");
+      return;
+    }
+
+    const bookingRequest = createBookingRequest();
+    if (!bookingRequest) return;
 
     bookingMutation.mutate(bookingRequest, {
       onSuccess: (data) => {
+        setPaymentCode(data.paymentCode);
+        setAppointmentId(data.appointmentId);
         toast.success(data.message);
         queryClient.invalidateQueries({ queryKey: ["appointments"] });
         queryClient.invalidateQueries({ queryKey: ["mentor-schedules"] });
-        // Move to completed step
+        setCurrentStep("payment");
+      },
+      onError: (err) => {
+        toast.error(`Lỗi: ${err.response?.data.message || err.message}`);
+      },
+    });
+  };
+
+  // Handle close and reset
+  const handleClose = () => {
+    setCurrentStep("booking");
+    setStartRange(null);
+    setEndRange(null);
+    setPaymentCode(null);
+    setAppointmentId(null);
+    onClose();
+  };
+
+  const handleVerifyPayment = () => {
+    if (!appointmentId) return;
+
+    verifyPaymentMutation.mutate(appointmentId, {
+      onSuccess: (data) => {
+        toast.success(data.message);
+        queryClient.invalidateQueries({ queryKey: ["appointments"] });
+        queryClient.invalidateQueries({ queryKey: ["mentee-appointments"] });
+        queryClient.invalidateQueries({ queryKey: ["payment-status"] });
         setCurrentStep("completed");
       },
       onError: (err) => {
@@ -433,34 +483,14 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
     });
   };
 
-  // Handle proceed to payment
-  const handleProceedToPayment = () => {
-    if (startRange && endRange) {
-      setCurrentStep("payment");
-    }
-  };
-
-  // Handle close and reset
-  const handleClose = () => {
-    setCurrentStep("booking");
-    setStartRange(null);
-    setEndRange(null);
-    onClose();
-  };
-
   // Render Payment Screen
   const renderPaymentScreen = () => {
     if (!startRange || !endRange) return null;
 
     const amount = Math.round((duration / 60) * mentor.pricePerHour);
-    const dateStr = new Intl.DateTimeFormat("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(startRange.date);
-    const addInfo = `MENTORX ${shortVietnameseName(mentor.name)} ${startRange.time} ${endRange.time} ${dateStr}`;
+    const transferInfo = paymentCode ? `MENTORX ${paymentCode}` : "";
     const qrUrl = `https://img.vietqr.io/image/tpbank-00000117197-compact2.jpg?amount=${amount}&addInfo=${encodeURIComponent(
-      addInfo,
+      transferInfo,
     )}&accountName=mentor%20x`;
 
     return (
@@ -535,6 +565,14 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
                   </p>
                 </div>
               </div>
+
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 mt-0.5" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Mã thanh toán</p>
+                  <p className="font-medium">{paymentCode}</p>
+                </div>
+              </div>
             </div>
 
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-2">
@@ -577,8 +615,7 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
 
           <h2 className="text-2xl font-bold">Đặt lịch thành công!</h2>
           <p className="text-muted-foreground">
-            Buổi học của bạn đã được xác nhận và thêm vào lịch. Email xác nhận
-            đã được gửi.
+            Buổi học đã được tạo và đang chờ xác nhận thanh toán.
           </p>
 
           {/* Session Details */}
@@ -889,10 +926,16 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
               {user && user.role === USER_ROLES.USER ? (
                 <Button
                   className="flex-1 sm:flex-none min-w-[140px]"
-                  disabled={!startRange || !endRange}
+                  disabled={!startRange || !endRange || bookingMutation.isPending}
                   onClick={handleProceedToPayment}
                 >
-                  Tiếp tục
+                  {bookingMutation.isPending ? (
+                    <>
+                      <Spinner /> Đang xử lý...
+                    </>
+                  ) : (
+                    "Tiếp tục"
+                  )}
                 </Button>
               ) : (
                 <Button
@@ -981,20 +1024,21 @@ export function BookingDrawer({ isOpen, onClose, mentor }: BookingDrawerProps) {
                 <Button
                   variant="outline"
                   onClick={() => setCurrentStep("booking")}
+                  disabled={verifyPaymentMutation.isPending}
                 >
                   Quay lại
                 </Button>
                 <Button
-                  onClick={handleConfirmBooking}
-                  disabled={bookingMutation.isPending}
+                  onClick={handleVerifyPayment}
+                  disabled={!appointmentId || verifyPaymentMutation.isPending}
                   className="min-w-[180px]"
                 >
-                  {bookingMutation.isPending ? (
+                  {verifyPaymentMutation.isPending ? (
                     <>
-                      <Spinner /> Đang xử lý...
+                      <Spinner /> Đang kiểm tra...
                     </>
                   ) : (
-                    "Xác nhận thanh toán"
+                    "Tôi đã chuyển khoản"
                   )}
                 </Button>
               </div>

@@ -23,6 +23,6 @@ public class Appointment
     public DateTime UpdatedAt { get; set; }
     public User Mentor { get; set; }
     public User Mentee { get; set; }
-    public bool IsPaid { get; set; }
+    public AppointmentPayment? Payment { get; set; }
     public virtual ICollection<MentorReview> Reviews { get; set; } = new List<MentorReview>();
 }

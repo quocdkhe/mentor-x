@@ -1,9 +1,11 @@
 using backend.Models.DTOs;
 using backend.Models.DTOs.Booking;
+using backend.Models;
 using backend.Services.Interfaces;
 using backend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
@@ -12,26 +14,51 @@ public class BookingController : ControllerBase
 
     private readonly IBookingService _bookingService;
     private readonly IPaymentService _paymentService;
-    public BookingController(IBookingService bookingService, IPaymentService paymentService)
+    private readonly IStatisticService _statisticService;
+    private readonly MentorXContext _context;
+    
+    public BookingController(
+        IBookingService bookingService,
+        IPaymentService paymentService,
+        IStatisticService statisticService,
+        MentorXContext context)
     {
         _bookingService = bookingService;
         _paymentService = paymentService;
+        _statisticService = statisticService;
+        _context = context;
     }
 
     [HttpPost("appointments")]
     [Authorize(Roles = Roles.User)]
-    public async Task<ActionResult<Message>> BookAnAppointment([FromBody] BookingRequestDto dto)
+    public async Task<ActionResult<BookingCreatedResponseDto>> BookAnAppointment([FromBody] BookingRequestDto dto)
     {
         var userId = User.GetUserId();
-
-        var isPaid = await _paymentService.VerifyPayment(dto);
-        if (!isPaid)
-        {
-            return BadRequest(new Message("Vui lòng hãy thanh toán. Nếu bạn đã thanh toán, hãy liên hệ Admin để " +
-                                          "được trợ giúp"));
-        }
         var result = await _bookingService.BookAnAppointment(userId, dto);
         return Ok(result);
+    }
+
+    [HttpPost("appointments/{appointmentId}/verify-payment")]
+    [Authorize(Roles = Roles.User)]
+    public async Task<ActionResult<Message>> VerifyPayment(Guid appointmentId)
+    {
+        var menteeId = User.GetUserId();
+        var appointment = await _context.Appointments
+            .FirstOrDefaultAsync(a => a.Id == appointmentId && a.MenteeId == menteeId);
+
+        if (appointment == null)
+        {
+            return NotFound(new Message("Không tìm thấy cuộc hẹn"));
+        }
+
+        var isPaid = await _paymentService.VerifyPayment(appointmentId);
+        if (!isPaid)
+        {
+            return BadRequest(new Message("Chưa ghi nhận thanh toán"));
+        }
+
+        await _statisticService.MarkUserPaid(appointmentId, null);
+        return Ok(new Message("Đã xác nhận thanh toán thành công"));
     }
 
     [HttpGet("/mentors/me/appointments")]
@@ -49,6 +76,15 @@ public class BookingController : ControllerBase
     {
         var menteeId = User.GetUserId();
         var result = await _bookingService.GetMenteeAppointments(menteeId, date);
+        return Ok(result);
+    }
+
+    [HttpGet("appointments/{appointmentId}/payment-detail")]
+    [Authorize(Roles = Roles.User)]
+    public async Task<ActionResult<AppointmentPaymentDetailDto>> GetAppointmentPaymentDetail(Guid appointmentId)
+    {
+        var menteeId = User.GetUserId();
+        var result = await _bookingService.GetAppointmentPaymentDetail(menteeId, appointmentId);
         return Ok(result);
     }
 

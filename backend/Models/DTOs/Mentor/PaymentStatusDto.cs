@@ -14,7 +14,13 @@ public class PaymentStatusDto
     public decimal PricePerHour { get; set; }
     public DateTime StartAt { get; set; }
     public DateTime EndAt { get; set; }
-    public bool IsPaid { get; set; }
+    /// <summary>When the mentee paid the platform (null = not yet paid).</summary>
+    public DateTime? UserPaidAt { get; set; }
+    /// <summary>When the admin paid out to the mentor (null = not yet paid).</summary>
+    public DateTime? MentorPaidAt { get; set; }
+    /// <summary>Sepay / bank transfer reference code.</summary>
+    public string? PaymentCode { get; set; }
     public string BankAccountNumber { get; set; } = string.Empty;
     public string BankName { get; set; } = string.Empty;
 }
+

@@ -1,5 +1,7 @@
 import type {
   AcceptAppointmentDto,
+  AppointmentPaymentDetail,
+  BookingCreatedResponse,
   BookingRequest,
   MenteeAppointmentDto,
   MentorAppointmentDto,
@@ -11,11 +13,49 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./api";
 
 export function useBooking() {
-  return useMutation<Message, AxiosError<ErrorMessage>, BookingRequest>({
-    mutationFn: async (bookingRequest: BookingRequest): Promise<Message> => {
-      const res = await api.post<Message>(`/appointments`, bookingRequest);
+  return useMutation<
+    BookingCreatedResponse,
+    AxiosError<ErrorMessage>,
+    BookingRequest
+  >({
+    mutationFn: async (
+      bookingRequest: BookingRequest,
+    ): Promise<BookingCreatedResponse> => {
+      const res = await api.post<BookingCreatedResponse>(
+        `/appointments`,
+        bookingRequest,
+      );
       return res.data;
     },
+  });
+}
+
+export function useVerifyAppointmentPayment() {
+  return useMutation<Message, AxiosError<ErrorMessage>, string>({
+    mutationFn: async (appointmentId: string): Promise<Message> => {
+      const res = await api.post<Message>(
+        `/appointments/${appointmentId}/verify-payment`,
+        {},
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useGetAppointmentPaymentDetail(
+  appointmentId?: string,
+  enabled = true,
+) {
+  return useQuery<AppointmentPaymentDetail, AxiosError<ErrorMessage>>({
+    queryKey: ["appointment-payment-detail", appointmentId],
+    queryFn: async () => {
+      const res = await api.get<AppointmentPaymentDetail>(
+        `/appointments/${appointmentId}/payment-detail`,
+      );
+      return res.data;
+    },
+    enabled: enabled && !!appointmentId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 

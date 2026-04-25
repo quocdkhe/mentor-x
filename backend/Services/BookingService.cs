@@ -1,9 +1,10 @@
-﻿using backend.Middleware.Exceptions;
+using backend.Middleware.Exceptions;
 using backend.Models;
 using backend.Models.DTOs;
 using backend.Models.DTOs.Booking;
 using backend.Models.DTOs.Mentor;
 using backend.Services.Interfaces;
+using backend.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services
@@ -15,7 +16,7 @@ namespace backend.Services
         private readonly IGoogleOAuthService _googleOAuthService;
 
         public BookingService(MentorXContext context, IGoogleCalendarService googleCalendarService
-        , IGoogleOAuthService googleOAuthService)
+            , IGoogleOAuthService googleOAuthService)
         {
             _context = context;
             _googleCalendarService = googleCalendarService;
@@ -109,7 +110,7 @@ namespace backend.Services
             return new Message("Cập nhật availability thành công");
         }
 
-        public async Task<Message> BookAnAppointment(Guid menteeId, BookingRequestDto dto)
+        public async Task<BookingCreatedResponseDto> BookAnAppointment(Guid menteeId, BookingRequestDto dto)
         {
             var isDuplicate = await _context.Appointments.AnyAsync(a =>
                 a.MentorId == dto.MentorId &&
@@ -121,20 +122,38 @@ namespace backend.Services
             {
                 throw new ConflictException("Lịch đặt bị trùng với lịch khác, vui lòng thử lại");
             }
-            
 
-            await _context.Appointments.AddAsync(
-                new Appointment
-                {
-                    MenteeId = menteeId,
-                    MentorId = dto.MentorId,
-                    StartAt = dto.StartAt,
-                    EndAt = dto.EndAt,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                });
+            var appointment = new Appointment
+            {
+                Status = AppointmentStatusEnum.AwaitingPayment,
+                MenteeId = menteeId,
+                MentorId = dto.MentorId,
+                StartAt = dto.StartAt,
+                EndAt = dto.EndAt,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _context.Appointments.AddAsync(appointment);
             await _context.SaveChangesAsync();
-            return new Message("Đặt lịch thành công, vui lòng chuyển đến trang lịch học của tôi");
+
+            var paymentCode = GeneratePaymentCode.Generate();
+
+            await _context.AppointmentPayments.AddAsync(new AppointmentPayment
+            {
+                AppointmentId = appointment.Id,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                PaymentCode = paymentCode,
+            });
+            await _context.SaveChangesAsync();
+
+            return new BookingCreatedResponseDto
+            {
+                Message = "Đặt lịch thành công, vui lòng tiếp tục thanh toán",
+                PaymentCode = paymentCode,
+                AppointmentId = appointment.Id,
+            };
         }
 
         public async Task<List<MentorAppointmentDto>> GetMentorAppointments(Guid mentorId, DateTime? date)
@@ -213,12 +232,56 @@ namespace backend.Services
             return appointments;
         }
 
+        public async Task<AppointmentPaymentDetailDto> GetAppointmentPaymentDetail(Guid menteeId, Guid appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Mentor)
+                .ThenInclude(m => m.MentorProfile)
+                .Include(a => a.Payment)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId && a.MenteeId == menteeId);
+
+            if (appointment == null || appointment.Payment?.PaymentCode == null)
+            {
+                throw new NotFoundException("Không tìm thấy cuộc hẹn");
+            }
+
+            if (appointment.Status != AppointmentStatusEnum.AwaitingPayment)
+            {
+                throw new BadRequestException("Cuộc hẹn này không còn ở trạng thái chờ thanh toán");
+            }
+
+            var mentorProfile = appointment.Mentor.MentorProfile;
+            if (mentorProfile == null)
+            {
+                throw new NotFoundException("Không tìm thấy thông tin mentor");
+            }
+
+            var totalHours = Math.Round((decimal)(appointment.EndAt - appointment.StartAt).TotalHours, 2);
+            var amount = Math.Round(totalHours * mentorProfile.PricePerHour, 0);
+
+            return new AppointmentPaymentDetailDto
+            {
+                AppointmentId = appointment.Id,
+                PaymentCode = appointment.Payment.PaymentCode,
+                MentorId = appointment.MentorId,
+                MentorName = appointment.Mentor.Name,
+                MentorAvatar = appointment.Mentor.Avatar,
+                MentorCompany = mentorProfile.Company,
+                MentorPosition = mentorProfile.Position,
+                StartAt = appointment.StartAt,
+                EndAt = appointment.EndAt,
+                Amount = amount,
+                Status = appointment.Status,
+            };
+        }
+
         public async Task<MentorScheduleDto> GetMentorSchedule(Guid mentorId, DateTime? date)
         {
             if (date == null)
             {
                 throw new BadRequestException("DateTime là bắt buộc");
             }
+
             WeekDayEnum day = (WeekDayEnum)date?.DayOfWeek;
             List<TimeBlockDto> blocks = await _context.Availabilities
                 .Where(a => a.MentorId == mentorId && a.DayOfWeek == day && a.IsActive)
@@ -253,7 +316,7 @@ namespace backend.Services
                 .Include(a => a.Mentor)
                 .Include(a => a.Mentee)
                 .FirstOrDefault(a =>
-                a.Id == appointmentId && a.MentorId == mentorId);
+                    a.Id == appointmentId && a.MentorId == mentorId);
             if (appointment == null)
             {
                 throw new NotFoundException("Không tìm thấy cuộc hẹn");
@@ -281,7 +344,7 @@ namespace backend.Services
                     throw new BadRequestException($"Không thể tạo cuộc họp: {ex.Message}");
                 }
             }
-            
+
             appointment.Status = AppointmentStatusEnum.Confirmed;
             _context.Appointments.Update(appointment);
             await _context.SaveChangesAsync();
@@ -297,6 +360,7 @@ namespace backend.Services
             {
                 throw new NotFoundException("Không tìm thấy cuộc hẹn");
             }
+
             appointment.Status = AppointmentStatusEnum.Completed;
             _context.Appointments.Update(appointment);
             _context.SaveChanges();
@@ -311,6 +375,7 @@ namespace backend.Services
             {
                 throw new NotFoundException("Không tìm thấy cuộc hẹn");
             }
+
             appointment.Status = AppointmentStatusEnum.Cancelled;
             _context.Appointments.Update(appointment);
             _context.SaveChanges();
@@ -325,6 +390,7 @@ namespace backend.Services
             {
                 throw new NotFoundException("Không tìm thấy cuộc hẹn");
             }
+
             _context.Appointments.Remove(appointment);
             await _context.SaveChangesAsync();
             return new Message("Cuộc hẹn đã bị xóa");

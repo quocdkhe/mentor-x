@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +32,8 @@ public partial class MentorXContext : DbContext
     public virtual DbSet<Availability> Availabilities { get; set; }
 
     public virtual DbSet<Appointment> Appointments { get; set; }
+
+    public virtual DbSet<AppointmentPayment> AppointmentPayments { get; set; }
 
     public virtual DbSet<GoogleAccount> GoogleAccounts { get; set; }
 
@@ -412,10 +414,6 @@ public partial class MentorXContext : DbContext
             entity.Property(e => e.GoogleCalendarLink)
                 .HasColumnName("google_calendar_link");
 
-            entity.Property(e => e.IsPaid)
-                .HasDefaultValue(false)
-                .HasColumnName("is_paid");
-
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
@@ -435,6 +433,42 @@ public partial class MentorXContext : DbContext
                 .HasForeignKey(e => e.MenteeId)
                 .HasConstraintName("fk_appointments_mentee")
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Payment)
+                .WithOne(p => p.Appointment)
+                .HasForeignKey<AppointmentPayment>(p => p.AppointmentId)
+                .HasConstraintName("fk_appointment_payments_appointment")
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AppointmentPayment>(entity =>
+        {
+            entity.HasKey(e => e.AppointmentId)
+                .HasName("appointment_payments_pkey");
+
+            entity.ToTable("appointment_payments");
+
+            entity.Property(e => e.AppointmentId)
+                .HasColumnName("appointment_id");
+
+            entity.Property(e => e.UserPaidAt)
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("user_paid_at");
+
+            entity.Property(e => e.MentorPaidAt)
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("mentor_paid_at");
+
+            entity.Property(e => e.PaymentCode)
+                .HasColumnName("payment_code");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
         });
 
         modelBuilder.Entity<GoogleAccount>(entity =>

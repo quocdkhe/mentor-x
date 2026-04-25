@@ -6,5 +6,7 @@ namespace backend.Services.Interfaces;
 public interface IStatisticService
 {
     Task<List<PaymentStatusDto>> GetAllPaymentStatus(Guid? mentorId);
-    Task MarkAppointmentIsPaid(Guid appointmentId);
+    Task MarkMentorPaid(Guid appointmentId);
+    Task MarkUserPaid(Guid appointmentId, string? paymentCode);
 }
+
