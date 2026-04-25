@@ -1,5 +1,6 @@
 import type {
   AcceptAppointmentDto,
+  BookingCreatedResponse,
   BookingRequest,
   MenteeAppointmentDto,
   MentorAppointmentDto,
@@ -11,9 +12,18 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./api";
 
 export function useBooking() {
-  return useMutation<Message, AxiosError<ErrorMessage>, BookingRequest>({
-    mutationFn: async (bookingRequest: BookingRequest): Promise<Message> => {
-      const res = await api.post<Message>(`/appointments`, bookingRequest);
+  return useMutation<BookingCreatedResponse, AxiosError<ErrorMessage>, BookingRequest>({
+    mutationFn: async (bookingRequest: BookingRequest): Promise<BookingCreatedResponse> => {
+      const res = await api.post<BookingCreatedResponse>(`/appointments`, bookingRequest);
+      return res.data;
+    },
+  });
+}
+
+export function useVerifyAppointmentPayment() {
+  return useMutation<Message, AxiosError<ErrorMessage>, string>({
+    mutationFn: async (appointmentId: string): Promise<Message> => {
+      const res = await api.post<Message>(`/appointments/${appointmentId}/verify-payment`, {});
       return res.data;
     },
   });

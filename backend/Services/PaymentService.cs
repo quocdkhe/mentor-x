@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+﻿using backend.Models;
+using backend.Services.Interfaces;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using backend.Models;
-using backend.Models.DTOs.Booking;
-using backend.Services.Interfaces;
-using backend.Utils;
 using Microsoft.EntityFrameworkCore;
+using backend.Models.DTOs.Booking;
 
 namespace backend.Services
 {
@@ -63,7 +62,7 @@ namespace backend.Services
             return JsonSerializer.Deserialize<SepayResponseDto>(json, options);
         }
 
-        public async Task<bool> VerifyPayment(BookingRequestDto dto)
+        public async Task<bool> VerifyPayment(Guid appointmentId)
         {
             // Skip API call in development environment
             var environment = _configuration["ASPNETCORE_ENVIRONMENT"];
@@ -72,27 +71,33 @@ namespace backend.Services
                 return true;
             }
 
-            // todo: calculate price
-            var mentor = await _context.MentorProfiles.Include(mp => mp.User)
-                .FirstOrDefaultAsync(mp => mp.UserId == dto.MentorId);
+            var appointment = await _context.Appointments
+                .Include(a => a.Payment)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+            if (appointment == null || appointment.Payment?.PaymentCode == null)
+            {
+                return false;
+            }
+
+            var mentor = await _context.MentorProfiles
+                .FirstOrDefaultAsync(mp => mp.UserId == appointment.MentorId);
             if (mentor == null)
             {
                 return false;
             }
-            decimal pricePerHour = mentor.PricePerHour;
-            TimeSpan duration = dto.EndAt - dto.StartAt;
-            decimal totalHours = (decimal)duration.TotalHours;
 
-            // Optional: round to 2 decimal places
+            decimal pricePerHour = mentor.PricePerHour;
+            TimeSpan duration = appointment.EndAt - appointment.StartAt;
+            decimal totalHours = (decimal)duration.TotalHours;
             totalHours = Math.Round(totalHours, 2);
 
             int totalPrice = decimal.ToInt32(totalHours * pricePerHour);
             var sepayResponse = await GetTransactionsAsync(totalPrice);
 
-            //check key
-            string key = GeneratePaymentCode.GenerateAddInfo(dto, mentor.User.Name);
-            bool result = sepayResponse.Transactions.Any(tran => tran.TransactionContent.Contains(key));
-            return result;
+            return sepayResponse?.Transactions.Any(tran =>
+                !string.IsNullOrWhiteSpace(tran.TransactionContent) &&
+                tran.TransactionContent.Contains(appointment.Payment.PaymentCode, StringComparison.OrdinalIgnoreCase)
+            ) == true;
         }
     }
 }

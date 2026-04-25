@@ -4,6 +4,12 @@ export interface BookingRequest {
   endAt: string;
 }
 
+export interface BookingCreatedResponse {
+  message: string;
+  paymentCode: string;
+  appointmentId: string;
+}
+
 // ===== Booking DTOs (mentor side) =====
 
 export type AppointmentStatusEnum =

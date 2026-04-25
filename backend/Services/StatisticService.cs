@@ -70,10 +70,12 @@ public class StatisticService : IStatisticService
         if (payment != null)
         {
             payment.UserPaidAt = DateTime.UtcNow;
-            payment.PaymentCode = paymentCode;
+            if (!string.IsNullOrWhiteSpace(paymentCode))
+            {
+                payment.PaymentCode = paymentCode;
+            }
             payment.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
     }
 }
-

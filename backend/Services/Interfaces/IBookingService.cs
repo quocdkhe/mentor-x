@@ -9,7 +9,7 @@ namespace backend.Services.Interfaces
     {
         Task<List<AvailabilityResponseDTO>> GetAvailabilities(Guid mentorId);
         Task<Message> UpdateAvailabilities(Guid mentorId, List<AvailabilityResponseDTO> availabilities);
-        Task<Message> BookAnAppointment(Guid menteeId, BookingRequestDto dto);
+        Task<BookingCreatedResponseDto> BookAnAppointment(Guid menteeId, BookingRequestDto dto);
         Task<List<MentorAppointmentDto>> GetMentorAppointments(Guid mentorId, DateTime? date);
         Task<List<MenteeAppointmentDto>> GetMenteeAppointments(Guid menteeId, DateTime? date);
         Task<MentorScheduleDto> GetMentorSchedule(Guid mentorId, DateTime? date);
