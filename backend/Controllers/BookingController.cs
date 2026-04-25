@@ -16,6 +16,7 @@ public class BookingController : ControllerBase
     private readonly IPaymentService _paymentService;
     private readonly IStatisticService _statisticService;
     private readonly MentorXContext _context;
+    
     public BookingController(
         IBookingService bookingService,
         IPaymentService paymentService,
@@ -75,6 +76,15 @@ public class BookingController : ControllerBase
     {
         var menteeId = User.GetUserId();
         var result = await _bookingService.GetMenteeAppointments(menteeId, date);
+        return Ok(result);
+    }
+
+    [HttpGet("appointments/{appointmentId}/payment-detail")]
+    [Authorize(Roles = Roles.User)]
+    public async Task<ActionResult<AppointmentPaymentDetailDto>> GetAppointmentPaymentDetail(Guid appointmentId)
+    {
+        var menteeId = User.GetUserId();
+        var result = await _bookingService.GetAppointmentPaymentDetail(menteeId, appointmentId);
         return Ok(result);
     }
 

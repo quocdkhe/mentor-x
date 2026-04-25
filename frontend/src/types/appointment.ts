@@ -10,9 +10,24 @@ export interface BookingCreatedResponse {
   appointmentId: string;
 }
 
+export interface AppointmentPaymentDetail {
+  appointmentId: string;
+  paymentCode: string;
+  mentorId: string;
+  mentorName: string;
+  mentorAvatar?: string | null;
+  mentorCompany?: string | null;
+  mentorPosition?: string | null;
+  startAt: string;
+  endAt: string;
+  amount: number;
+  status: AppointmentStatusEnum;
+}
+
 // ===== Booking DTOs (mentor side) =====
 
 export type AppointmentStatusEnum =
+  | "AwaitingPayment"
   | "Pending"
   | "Confirmed"
   | "Cancelled"

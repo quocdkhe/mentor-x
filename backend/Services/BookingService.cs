@@ -232,6 +232,49 @@ namespace backend.Services
             return appointments;
         }
 
+        public async Task<AppointmentPaymentDetailDto> GetAppointmentPaymentDetail(Guid menteeId, Guid appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Mentor)
+                .ThenInclude(m => m.MentorProfile)
+                .Include(a => a.Payment)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId && a.MenteeId == menteeId);
+
+            if (appointment == null || appointment.Payment?.PaymentCode == null)
+            {
+                throw new NotFoundException("Không tìm thấy cuộc hẹn");
+            }
+
+            if (appointment.Status != AppointmentStatusEnum.AwaitingPayment)
+            {
+                throw new BadRequestException("Cuộc hẹn này không còn ở trạng thái chờ thanh toán");
+            }
+
+            var mentorProfile = appointment.Mentor.MentorProfile;
+            if (mentorProfile == null)
+            {
+                throw new NotFoundException("Không tìm thấy thông tin mentor");
+            }
+
+            var totalHours = Math.Round((decimal)(appointment.EndAt - appointment.StartAt).TotalHours, 2);
+            var amount = Math.Round(totalHours * mentorProfile.PricePerHour, 0);
+
+            return new AppointmentPaymentDetailDto
+            {
+                AppointmentId = appointment.Id,
+                PaymentCode = appointment.Payment.PaymentCode,
+                MentorId = appointment.MentorId,
+                MentorName = appointment.Mentor.Name,
+                MentorAvatar = appointment.Mentor.Avatar,
+                MentorCompany = mentorProfile.Company,
+                MentorPosition = mentorProfile.Position,
+                StartAt = appointment.StartAt,
+                EndAt = appointment.EndAt,
+                Amount = amount,
+                Status = appointment.Status,
+            };
+        }
+
         public async Task<MentorScheduleDto> GetMentorSchedule(Guid mentorId, DateTime? date)
         {
             if (date == null)

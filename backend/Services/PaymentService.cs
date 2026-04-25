@@ -65,11 +65,8 @@ namespace backend.Services
         public async Task<bool> VerifyPayment(Guid appointmentId)
         {
             // Skip API call in development environment
-            var environment = _configuration["ASPNETCORE_ENVIRONMENT"];
-            if (environment == "Development")
-            {
-                return true;
-            }
+            bool isDevelopment = _configuration["ASPNETCORE_ENVIRONMENT"] == "Development";
+            bool isPaid = false;
 
             var appointment = await _context.Appointments
                 .Include(a => a.Payment)
@@ -93,11 +90,26 @@ namespace backend.Services
 
             int totalPrice = decimal.ToInt32(totalHours * pricePerHour);
             var sepayResponse = await GetTransactionsAsync(totalPrice);
+            if (isDevelopment)
+            {
+                isPaid = true;
+            }
+            else
+            {
+                isPaid = sepayResponse?.Transactions.Any(tran =>
+                    !string.IsNullOrWhiteSpace(tran.TransactionContent) &&
+                    tran.TransactionContent.Contains(appointment.Payment.PaymentCode,
+                        StringComparison.OrdinalIgnoreCase)) == true;
+            }
 
-            return sepayResponse?.Transactions.Any(tran =>
-                !string.IsNullOrWhiteSpace(tran.TransactionContent) &&
-                tran.TransactionContent.Contains(appointment.Payment.PaymentCode, StringComparison.OrdinalIgnoreCase)
-            ) == true;
+
+            if (isPaid)
+            {
+                appointment.Status = AppointmentStatusEnum.Pending;
+                await _context.SaveChangesAsync();
+            }
+
+            return isPaid;
         }
     }
 }

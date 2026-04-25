@@ -42,8 +42,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  useGetAppointmentPaymentDetail,
   useMenteeGetAppointments,
   useDeleteAppointment,
+  useVerifyAppointmentPayment,
 } from "@/api/appointment";
 import { useCreateReview } from "@/api/review";
 import type { AppointmentStatusEnum } from "@/types/appointment";
@@ -58,11 +60,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { AppointmentPaymentDialog } from "@/components/features/booking/appointment-payment-dialog";
 
 // --- Components ---
 
 const StatusBadge = ({ status }: { status: AppointmentStatusEnum }) => {
   switch (status) {
+    case "AwaitingPayment":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-orange-100 text-orange-800 hover:bg-orange-100/80 dark:bg-orange-900/30 dark:text-orange-500"
+        >
+          Chờ thanh toán
+        </Badge>
+      );
     case "Pending":
       return (
         <Badge
@@ -106,6 +118,7 @@ const StatusBadge = ({ status }: { status: AppointmentStatusEnum }) => {
 
 const statusItems = [
   { value: "all", label: "Tất cả" },
+  { value: "AwaitingPayment", label: "Chờ thanh toán" },
   { value: "Pending", label: "Chờ xác nhận" },
   { value: "Confirmed", label: "Đã xác nhận" },
   { value: "Completed", label: "Hoàn thành" },
@@ -125,6 +138,8 @@ function MenteeSchedulesPage() {
   // Initialize the cancel appointment mutation
   const { mutate: cancelAppointment, isPending: isCancelling } =
     useDeleteAppointment();
+  const { mutate: verifyPayment, isPending: isVerifyingPayment } =
+    useVerifyAppointmentPayment();
 
   // Initialize the create review mutation
   const { mutate: createReview, isPending: isSubmittingReview } =
@@ -151,11 +166,20 @@ function MenteeSchedulesPage() {
     open: boolean;
     appointmentId: string;
   }>({ open: false, appointmentId: "" });
+  const [paymentDialog, setPaymentDialog] = useState<{
+    open: boolean;
+    appointmentId: string;
+  }>({ open: false, appointmentId: "" });
 
   const [reviewData, setReviewData] = useState<{
     rating: number;
     comment: string;
   }>({ rating: 0, comment: "" });
+  const { data: paymentDetail, isLoading: isLoadingPaymentDetail } =
+    useGetAppointmentPaymentDetail(
+      paymentDialog.appointmentId,
+      paymentDialog.open,
+    );
 
   const handleConfirmAction = () => {
     if (confirmDialog.action && confirmDialog.appointmentId) {
@@ -211,6 +235,34 @@ function MenteeSchedulesPage() {
   const openReviewDialog = (appointmentId: string) => {
     setReviewDialog({ open: true, appointmentId });
     setReviewData({ rating: 0, comment: "" });
+  };
+
+  const openPaymentDialog = (appointmentId: string) => {
+    setPaymentDialog({ open: true, appointmentId });
+  };
+
+  const handleVerifyPayment = () => {
+    if (!paymentDialog.appointmentId) return;
+
+    verifyPayment(paymentDialog.appointmentId, {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({
+          queryKey: [
+            "mentee-appointments",
+            date ? convertDateToUTC(date) : undefined,
+          ],
+        });
+        queryClient.invalidateQueries({ queryKey: ["appointment-payment-detail"] });
+        queryClient.invalidateQueries({ queryKey: ["payment-status"] });
+        toast.success(data.message);
+        setPaymentDialog({ open: false, appointmentId: "" });
+      },
+      onError: (error: AxiosError<{ message?: string }>) => {
+        toast.error(
+          error.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.",
+        );
+      },
+    });
   };
 
   const handleReviewSubmit = () => {
@@ -343,8 +395,9 @@ function MenteeSchedulesPage() {
             setStatusFilter(value as AppointmentStatusEnum | "all")
           }
         >
-          <TabsList className="grid w-full md:w-auto grid-cols-5">
+          <TabsList className="grid w-full md:w-auto grid-cols-6">
             <TabsTrigger value="all">Tất cả</TabsTrigger>
+            <TabsTrigger value="AwaitingPayment">Chờ thanh toán</TabsTrigger>
             <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
             <TabsTrigger value="Confirmed">Đã xác nhận</TabsTrigger>
             <TabsTrigger value="Completed">Hoàn thành</TabsTrigger>
@@ -478,6 +531,25 @@ function MenteeSchedulesPage() {
                       <X className="h-4 w-4" />
                       Hủy yêu cầu
                     </Button>
+                  )}
+
+                  {appointment.status === "AwaitingPayment" && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                        onClick={() => openCancelDialog(appointment.appointmentId)}
+                      >
+                        <X className="h-4 w-4" />
+                        Hủy lịch
+                      </Button>
+                      <Button
+                        className="gap-2"
+                        onClick={() => openPaymentDialog(appointment.appointmentId)}
+                      >
+                        Thanh toán
+                      </Button>
+                    </div>
                   )}
 
                   {appointment.status === "Completed" && (
@@ -629,6 +701,17 @@ function MenteeSchedulesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AppointmentPaymentDialog
+        open={paymentDialog.open}
+        onOpenChange={(open) =>
+          !open && setPaymentDialog({ open: false, appointmentId: "" })
+        }
+        paymentDetail={paymentDetail}
+        isLoading={isLoadingPaymentDetail}
+        isVerifying={isVerifyingPayment}
+        onVerifyPayment={handleVerifyPayment}
+      />
     </div>
   );
 }

@@ -12,6 +12,7 @@ namespace backend.Services.Interfaces
         Task<BookingCreatedResponseDto> BookAnAppointment(Guid menteeId, BookingRequestDto dto);
         Task<List<MentorAppointmentDto>> GetMentorAppointments(Guid mentorId, DateTime? date);
         Task<List<MenteeAppointmentDto>> GetMenteeAppointments(Guid menteeId, DateTime? date);
+        Task<AppointmentPaymentDetailDto> GetAppointmentPaymentDetail(Guid menteeId, Guid appointmentId);
         Task<MentorScheduleDto> GetMentorSchedule(Guid mentorId, DateTime? date);
         Task<Message> AcceptAppointment(Guid mentorId, Guid appointmentId, AcceptAppointmentDto dto);
         Task<Message> CancelAppointment(Guid userId, Guid appointmentId);

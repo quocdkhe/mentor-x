@@ -68,6 +68,8 @@ interface ScheduleItem {
 
 const StatusBadge = ({ status }: { status: AppointmentStatusEnum }) => {
   switch (status) {
+    case "AwaitingPayment":
+      return <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-100/80 dark:bg-orange-900/30 dark:text-orange-500">Chờ thanh toán</Badge>;
     case "Pending":
       return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80 dark:bg-yellow-900/30 dark:text-yellow-500">Chờ xác nhận</Badge>;
     case "Confirmed":
@@ -230,8 +232,9 @@ const Schedules = () => {
 
           {/* Right: Status Tabs */}
           <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={(value) => setStatusFilter(value as AppointmentStatusEnum | "all")}>
-            <TabsList className="grid w-full md:w-auto grid-cols-5">
+            <TabsList className="grid w-full md:w-auto grid-cols-6">
               <TabsTrigger value="all">Tất cả</TabsTrigger>
+              <TabsTrigger value="AwaitingPayment">Chờ thanh toán</TabsTrigger>
               <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
               <TabsTrigger value="Confirmed">Đã xác nhận</TabsTrigger>
               <TabsTrigger value="Completed">Hoàn thành</TabsTrigger>
@@ -291,8 +294,9 @@ const Schedules = () => {
 
         {/* Right: Status Tabs */}
         <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={(value) => setStatusFilter(value as AppointmentStatusEnum | "all")}>
-          <TabsList className="grid w-full md:w-auto grid-cols-5">
+          <TabsList className="grid w-full md:w-auto grid-cols-6">
             <TabsTrigger value="all">Tất cả</TabsTrigger>
+            <TabsTrigger value="AwaitingPayment">Chờ thanh toán</TabsTrigger>
             <TabsTrigger value="Pending">Chờ xác nhận</TabsTrigger>
             <TabsTrigger value="Confirmed">Đã xác nhận</TabsTrigger>
             <TabsTrigger value="Completed">Hoàn thành</TabsTrigger>
