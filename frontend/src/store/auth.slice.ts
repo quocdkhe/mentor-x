@@ -9,12 +9,14 @@ import type { AxiosError } from "axios";
 
 interface AuthState {
   user: UserResponseDTO | null;
+  bootstrapped: boolean;
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: AuthState = {
   user: null,
+  bootstrapped: false,
   isLoading: true,
   error: null,
 };
@@ -51,12 +53,14 @@ const authSlice = createSlice({
     // Utility reducer to manually set a user (e.g., after successful login)
     setUser: (state, action: PayloadAction<UserResponseDTO | null>) => {
       state.user = action.payload;
+      state.bootstrapped = true;
       state.isLoading = false;
       state.error = null;
     },
     // Logout reducer to clear user state
     logout: (state) => {
       state.user = null;
+      state.bootstrapped = true;
       state.isLoading = false;
       state.error = null;
     },
@@ -71,12 +75,14 @@ const authSlice = createSlice({
       // FULFILLED: Successfully fetched user data
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.bootstrapped = true;
         state.isLoading = false;
         state.error = null;
       })
       // REJECTED: Failed to fetch user data (e.g., 401, 500 error)
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.user = null; // Clear user on failure
+        state.bootstrapped = true;
         state.isLoading = false;
         state.error = (action.payload as string) || "An unknown error occurred";
       });

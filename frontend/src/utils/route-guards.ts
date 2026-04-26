@@ -1,38 +1,6 @@
 import { redirect } from "@tanstack/react-router";
 import { store } from "@/store/store";
 import type { UserRole } from "@/types/user";
-import type { UserResponseDTO } from "@/types/user";
-
-interface AuthState {
-  user: UserResponseDTO | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
-/**
- * Wait for the auth state to finish loading
- * Returns a promise that resolves when isLoading becomes false
- */
-const waitForAuthInit = (): Promise<AuthState> => {
-  return new Promise((resolve) => {
-    const state = store.getState().auth;
-
-    // If already loaded, resolve immediately
-    if (!state.isLoading) {
-      resolve(state);
-      return;
-    }
-
-    // Otherwise, subscribe and wait for loading to finish
-    const unsubscribe = store.subscribe(() => {
-      const currentState = store.getState().auth;
-      if (!currentState.isLoading) {
-        unsubscribe();
-        resolve(currentState);
-      }
-    });
-  });
-};
 
 /**
  * Get the current auth state from Redux store
@@ -41,6 +9,7 @@ export const getAuthState = () => {
   const state = store.getState();
   return {
     user: state.auth.user,
+    bootstrapped: state.auth.bootstrapped,
     isLoading: state.auth.isLoading,
   };
 };
@@ -50,8 +19,7 @@ export const getAuthState = () => {
  * Redirects to /login if not authenticated
  */
 export const requireAuth = async () => {
-  // Wait for auth to finish loading
-  const { user } = await waitForAuthInit();
+  const { user } = getAuthState();
 
   if (!user) {
     throw redirect({
@@ -90,8 +58,7 @@ export const requireRole = async (allowedRole: UserRole) => {
  * to their role-specific home page
  */
 export const redirectIfAuthenticated = async () => {
-  // Wait for auth to finish loading
-  const { user } = await waitForAuthInit();
+  const { user } = getAuthState();
 
   if (user) {
     // Redirect to role-specific home page

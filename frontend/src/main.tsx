@@ -8,11 +8,15 @@ import { Provider } from 'react-redux'
 import { store } from './store/store'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { fetchCurrentUser } from './store/auth.slice'
+import { useEffect, useRef } from 'react'
+import { useAppSelector } from './store/hooks'
+import { LoadingPage } from './components/loading-page'
+import { ThemeProvider } from './components/theme-provider'
+import { Toaster } from 'sonner'
 import './index.css'
 import Clarity from '@microsoft/clarity';
 
 const queryClient = new QueryClient()
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 // Initialize analytics only in production
 if (import.meta.env.PROD) {
@@ -36,17 +40,42 @@ if (import.meta.env.PROD) {
   document.head.appendChild(script2);
 }
 
-// Dispatch fetchCurrentUser BEFORE rendering to avoid race condition with route guards
-store.dispatch(fetchCurrentUser())
+function AuthBootstrap() {
+  const hasStartedBootstrap = useRef(false)
+  const bootstrapped = useAppSelector((state) => state.auth.bootstrapped)
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+  useEffect(() => {
+    if (hasStartedBootstrap.current) {
+      return
+    }
+
+    hasStartedBootstrap.current = true
+    void store.dispatch(fetchCurrentUser())
+  }, [])
+
+  if (!bootstrapped) {
+    return (
+      <ThemeProvider storageKey="vite-ui-theme">
+        <LoadingPage />
+        <Toaster position="top-center" richColors />
+      </ThemeProvider>
+    )
+  }
+
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <RouterProvider router={router} />
+      <TanStackRouterDevtools router={router} />
+      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
+    </GoogleOAuthProvider>
+  )
+}
 
 createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
-      <GoogleOAuthProvider clientId={googleClientId}>
-        <RouterProvider router={router} />
-      </GoogleOAuthProvider>
-      <TanStackRouterDevtools router={router} />
-      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
+      <AuthBootstrap />
     </QueryClientProvider>
   </Provider>
 )
