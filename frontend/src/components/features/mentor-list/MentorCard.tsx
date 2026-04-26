@@ -24,7 +24,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
       params={{ mentorId: mentor.userId }}
       className="block h-full"
     >
-      <Card className="h-full overflow-hidden hover:shadow-xl hover:border-primary transition-all duration-300 group p-0 rounded-2xl border border-transparent">
+      <Card className="h-full overflow-hidden hover:shadow-xl hover:border-primary transition-all duration-300 group gap-1 p-0 rounded-2xl border border-transparent">
         {/* Avatar Section */}
         <div className="relative">
           <img
@@ -35,65 +35,59 @@ export function MentorCard({ mentor }: MentorCardProps) {
         </div>
 
         {/* Content Section */}
-        <div className="p-4 pt-3">
-          {/* Name */}
-          <h3 className="font-bold text-lg mb-2 transition-colors flex items-center gap-2">
-            <span className="flex items-center gap-1">
-              {mentor.name}
-              {mentor.isVerified && (
-                <CheckCircle2 className="w-5 h-5 text-primary" />
-              )}
-            </span>
-          </h3>
+        <div className="flex flex-1 flex-col p-4 pt-2">
+          <div className="space-y-2 pb-2">
+            {/* Name */}
+            <h3 className="font-bold text-lg transition-colors flex items-center gap-2">
+              <span className="flex items-center gap-1">
+                {mentor.name}
+                {mentor.isVerified && (
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                )}
+              </span>
+            </h3>
 
-          {mentor.hasMet && (
-            <Badge variant="outline" className="mb-2">
-              Đã học
-            </Badge>
-          )}
-
-          {/* Position at Company */}
-          <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
-            <Briefcase className="w-4 h-4 mt-0.5 shrink-0" />
-            <span className="line-clamp-2">
-              <strong>{mentor.position}</strong> tại{" "}
-              <strong>{mentor.company}</strong>
-            </span>
-          </div>
-
-          {/* Skills */}
-          {mentor.skills && mentor.skills.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {mentor.skills.slice(0, 3).map((skill, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                >
-                  {skill}
-                </Badge>
-              ))}
-              {mentor.skills.length > 3 && (
-                <Badge
-                  variant="secondary"
-                >
-                  +{mentor.skills.length - 3}
-
-                </Badge>
-              )}
+            {/* Position at Company */}
+            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+              <Briefcase className="w-4 h-4 mt-0.5 shrink-0" />
+              <span className="line-clamp-2">
+                <strong>{mentor.position}</strong> tại{" "}
+                <strong>{mentor.company}</strong>
+              </span>
             </div>
-          )}
 
-          {/* Rating Info */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <Star className="w-4 h-4 shrink-0 fill-amber-400 text-amber-400" />
-            <span>
-              {mentor.avgRating.toFixed(1)} ({mentor.totalRatings}{" "}
-              {mentor.totalRatings === 1 ? "đánh giá" : "đánh giá"})
-            </span>
+            {/* Rating Info */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Star className="w-4 h-4 shrink-0 fill-amber-400 text-amber-400" />
+              <span>
+                {mentor.avgRating.toFixed(1)} ({mentor.totalRatings}{" "}
+                {mentor.totalRatings === 1 ? "đánh giá" : "đánh giá"})
+              </span>
+            </div>
+
+            {/* Skills */}
+            {mentor.skills && mentor.skills.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {mentor.skills.slice(0, 3).map((skill, index) => (
+                  <Badge key={index} variant="secondary">
+                    {skill}
+                  </Badge>
+                ))}
+                {mentor.skills.length > 3 && (
+                  <Badge variant="secondary">+{mentor.skills.length - 3}</Badge>
+                )}
+              </div>
+            )}
+
+            {mentor.hasMet && (
+              <Badge variant="outline" className="w-fit">
+                Đã học
+              </Badge>
+            )}
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3 pt-3 border-t">
+          <div className="mt-auto grid grid-cols-2 gap-3 border-t pt-5">
             <div>
               <div className="text-xs text-muted-foreground mb-1">
                 Kinh nghiệm

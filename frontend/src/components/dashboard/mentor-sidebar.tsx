@@ -3,6 +3,7 @@ import {
   Calendar,
   Clock,
   DollarSign,
+  MessageSquare,
   User,
 } from "lucide-react"
 
@@ -33,6 +34,11 @@ const navMain = [
     title: "Lên lịch khả dụng",
     url: "/mentor/set-availabilities" as const,
     icon: Clock,
+  },
+  {
+    title: "Diễn đàn",
+    url: "/mentor/forum" as const,
+    icon: MessageSquare,
   },
   {
     title: "Chỉnh sửa thông tin",

@@ -33,7 +33,14 @@ export function TopicDetail() {
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const dispatch = useAppDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
-  const route = user?.role === USER_ROLES.USER ? getRouteApi('/user/forum/topic/$topicId') : getRouteApi('/public/forum/topic/$topicId');
+  const route =
+    user?.role === USER_ROLES.USER
+      ? getRouteApi('/user/forum/topic/$topicId')
+      : user?.role === USER_ROLES.ADMIN
+        ? getRouteApi('/admin/forum/topic/$topicId')
+        : user?.role === USER_ROLES.MENTOR
+          ? getRouteApi('/mentor/forum/topic/$topicId')
+          : getRouteApi('/public/forum/topic/$topicId');
   const { topicId } = route.useParams();
   const pageSize = 10;
   const postsQuery = useGetAllPostsByTopicId(topicId, currentPage, pageSize);
@@ -122,11 +129,20 @@ export function TopicDetail() {
     });
   }
 
+  const forumLink =
+    user?.role === USER_ROLES.USER
+      ? '/user/forum'
+      : user?.role === USER_ROLES.ADMIN
+        ? '/admin/forum'
+        : user?.role === USER_ROLES.MENTOR
+          ? '/mentor/forum'
+          : '/forum';
+
   return (
     <div className="container mx-auto px-4 pt-6 pb-6">
       <div className="w-full space-y-6">
         <Button variant="outline" className="mb-4" asChild>
-          <Link to={user?.role === USER_ROLES.USER ? '/user/forum' : '/forum'}>
+          <Link to={forumLink}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Quay lại
           </Link>
@@ -204,5 +220,13 @@ export const Route = createLazyRoute('/public/forum/topic/$topicId')({
 })
 
 export const UserRoute = createLazyRoute('/user/forum/topic/$topicId')({
+  component: TopicDetail
+});
+
+export const AdminRoute = createLazyRoute('/admin/forum/topic/$topicId')({
+  component: TopicDetail
+});
+
+export const MentorRoute = createLazyRoute('/mentor/forum/topic/$topicId')({
   component: TopicDetail
 });

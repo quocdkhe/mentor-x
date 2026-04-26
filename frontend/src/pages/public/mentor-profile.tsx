@@ -165,11 +165,60 @@ const MentorProfilePage = () => {
     return stars;
   };
 
+  const canBook = !user || user.role === USER_ROLES.USER;
+
+  const bookingCardContent = (
+    <>
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="flex items-center justify-center font-bold">
+          <span className="text-2xl sm:text-3xl mr-1">
+            {formatPrice(mentor.pricePerHour)}
+          </span>
+          <span className="text-lg sm:text-xl">VND</span>
+        </div>
+        <p className="text-muted-foreground text-sm mt-1 font-medium">
+          giá mỗi giờ
+        </p>
+      </div>
+
+      {canBook && (
+        <div className="space-y-3">
+          <Button className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
+            <Calendar className="w-5 h-5" />
+            Đặt lịch
+          </Button>
+        </div>
+      )}
+
+      <div className="h-px bg-border my-5 sm:my-6"></div>
+      <ul className="space-y-2.5 sm:space-y-3">
+        <li className="flex items-start gap-3">
+          <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <span className="text-sm text-muted-foreground">
+            Xác nhận đặt lịch ngay lập tức
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <span className="text-sm text-muted-foreground">
+            Hủy lịch miễn phí trước 24 giờ
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <span className="text-sm text-muted-foreground">
+            Video call bảo mật và ổn định
+          </span>
+        </li>
+      </ul>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-background text-foreground py-8">
-      <div className="container mx-auto px-4">
-        <div className="mb-6">
-          <Button variant="ghost" asChild className="gap-2 hover:bg-muted">
+    <div className="min-h-screen bg-background text-foreground py-4 sm:py-8">
+      <div className="container mx-auto px-3 sm:px-4">
+        <div className="mb-4 sm:mb-6">
+          <Button variant="ghost" asChild className="gap-2 hover:bg-muted px-2 sm:px-3">
             <Link
               to={user?.role === USER_ROLES.USER ? "/user/mentors" : "/mentors"}
             >
@@ -178,48 +227,45 @@ const MentorProfilePage = () => {
             </Link>
           </Button>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-9 space-y-6">
+          <div className="lg:col-span-9 space-y-5 sm:space-y-6">
             {/* Profile Header Card */}
             <Card className="rounded-2xl shadow-sm border">
-              <CardContent className="p-6 sm:p-8">
-                <div className="flex flex-col sm:flex-row gap-6">
+              <CardContent className="p-4 sm:p-8">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                   {/* Avatar with gradient border and online status */}
                   <div className="shrink-0 relative mx-auto sm:mx-0">
-                    <div className="h-32 w-32 rounded-full p-1 bg-linear-to-tr from-primary to-purple-300">
+                    <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full p-1 bg-linear-to-tr from-primary to-purple-300">
                       <Avatar className="h-full w-full border-4 border-card">
                         <AvatarImage
                           src={mentor.avatar}
                           alt={mentor.name}
                           className="object-cover"
                         />
-                        <AvatarFallback className="text-4xl">
+                        <AvatarFallback className="text-2xl sm:text-4xl">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
                     </div>
                   </div>
-                  
 
                   {/* Profile Info */}
                   <div className="flex-1 text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row justify-between items-start">
-                      <div>
-                        <div className="flex flex-row items-center gap-2">
-                          <h1 className="text-3xl font-bold mb-1">
+                      <div className="w-full">
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                          <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
                             {mentor.name}
                           </h1>
                           {mentor.isVerified && (
-                            <CheckCircle2 className="w-5 h-5 text-primary" />
+                            <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1.5 mt-2 mb-2">
+                        <div className="flex items-center justify-center sm:justify-start gap-1.5 mt-2">
                           {mentor.isVerified && (
-                            <Badge
-                              variant="secondary"
-                            >
+                            <Badge variant="secondary" className="px-2 py-1">
                               <CheckCircle2 className="w-4 h-4" />
                               <span className="text-xs font-semibold">
                                 Được kiểm duyệt bởi MentorX
@@ -227,7 +273,7 @@ const MentorProfilePage = () => {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-lg text-muted-foreground font-medium">
+                        <p className="mt-2 text-base sm:text-lg text-muted-foreground font-medium">
                           {mentor.position} tại {mentor.company}
                         </p>
                         <div className="flex items-center justify-center sm:justify-start gap-2 mt-2 text-muted-foreground text-sm">
@@ -237,7 +283,10 @@ const MentorProfilePage = () => {
 
                         {/* Study hours badge - using primary color */}
                         {user && mentor.meetingHours > 0 && (
-                          <Badge variant="secondary" className="mt-3">
+                          <Badge
+                            variant="secondary"
+                            className="mt-3 justify-center mx-auto sm:mx-0"
+                          >
                             <Clock className="w-4 h-4 mr-1" />
                             Bạn đã học {mentor.meetingHours.toFixed(1)} giờ
                             cùng Mentor này
@@ -247,7 +296,7 @@ const MentorProfilePage = () => {
                     </div>
 
                     {/* Experience and Response Time */}
-                    <div className="flex flex-wrap justify-center sm:justify-start gap-y-2 gap-x-6 mt-4 text-sm text-muted-foreground">
+                    <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-y-2 gap-x-4 sm:gap-x-6 text-xs sm:text-sm text-muted-foreground">
                       <div className="flex items-center gap-1.5">
                         <Briefcase className="w-4 h-4" />
                         {mentor.yearsOfExperience} năm kinh nghiệm
@@ -258,11 +307,11 @@ const MentorProfilePage = () => {
                       </div>
                     </div>
                     {/* Rating */}
-                    <div className="flex items-center justify-center sm:justify-start gap-2 mt-4">
+                    <div className="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-2 text-sm sm:text-base">
                       <div className="flex text-orange-400">
                         {renderStars(mentor.avgRating)}
                       </div>
-                      <span className="font-bold text-lg">
+                      <span className="font-bold text-base sm:text-lg">
                         {mentor.avgRating.toFixed(1)}
                       </span>
                       <span className="text-muted-foreground text-sm underline cursor-pointer">
@@ -274,15 +323,21 @@ const MentorProfilePage = () => {
               </CardContent>
             </Card>
 
+            {canBook && (
+              <Card className="lg:hidden rounded-2xl shadow-lg border">
+                <CardContent className="p-4">{bookingCardContent}</CardContent>
+              </Card>
+            )}
+
             {/* Navigation */}
             <div
-              className="sticky z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 py-2 -mx-2 px-2"
+              className="sticky z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 py-1.5 sm:py-2 -mx-1 sm:-mx-2 px-1 sm:px-2"
               style={{ top: "var(--navbar-height, 64px)" }}
             >
-              <div className="w-full grid grid-cols-3 h-11 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+              <div className="w-full grid grid-cols-3 h-10 sm:h-11 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
                 <button
                   onClick={() => scrollToSection("about")}
-                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
+                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
                     activeSection === "about"
                       ? "bg-primary/10 shadow-sm dark:bg-primary/20 border-primary/20"
                       : "hover:text-foreground text-muted-foreground"
@@ -292,7 +347,7 @@ const MentorProfilePage = () => {
                 </button>
                 <button
                   onClick={() => scrollToSection("availability")}
-                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
+                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
                     activeSection === "availability"
                       ? "bg-primary/10 shadow-sm dark:bg-primary/20 border-primary/20"
                       : "hover:text-foreground text-muted-foreground"
@@ -302,7 +357,7 @@ const MentorProfilePage = () => {
                 </button>
                 <button
                   onClick={() => scrollToSection("reviews")}
-                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
+                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full ${
                     activeSection === "reviews"
                       ? "bg-primary/10 shadow-sm dark:bg-primary/20 border-primary/20"
                       : "hover:text-foreground text-muted-foreground"
@@ -313,27 +368,31 @@ const MentorProfilePage = () => {
               </div>
             </div>
 
-            <div className="space-y-8 mt-6">
+            <div className="mt-4 space-y-6 sm:mt-6 sm:space-y-8">
               {/* About Section */}
               <div id="about" className="scroll-mt-32">
                 <Card className="rounded-2xl shadow-sm border">
-                  <CardContent className="p-6 sm:p-8">
-                    <h2 className="text-xl font-bold mb-4">Về tôi</h2>
+                  <CardContent className="p-4 sm:p-8">
+                    <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
+                      Về tôi
+                    </h2>
                     <div
-                      className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed mb-8"
+                      className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed mb-6 sm:mb-8"
                       dangerouslySetInnerHTML={{ __html: mentor.biography }}
                     />
 
-                    <div className="space-y-8 pt-6 border-t">
+                    <div className="space-y-6 sm:space-y-8 pt-4 sm:pt-6 border-t">
                       {/* Skills */}
                       <div>
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-2 mb-3 sm:mb-4">
                           <Brain className="w-5 h-5" />
                           <h3 className="font-bold">Kỹ năng</h3>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
                           {mentor.skills.map((skill, idx) => (
-                            <Badge variant="default" key={idx}>{skill}</Badge>
+                            <Badge variant="default" key={idx}>
+                              {skill}
+                            </Badge>
                           ))}
                         </div>
                       </div>
@@ -345,8 +404,8 @@ const MentorProfilePage = () => {
               {/* Availability Section */}
               <div id="availability" className="scroll-mt-32">
                 <Card className="rounded-2xl shadow-sm border">
-                  <CardContent className="p-6 sm:p-8">
-                    <h2 className="text-xl font-bold mb-6">
+                  <CardContent className="p-4 sm:p-8">
+                    <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">
                       Lịch rảnh trong tuần
                     </h2>
                     {isLoadingAvailabilities ? (
@@ -421,9 +480,9 @@ const MentorProfilePage = () => {
                           return sortedDays.map((dayOfWeek) => (
                             <div
                               key={dayOfWeek}
-                              className="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b last:border-b-0"
+                              className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 pb-3 sm:pb-4 border-b last:border-b-0"
                             >
-                              <div className="w-24 shrink-0">
+                              <div className="w-20 sm:w-24 shrink-0">
                                 <span className="font-medium text-foreground">
                                   {dayNameVi[dayOfWeek]}
                                 </span>
@@ -450,8 +509,10 @@ const MentorProfilePage = () => {
               {/* Reviews Section */}
               <div id="reviews" className="scroll-mt-32">
                 <Card className="rounded-2xl shadow-sm border">
-                  <CardContent className="p-6 sm:p-8">
-                    <h2 className="text-xl font-bold mb-6">Đánh giá</h2>
+                  <CardContent className="p-4 sm:p-8">
+                    <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">
+                      Đánh giá
+                    </h2>
 
                     {isLoadingReviews ? (
                       <div className="space-y-4">
@@ -480,11 +541,11 @@ const MentorProfilePage = () => {
                         {reviewsData.items.map((review) => (
                           <div
                             key={review.id}
-                            className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                            className="border rounded-lg p-3 sm:p-4 hover:bg-muted/50 transition-colors"
                           >
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3 sm:gap-4">
                               {/* User Avatar */}
-                              <Avatar className="h-12 w-12">
+                              <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                                 <AvatarImage
                                   src={review.menteeAvatar || undefined}
                                   alt={review.menteeName}
@@ -499,8 +560,8 @@ const MentorProfilePage = () => {
 
                               <div className="flex-1 min-w-0">
                                 {/* User Info and Date */}
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                  <div>
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-2">
+                                  <div className="min-w-0">
                                     <h4 className="font-semibold text-sm">
                                       {review.menteeName}
                                     </h4>
@@ -521,7 +582,7 @@ const MentorProfilePage = () => {
                                   </div>
 
                                   {/* Stars */}
-                                  <div className="flex gap-0.5">
+                                  <div className="flex gap-0.5 self-start sm:self-auto">
                                     {Array.from({ length: 5 }).map((_, idx) => (
                                       <Star
                                         key={idx}
@@ -537,7 +598,7 @@ const MentorProfilePage = () => {
 
                                 {/* Comment */}
                                 {review.comment && (
-                                  <p className="text-sm text-foreground leading-relaxed mb-3">
+                                  <p className="text-sm text-foreground leading-relaxed mb-2 sm:mb-3">
                                     {review.comment}
                                   </p>
                                 )}
@@ -578,67 +639,20 @@ const MentorProfilePage = () => {
           </div>
 
           {/* Right Sidebar - Booking */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-4 sm:space-y-6">
             <div
               className="sticky space-y-6"
               style={{ top: "calc(var(--navbar-height, 64px) + 1rem)" }}
             >
               {/* Pricing and Booking Card */}
-              <Card className="rounded-2xl shadow-lg border">
-                <CardContent className="p-6 sm:p-8">
-                  {/* Price */}
-                  <div className="text-center mb-8">
-                    <div className="flex items-center justify-center font-bold">
-                      <span className="text-3xl mr-1">
-                        {formatPrice(mentor.pricePerHour)}
-                      </span>
-                      <span className="text-xl">VND</span>
-                    </div>
-                    <p className="text-muted-foreground text-sm mt-1 font-medium">
-                      giá mỗi giờ
-                    </p>
-                  </div>
-
-                  {/* Action Buttons - using primary color */}
-                  {(!user || user.role === USER_ROLES.USER) && (
-                    <div className="space-y-3">
-                      <Button
-                        className="w-full gap-2"
-                        onClick={() => setIsBookingOpen(true)}
-                      >
-                        <Calendar className="w-5 h-5" />
-                        Đặt lịch
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Features */}
-                  <div className="h-px bg-border my-6"></div>
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">
-                        Xác nhận đặt lịch ngay lập tức
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">
-                        Hủy lịch miễn phí trước 24 giờ
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">
-                        Video call bảo mật và ổn định
-                      </span>
-                    </li>
-                  </ul>
+              <Card className="hidden lg:block rounded-2xl shadow-lg border">
+                <CardContent className="p-4 sm:p-8">
+                  {bookingCardContent}
                 </CardContent>
               </Card>
 
               {/* Info Alert */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800/50 flex items-start gap-3">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 sm:p-4 border border-blue-100 dark:border-blue-800/50 flex items-start gap-3">
                 <Info className="w-5 h-5 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-700 dark:text-blue-300 leading-snug">
                   {mentor.name} thường phản hồi trong vòng vài giờ. Hãy đặt lịch
