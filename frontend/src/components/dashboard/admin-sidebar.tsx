@@ -1,5 +1,12 @@
 import * as React from "react";
-import { CheckCheckIcon, DollarSign, User, Users, VerifiedIcon } from "lucide-react";
+import {
+  CheckCheckIcon,
+  DollarSign,
+  MessageSquare,
+  User,
+  Users,
+  VerifiedIcon,
+} from "lucide-react";
 
 import { NavMain } from "@/components/dashboard/nav-main.tsx";
 import { NavUser } from "@/components/dashboard/nav-user.tsx";
@@ -33,6 +40,11 @@ const navMain = [
     title: "Xác thực mentor",
     url: "/admin/verify-mentors" as const,
     icon: VerifiedIcon,
+  },
+  {
+    title: "Diễn đàn",
+    url: "/admin/forum" as const,
+    icon: MessageSquare,
   },
   {
     title: "Tài khoản của tôi",

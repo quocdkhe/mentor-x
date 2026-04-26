@@ -48,10 +48,30 @@ const mentorPaymentStatusRoute = createRoute({
   }),
 }).lazy(() => import("@/pages/mentor/mentor-payment-status").then((d) => d.Route));
 
+const forumRoute = createRoute({
+  getParentRoute: () => mentorLayoutRoute,
+  path: "/forum",
+  head: () => ({
+    meta: [{ title: "MentorX - Diễn đàn" }],
+  }),
+}).lazy(() => import("@/pages/public/forum/forum").then((d) => d.MentorRoute));
+
+const forumTopicDetailRoute = createRoute({
+  getParentRoute: () => mentorLayoutRoute,
+  path: "/forum/topic/$topicId",
+  head: () => ({
+    meta: [{ title: "MentorX - Chi tiết chủ đề" }],
+  }),
+}).lazy(() =>
+  import("@/pages/public/forum/topic-detail").then((d) => d.MentorRoute),
+);
+
 const mentorRouteTree = mentorLayoutRoute.addChildren([
   editProfileRoute,
   setAvailabilitiesRoute,
   schedulesRoute,
   mentorPaymentStatusRoute,
+  forumRoute,
+  forumTopicDetailRoute,
 ]);
 export { mentorRouteTree };

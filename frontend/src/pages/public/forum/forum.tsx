@@ -61,6 +61,19 @@ export function ForumListing() {
   const { items, totalItems, currentPage: page } = data;
   const startIndex = (page - 1) * pageSize;
 
+  function getTopicLink(topicId: string) {
+    switch (user?.role) {
+      case USER_ROLES.USER:
+        return `/user/forum/topic/${topicId}`;
+      case USER_ROLES.ADMIN:
+        return `/admin/forum/topic/${topicId}`;
+      case USER_ROLES.MENTOR:
+        return `/mentor/forum/topic/${topicId}`;
+      default:
+        return `/forum/topic/${topicId}`;
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 pt-6 pb-20 min-h-screen">
       <div className="w-full space-y-4">
@@ -80,10 +93,7 @@ export function ForumListing() {
         <div className="md:hidden space-y-4">
           {items.map(function (topic) {
             const { label, variant } = getTopicTypeMeta(topic.type);
-            const topicLink =
-              user?.role === USER_ROLES.USER
-                ? `/user/forum/topic/${topic.id}`
-                : `/forum/topic/${topic.id}`;
+            const topicLink = getTopicLink(topic.id);
 
             return (
               <Link key={topic.id} to={topicLink} className="block">
@@ -158,6 +168,22 @@ export function ForumListing() {
                         >
                           {topic.title}
                         </Link>
+                      ) : user?.role === USER_ROLES.ADMIN ? (
+                        <Link
+                          to="/admin/forum/topic/$topicId"
+                          params={{ topicId: topic.id }}
+                          className="font-medium hover:underline"
+                        >
+                          {topic.title}
+                        </Link>
+                      ) : user?.role === USER_ROLES.MENTOR ? (
+                        <Link
+                          to="/mentor/forum/topic/$topicId"
+                          params={{ topicId: topic.id }}
+                          className="font-medium hover:underline"
+                        >
+                          {topic.title}
+                        </Link>
                       ) : (
                         <Link
                           to="/forum/topic/$topicId"
@@ -210,5 +236,13 @@ export const Route = createLazyRoute("/public/forum")({
 });
 
 export const UserRoute = createLazyRoute("/user/forum")({
+  component: ForumListing,
+});
+
+export const AdminRoute = createLazyRoute("/admin/forum")({
+  component: ForumListing,
+});
+
+export const MentorRoute = createLazyRoute("/mentor/forum")({
   component: ForumListing,
 });
