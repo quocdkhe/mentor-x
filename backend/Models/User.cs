@@ -38,4 +38,10 @@ public partial class User
     // Reviews upvoted by this user
     public virtual ICollection<MentorReview> UpvotedReviews { get; set; } = new List<MentorReview>();
 
+    // Calls initiated by this user
+    public virtual ICollection<Call> InitiatedCalls { get; set; } = new List<Call>();
+
+    // Calls received by this user
+    public virtual ICollection<Call> ReceivedCalls { get; set; } = new List<Call>();
+
 }

@@ -37,6 +37,10 @@ public partial class MentorXContext : DbContext
 
     public virtual DbSet<GoogleAccount> GoogleAccounts { get; set; }
 
+    public virtual DbSet<Call> Calls { get; set; }
+
+    public virtual DbSet<CallLog> CallLogs { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -509,6 +513,103 @@ public partial class MentorXContext : DbContext
                 .IsRequired(false)
                 .HasForeignKey<GoogleAccount>(d => d.UserId)
                 .HasConstraintName("fk_google_accounts_user");
+        });
+
+        modelBuilder.Entity<Call>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("calls_pkey");
+            entity.ToTable("calls");
+
+            entity.HasIndex(e => e.InitiatorId, "idx_calls_initiator_id");
+            entity.HasIndex(e => e.RecipientId, "idx_calls_recipient_id");
+            entity.HasIndex(e => e.AppointmentId, "idx_calls_appointment_id");
+            entity.HasIndex(e => e.Status, "idx_calls_status");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+
+            entity.Property(e => e.InitiatorId).HasColumnName("initiator_id");
+            entity.Property(e => e.RecipientId).HasColumnName("recipient_id");
+            entity.Property(e => e.AppointmentId).HasColumnName("appointment_id");
+
+            entity.Property(e => e.Status)
+                .HasConversion<string>()
+                .HasDefaultValue(CallStatus.Pending)
+                .HasColumnName("status");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+
+            entity.Property(e => e.StartedAt)
+                .HasColumnName("started_at");
+
+            entity.Property(e => e.EndedAt)
+                .HasColumnName("ended_at");
+
+            entity.Property(e => e.DurationSeconds)
+                .HasDefaultValue(0)
+                .HasColumnName("duration_seconds");
+
+            entity.Property(e => e.EndReason)
+                .HasConversion<string>()
+                .HasColumnName("end_reason");
+
+            entity.Property(e => e.ErrorMessage)
+                .HasColumnName("error_message");
+
+            entity.HasOne(d => d.Initiator)
+                .WithMany(p => p.InitiatedCalls)
+                .HasForeignKey(d => d.InitiatorId)
+                .HasConstraintName("fk_calls_initiator")
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Recipient)
+                .WithMany(p => p.ReceivedCalls)
+                .HasForeignKey(d => d.RecipientId)
+                .HasConstraintName("fk_calls_recipient")
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Appointment)
+                .WithMany()
+                .HasForeignKey(d => d.AppointmentId)
+                .HasConstraintName("fk_calls_appointment")
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<CallLog>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("call_logs_pkey");
+            entity.ToTable("call_logs");
+
+            entity.HasIndex(e => e.CallId, "idx_call_logs_call_id");
+            entity.HasIndex(e => e.UserId, "idx_call_logs_user_id");
+            entity.HasIndex(e => e.Timestamp, "idx_call_logs_timestamp");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+
+            entity.Property(e => e.CallId).HasColumnName("call_id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.EventType).HasColumnName("event_type");
+            entity.Property(e => e.Timestamp)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("timestamp");
+            entity.Property(e => e.Details).HasColumnName("details");
+
+            entity.HasOne(d => d.Call)
+                .WithMany(p => p.CallLogs)
+                .HasForeignKey(d => d.CallId)
+                .HasConstraintName("fk_call_logs_call")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_call_logs_user")
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
 
