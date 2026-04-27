@@ -42,6 +42,7 @@ export interface MenteeInfoDto {
 export interface MentorAppointmentDto {
   appointmentId: string;
   mentorId: string; // Guid
+  menteeId: string; // Guid
   mentee: MenteeInfoDto;
   startAt: string; // ISO-8601 UTC string
   endAt: string; // ISO-8601 UTC string

@@ -14,6 +14,7 @@ public class MentorAppointmentDto
 {
     public Guid AppointmentId { get; set; }
     public Guid MentorId { get; set; }
+    public Guid MenteeId { get; set; }
 
     public MenteeInfoDto Mentee { get; set; } = null!;
 

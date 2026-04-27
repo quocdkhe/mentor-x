@@ -1,5 +1,6 @@
 //using backend.Configurations;
 using backend.Configurations;
+using backend.Hubs;
 using backend.Middleware;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,9 @@ builder.Services.AddMemoryCache(); // Memory cache store Google access token
 builder.Services.AddProjectServices();
 builder.Services.AddJwtConfig(builder.Configuration); // JWT and CORS configuration
 builder.Services.AddCorsConfig(builder.Configuration); // CORS configuration
+
+// Add SignalR
+builder.Services.AddSignalR();
 
 
 var app = builder.Build();
@@ -50,5 +54,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
+app.MapHub<CallSignalingHub>("/hubs/call-signaling");
 
 app.Run();

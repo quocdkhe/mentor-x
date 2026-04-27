@@ -27,10 +27,11 @@ namespace backend.Configurations
                     ValidAudience = configuration["Jwt:Audience"],
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
-                    RoleClaimType = ClaimTypes.Role
+                    RoleClaimType = ClaimTypes.Role,
+                    NameClaimType = ClaimTypes.NameIdentifier  // Map NameIdentifier to User.Identity.Name
                 };
 
-                // Read JWT from HTTP-only cookie
+                // Read JWT from HTTP-only cookie or query string (for SignalR)
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -41,6 +42,17 @@ namespace backend.Configurations
                             // Then check cookie (for browser clients)
                             context.Token = context.Request.Cookies["access_token"];
                         }
+                        
+                        // For SignalR WebSocket connections, check query string
+                        if (string.IsNullOrEmpty(context.Token) && context.Request.Path.StartsWithSegments("/hubs"))
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            if (!string.IsNullOrEmpty(accessToken))
+                            {
+                                context.Token = accessToken;
+                            }
+                        }
+                        
                         return Task.CompletedTask;
                     }
                 };

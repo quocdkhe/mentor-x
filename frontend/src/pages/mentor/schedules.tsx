@@ -47,6 +47,9 @@ import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
+import { useRef } from "react";
+import { CallManager, type CallManagerRef } from "@/components/features/call";
+import { Phone } from "lucide-react";
 
 // --- Types & Interfaces ---
 interface ScheduleItem {
@@ -88,6 +91,7 @@ const Schedules = () => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const queryClient = useQueryClient();
   const user = useSelector((state: RootState) => state.auth.user);
+  const callManagerRef = useRef<CallManagerRef>(null);
   // Fetch appointments from API for the selected date (or all if no date)
   const { data: appointmentsData = [], isLoading } = useMentorGetAppointments(date ? convertDateToUTC(date) : undefined);
 
@@ -383,6 +387,23 @@ const Schedules = () => {
                     )}
                     {schedule.status === "Confirmed" && (
                       <div className="flex gap-2 flex-wrap">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="gap-2 bg-purple-600 hover:bg-purple-700"
+                          onClick={() => {
+                            // Get mentee ID from the appointments data
+                            const apt = appointmentsData.find(a => a.appointmentId === schedule.appointmentId);
+                            if (apt?.menteeId) {
+                              callManagerRef.current?.initiateCall(apt.menteeId, schedule.appointmentId);
+                            } else {
+                              toast.error("Không tìm thấy thông tin học viên");
+                            }
+                          }}
+                        >
+                          <Phone className="h-4 w-4" />
+                          Gọi Video
+                        </Button>
                         <Button variant="outline" size="sm" className="gap-2" asChild>
                           <a href={schedule.meetingLink} target="_blank" rel="noopener noreferrer">
                             <Video className="h-4 w-4" />
@@ -482,6 +503,15 @@ const Schedules = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Call Manager */}
+      <CallManager
+        ref={callManagerRef}
+        accessToken={localStorage.getItem("accessToken") || ""}
+        userId={user?.id || ""}
+        userName={user?.name || ""}
+        apiUrl={import.meta.env.VITE_API_URL}
+      />
     </div>
   );
 };

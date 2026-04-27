@@ -9,7 +9,10 @@ import {
   X,
   Star,
   MessageSquare,
+  Phone,
 } from "lucide-react";
+import { useRef } from "react";
+import { CallManager, type CallManagerRef } from "@/components/features/call";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
@@ -129,6 +132,7 @@ function MenteeSchedulesPage() {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const queryClient = useQueryClient();
+  const callManagerRef = useRef<CallManagerRef>(null);
 
   // Fetch appointments from API for the selected date (or all if no date)
   const { data: appointmentsData = [], isLoading } = useMenteeGetAppointments(
@@ -492,6 +496,19 @@ function MenteeSchedulesPage() {
                   {appointment.status === "Confirmed" &&
                     appointment.meetingLink && (
                       <>
+                        <Button 
+                          className="w-full gap-2 bg-purple-600 hover:bg-purple-700"
+                          onClick={() => {
+                            if (appointment.mentorId) {
+                              callManagerRef.current?.initiateCall(appointment.mentorId, appointment.appointmentId);
+                            } else {
+                              toast.error("Không tìm thấy thông tin mentor");
+                            }
+                          }}
+                        >
+                          <Phone className="h-4 w-4" />
+                          Gọi Video
+                        </Button>
                         <Button className="w-full gap-2" asChild>
                           <a
                             href={appointment.meetingLink}
@@ -710,6 +727,15 @@ function MenteeSchedulesPage() {
         isLoading={isLoadingPaymentDetail}
         isVerifying={isVerifyingPayment}
         onVerifyPayment={handleVerifyPayment}
+      />
+
+      {/* Call Manager */}
+      <CallManager
+        ref={callManagerRef}
+        accessToken={localStorage.getItem("accessToken") || ""}
+        userId={localStorage.getItem("userId") || ""}
+        userName={localStorage.getItem("userName") || ""}
+        apiUrl={import.meta.env.VITE_API_URL}
       />
     </div>
   );

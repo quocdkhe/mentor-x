@@ -21,6 +21,7 @@ namespace backend.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // FIX: Guid to string
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), // Standard JWT sub claim
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.Role, user.Role.ToString()), // Critical for [Authorize(Roles = "Admin")]

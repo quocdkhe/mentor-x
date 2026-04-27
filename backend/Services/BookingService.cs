@@ -175,6 +175,7 @@ namespace backend.Services
                 {
                     AppointmentId = a.Id,
                     MentorId = a.MentorId,
+                    MenteeId = a.MenteeId,
                     Mentee = new MenteeInfoDto
                     {
                         Name = a.Mentee.Name,
