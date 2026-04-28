@@ -2,6 +2,7 @@
 using backend.Configurations;
 using backend.Middleware;
 using backend.Models;
+using backend.Hubs;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -17,6 +18,7 @@ builder.Services.AddSwaggerGen(); // Swagger configuration
 builder.Services.AddStorageConfig(builder.Configuration); // Storage configuration  
 builder.Services.AddHttpClient(); // HttpClient for external API calls
 builder.Services.AddMemoryCache(); // Memory cache store Google access token
+builder.Services.AddSignalR();
 
 // Add services to the container.
 builder.Services.AddProjectServices();
@@ -26,8 +28,9 @@ builder.Services.AddCorsConfig(builder.Configuration); // CORS configuration
 
 var app = builder.Build();
 // Run migration
-using (var scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<MentorXContext>();
     context.Database.Migrate();
@@ -49,6 +52,9 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.MapHub<CallHub>("/hubs/call");
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;
