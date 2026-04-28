@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
+import SignalRTest from "@/components/signalr-test";
 
 export function UserHomePage() {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -28,6 +29,8 @@ export function UserHomePage() {
           theo hôm nay chưa?
         </p>
       </div>
+
+      <SignalRTest />
 
       {/* Main Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto">
