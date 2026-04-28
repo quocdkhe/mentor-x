@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
 import { HubConnectionBuilder, HubConnectionState } from "@microsoft/signalr";
 import type { HubConnection } from "@microsoft/signalr";
+import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import type { CallStatus } from "@/types/call";
 
 interface UseSignalRResult {
-  connectionRef: React.MutableRefObject<HubConnection | null>;
+  connection: HubConnection | null;
+  connectionRef: MutableRefObject<HubConnection | null>;
   status: CallStatus;
 }
 
@@ -26,6 +27,7 @@ function mapHubState(state: HubConnectionState): CallStatus {
 
 export function useSignalR(hubUrl: string): UseSignalRResult {
   const [status, setStatus] = useState<CallStatus>("connecting");
+  const [connection, setConnection] = useState<HubConnection | null>(null);
   const connectionRef = useRef<HubConnection | null>(null);
   const isCancelledRef = useRef(false);
 
@@ -57,6 +59,7 @@ export function useSignalR(hubUrl: string): UseSignalRResult {
       .start()
       .then(() => {
         if (!isCancelledRef.current) setStatus(mapHubState(conn.state));
+        if (!isCancelledRef.current) setConnection(conn);
       })
       .catch(() => {
         if (!isCancelledRef.current) setStatus("error");
@@ -65,9 +68,10 @@ export function useSignalR(hubUrl: string): UseSignalRResult {
     return () => {
       isCancelledRef.current = true;
       connectionRef.current = null;
+      setConnection(null);
       void conn.stop();
     };
   }, [hubUrl]);
 
-  return { connectionRef, status };
+  return { connection, connectionRef, status };
 }

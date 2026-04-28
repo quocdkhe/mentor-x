@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
-import SignalRTest from "@/components/signalr-test";
+import WebRTCTest from "@/components/p2p-test";
 
 export function UserHomePage() {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -30,7 +30,7 @@ export function UserHomePage() {
         </p>
       </div>
 
-      <SignalRTest />
+      <WebRTCTest />
 
       {/* Main Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto">
