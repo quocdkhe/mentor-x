@@ -9,13 +9,15 @@ namespace backend.Configurations
     {
         public static IServiceCollection AddCorsConfig(this IServiceCollection services, IConfiguration configuration)
         {
+            var origins = configuration.GetSection("CorsOrigins").Get<string[]>() ?? [];
+
             // Cors configuration
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", policy =>
                 {
                     policy
-                        .WithOrigins("http://localhost:5173", "http://localhost:4173", "https://mentor-x-gamma.vercel.app", "https://mentor-x.quocdk.id.vn") // your frontend URL
+                        .WithOrigins(origins)
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials(); // allow cookies

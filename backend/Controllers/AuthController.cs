@@ -2,7 +2,6 @@
 using backend.Models.DTOs.Auth;
 using backend.Models.DTOs.User;
 using backend.Services.Interfaces;
-using Google.Apis.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -17,25 +16,13 @@ namespace backend.Controllers
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IGoogleOAuthService _googleOAuthService;
 
-        private readonly CookieOptions ACCESS_TOKEN_OPTION = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(15)
-        };
-
-        private readonly CookieOptions REFRESH_TOKEN_OPTION = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddDays(7)
-        };
+        private readonly CookieOptions ACCESS_TOKEN_OPTION;
+        private readonly CookieOptions REFRESH_TOKEN_OPTION;
 
         public AuthController(IAuthService authService, IUserService userService,
             ITokenService tokenService, IRefreshTokenService refreshTokenService,
-            IGoogleOAuthService googleOAuthService
+            IGoogleOAuthService googleOAuthService,
+            IWebHostEnvironment env
             )
         {
             _authService = authService;
@@ -43,6 +30,25 @@ namespace backend.Controllers
             _tokenService = tokenService;
             _refreshTokenService = refreshTokenService;
             _googleOAuthService = googleOAuthService;
+
+            var secure = env.IsProduction();
+            var sameSite = secure ? SameSiteMode.None : SameSiteMode.Lax;
+
+            ACCESS_TOKEN_OPTION = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = secure,
+                SameSite = sameSite,
+                Expires = DateTime.UtcNow.AddMinutes(15)
+            };
+
+            REFRESH_TOKEN_OPTION = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = secure,
+                SameSite = sameSite,
+                Expires = DateTime.UtcNow.AddDays(7)
+            };
         }
 
         private void SetTokenCookies(string accessToken, string refreshToken)

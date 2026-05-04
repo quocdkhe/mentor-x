@@ -24,6 +24,7 @@ type SignalRHandlers = {
   receiveOffer: (sdp: string) => Promise<void>;
   receiveAnswer: (sdp: string) => Promise<void>;
   receiveIceCandidate: (candidatePayload: string) => Promise<void>;
+  userJoined: () => Promise<void>;
   userLeft: () => void;
 };
 
@@ -165,6 +166,7 @@ export function useWebRTC({
       connection.off("ReceiveOffer", handlers.receiveOffer);
       connection.off("ReceiveAnswer", handlers.receiveAnswer);
       connection.off("ReceiveIceCandidate", handlers.receiveIceCandidate);
+      connection.off("UserJoined", handlers.userJoined);
       connection.off("UserLeft", handlers.userLeft);
       handlersRef.current = null;
     };
@@ -275,16 +277,34 @@ export function useWebRTC({
       void finalizeCall(false, "ended");
     };
 
+    const handleUserJoined = async () => {
+      const peerConnection = peerConnectionRef.current;
+      if (!isInitiator || !peerConnection || endedRef.current) return;
+
+      try {
+        setCallStatus("connecting");
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        if (offer.sdp) {
+          await connection.invoke("SendOffer", roomId, offer.sdp);
+        }
+      } catch {
+        void finalizeCall(false, "error");
+      }
+    };
+
     handlersRef.current = {
       receiveOffer: handleOffer,
       receiveAnswer: handleAnswer,
       receiveIceCandidate: handleIceCandidate,
+      userJoined: handleUserJoined,
       userLeft: handleUserLeft,
     };
 
     connection.on("ReceiveOffer", handleOffer);
     connection.on("ReceiveAnswer", handleAnswer);
     connection.on("ReceiveIceCandidate", handleIceCandidate);
+    connection.on("UserJoined", handleUserJoined);
     connection.on("UserLeft", handleUserLeft);
 
     const setup = async () => {
@@ -378,16 +398,6 @@ export function useWebRTC({
         await connection.invoke("JoinRoom", roomId);
         joinedRoomRef.current = true;
 
-        if (isInitiator) {
-          setCallStatus("connecting");
-
-          const offer = await peerConnection.createOffer();
-          await peerConnection.setLocalDescription(offer);
-
-          if (offer.sdp) {
-            await connection.invoke("SendOffer", roomId, offer.sdp);
-          }
-        }
       } catch {
         if (!isCancelled) {
           await finalizeCall(false, "error");
@@ -403,7 +413,6 @@ export function useWebRTC({
       void finalizeCall(true, "ended");
     };
   }, [
-    connectionRef,
     turnCredential,
     turnHost,
     turnPort,
@@ -437,6 +446,7 @@ export function useWebRTC({
         connection.off("ReceiveOffer", handlers.receiveOffer);
         connection.off("ReceiveAnswer", handlers.receiveAnswer);
         connection.off("ReceiveIceCandidate", handlers.receiveIceCandidate);
+        connection.off("UserJoined", handlers.userJoined);
         connection.off("UserLeft", handlers.userLeft);
         handlersRef.current = null;
       }
