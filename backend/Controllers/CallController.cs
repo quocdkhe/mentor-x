@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace backend.Controllers;
 
 [ApiController]
-[Route("api/call")]
+[Route("call")]
 public class CallController : ControllerBase
 {
     private readonly ICallService _callService;

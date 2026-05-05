@@ -9,6 +9,7 @@ import {
   X,
   Star,
   MessageSquare,
+  Phone,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -124,6 +125,7 @@ const statusItems = [
   { value: "Completed", label: "Hoàn thành" },
   { value: "Cancelled", label: "Đã hủy" },
 ];
+
 
 function MenteeSchedulesPage() {
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -489,6 +491,20 @@ function MenteeSchedulesPage() {
 
                 {/* Actions */}
                 <div className="space-y-2">
+                  {appointment.status === "Confirmed" && (
+                      <Button className="w-full gap-2" asChild>
+                        <Link
+                          to="/call/$sessionId"
+                          params={{
+                            sessionId: appointment.appointmentId,
+                          }}
+                        >
+                          <Phone className="h-4 w-4" />
+                          Tham gia cuộc gọi
+                        </Link>
+                      </Button>
+                    )}
+
                   {appointment.status === "Confirmed" &&
                     appointment.meetingLink && (
                       <>
