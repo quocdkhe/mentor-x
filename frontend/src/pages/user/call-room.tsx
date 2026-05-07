@@ -64,6 +64,12 @@ function CallRoom({
     }
   }, [callStatus, onNavigateBack]);
 
+  useEffect(() => {
+    if (callStatus !== "reconnecting") return;
+    const id = toast.loading("Đang kết nối lại...");
+    return () => { toast.dismiss(id); };
+  }, [callStatus]);
+
   const showOverlay =
     callStatus === "connecting" ||
     callStatus === "ended" ||
@@ -130,6 +136,8 @@ function CallRoomPage() {
     queryKey: ["call-token", sessionId],
     queryFn: () => fetchCallToken(sessionId),
     retry: false,
+    staleTime: Infinity,          // never re-fetch mid-call — new credential = new effect deps = call ends
+    refetchOnWindowFocus: false,  // returning to the tab must not trigger a re-fetch
   });
 
   const navigateBack = () => {

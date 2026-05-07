@@ -387,10 +387,15 @@ export function useWebRTC({
             return;
           }
 
-          if (
-            peerConnection.connectionState === "failed" ||
-            peerConnection.connectionState === "disconnected"
-          ) {
+          // "disconnected" is temporary (browser tab backgrounded, brief network
+          // blip). Do NOT end the call — it recovers back to "connected" on its own.
+          if (peerConnection.connectionState === "disconnected") {
+            setCallStatus("reconnecting");
+            return;
+          }
+
+          // "failed" is permanent — ICE has exhausted all candidates.
+          if (peerConnection.connectionState === "failed") {
             void finalizeCall(false, "error");
             return;
           }
