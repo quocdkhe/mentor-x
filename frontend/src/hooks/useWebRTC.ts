@@ -16,8 +16,10 @@ export interface UseWebRTCReturn {
   callStatus: CallStatus;
   isMuted: boolean;
   isVideoOff: boolean;
+  isScreenSharing: boolean;
   toggleMute: () => void;
   toggleVideo: () => void;
+  toggleScreenShare: () => void;
   endCall: () => void;
 }
 
@@ -115,10 +117,12 @@ export function useWebRTC({
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
   const joinedRoomRef = useRef(false);
   const endedRef = useRef(false);
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const handlersRef = useRef<SignalRHandlers | null>(null);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   useEffect(() => {
     const connection = connectionRef.current;
@@ -149,12 +153,15 @@ export function useWebRTC({
 
       stopStream(localStreamRef.current);
       localStreamRef.current = null;
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current = null;
       remoteStreamRef.current = null;
       pendingIceCandidatesRef.current = [];
       setLocalStream(null);
       setRemoteStream(null);
       setIsMuted(false);
       setIsVideoOff(false);
+      setIsScreenSharing(false);
     };
 
     const detachHandlers = () => {
@@ -482,13 +489,68 @@ export function useWebRTC({
 
       stopStream(localStreamRef.current);
       localStreamRef.current = null;
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current = null;
       remoteStreamRef.current = null;
       pendingIceCandidatesRef.current = [];
       setLocalStream(null);
       setRemoteStream(null);
       setIsMuted(false);
       setIsVideoOff(false);
+      setIsScreenSharing(false);
       setCallStatus("ended");
+    })();
+  };
+
+  const toggleScreenShare = () => {
+    void (async () => {
+      const pc = peerConnectionRef.current;
+      const cameraStream = localStreamRef.current;
+      if (!pc || !cameraStream) return;
+
+      if (screenStreamRef.current) {
+        // Stop screen sharing and revert to camera
+        screenStreamRef.current.getTracks().forEach((t) => t.stop());
+        screenStreamRef.current = null;
+        setIsScreenSharing(false);
+        const cameraTrack = cameraStream.getVideoTracks()[0];
+        const sender = pc.getSenders().find((s) => s.track?.kind === "video");
+        if (sender && cameraTrack) await sender.replaceTrack(cameraTrack);
+        setLocalStream(new MediaStream(cameraStream.getTracks()));
+        return;
+      }
+
+      // Start screen sharing
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: false,
+        });
+        screenStreamRef.current = screenStream;
+
+        const screenTrack = screenStream.getVideoTracks()[0];
+
+        // Fires when the user clicks the browser's native "Stop sharing" button
+        screenTrack.onended = () => {
+          screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+          screenStreamRef.current = null;
+          setIsScreenSharing(false);
+          const camTrack = cameraStream.getVideoTracks()[0];
+          const sndr = pc.getSenders().find((s) => s.track?.kind === "video");
+          if (sndr && camTrack) void sndr.replaceTrack(camTrack);
+          setLocalStream(new MediaStream(cameraStream.getTracks()));
+        };
+
+        const sender = pc.getSenders().find((s) => s.track?.kind === "video");
+        if (sender) await sender.replaceTrack(screenTrack);
+
+        setLocalStream(
+          new MediaStream([...cameraStream.getAudioTracks(), screenTrack]),
+        );
+        setIsScreenSharing(true);
+      } catch {
+        // User cancelled the browser picker or denied permission
+      }
     })();
   };
 
@@ -498,8 +560,10 @@ export function useWebRTC({
     callStatus,
     isMuted,
     isVideoOff,
+    isScreenSharing,
     toggleMute,
     toggleVideo,
+    toggleScreenShare,
     endCall,
   };
 }

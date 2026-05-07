@@ -44,8 +44,10 @@ function CallRoom({
     callStatus,
     isMuted,
     isVideoOff,
+    isScreenSharing,
     toggleMute,
     toggleVideo,
+    toggleScreenShare,
     endCall,
   } = useWebRTC({
     roomId: credential.roomId,
@@ -78,9 +80,9 @@ function CallRoom({
         <div className="absolute bottom-4 right-4 overflow-hidden rounded-xl shadow-lg ring-2 ring-white/20">
           <VideoTile
             stream={localStream}
-            label={localLabel}
+            label={isScreenSharing ? "Màn hình" : localLabel}
             isMuted={isMuted}
-            isVideoOff={isVideoOff}
+            isVideoOff={isVideoOff && !isScreenSharing}
             size="secondary"
           />
         </div>
@@ -99,8 +101,10 @@ function CallRoom({
         <ControlsBar
           isMuted={isMuted}
           isVideoOff={isVideoOff}
+          isScreenSharing={isScreenSharing}
           toggleMute={toggleMute}
           toggleVideo={toggleVideo}
+          toggleScreenShare={toggleScreenShare}
           endCall={endCall}
         />
       </div>
