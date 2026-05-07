@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { HubConnectionState } from "@microsoft/signalr";
 import type { HubConnection } from "@microsoft/signalr";
 import type { CallStatus, TurnCredential } from "@/types/call";
 
@@ -394,6 +395,17 @@ export function useWebRTC({
             void finalizeCall(false, "ended");
           }
         };
+
+        // Wait for the SignalR transport to reach Connected before joining.
+        // Without this, instant getUserMedia (cached permissions) races ahead
+        // of conn.start() and invoke throws, showing "error" immediately.
+        const signalRDeadline = Date.now() + 30_000;
+        while (connection.state !== HubConnectionState.Connected) {
+          if (isCancelled) return;
+          if (Date.now() > signalRDeadline) throw new Error("SignalR connection timeout");
+          await new Promise<void>((resolve) => setTimeout(resolve, 150));
+        }
+        if (isCancelled) return;
 
         await connection.invoke("JoinRoom", roomId);
         joinedRoomRef.current = true;
