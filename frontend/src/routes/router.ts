@@ -9,6 +9,7 @@ import App from "@/App";
 import { adminRouteTree } from "./admin.router";
 import { publicRouteTree } from "./public.router";
 import { mentorRouteTree } from "./mentor.router";
+import { callRoute } from "./call.router";
 import { redirectIfAuthenticated } from "@/utils/route-guards";
 import { Error404 } from "@/components/errors";
 
@@ -42,6 +43,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   registerRoute,
   mentorRouteTree,
+  callRoute,
 ]);
 
 export const router = createRouter({

@@ -1,8 +1,8 @@
-import { createLazyRoute } from "@tanstack/react-router";
+import { createLazyRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Calendar as CalendarIcon, Video, CalendarDays, CheckCircle, X } from "lucide-react";
+import { Calendar as CalendarIcon, Video, CalendarDays, CheckCircle, X, Phone } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
@@ -383,6 +383,15 @@ const Schedules = () => {
                     )}
                     {schedule.status === "Confirmed" && (
                       <div className="flex gap-2 flex-wrap">
+                          <Button size="sm" className="gap-2" asChild>
+                            <Link
+                              to="/call/$sessionId"
+                              params={{ sessionId: schedule.appointmentId }}
+                            >
+                              <Phone className="h-4 w-4" />
+                              Tham gia cuộc gọi
+                            </Link>
+                          </Button>
                         <Button variant="outline" size="sm" className="gap-2" asChild>
                           <a href={schedule.meetingLink} target="_blank" rel="noopener noreferrer">
                             <Video className="h-4 w-4" />

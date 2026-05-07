@@ -30,17 +30,29 @@ namespace backend.Configurations
                     RoleClaimType = ClaimTypes.Role
                 };
 
-                // Read JWT from HTTP-only cookie
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
                     {
-                        // First check Authorization header (for API clients)
-                        if (string.IsNullOrEmpty(context.Token))
+                        var authorizationHeader = context.Request.Headers.Authorization.ToString();
+                        if (!string.IsNullOrWhiteSpace(authorizationHeader) &&
+                            authorizationHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                         {
-                            // Then check cookie (for browser clients)
-                            context.Token = context.Request.Cookies["access_token"];
+                            context.Token = authorizationHeader["Bearer ".Length..].Trim();
+                            return Task.CompletedTask;
                         }
+
+                        if (context.Request.Path.StartsWithSegments("/hubs/call"))
+                        {
+                            var accessToken = context.Request.Query["access_token"].ToString();
+                            if (!string.IsNullOrWhiteSpace(accessToken))
+                            {
+                                context.Token = accessToken;
+                                return Task.CompletedTask;
+                            }
+                        }
+
+                        context.Token = context.Request.Cookies["access_token"];
                         return Task.CompletedTask;
                     }
                 };

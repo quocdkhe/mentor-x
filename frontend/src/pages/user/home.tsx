@@ -29,6 +29,7 @@ export function UserHomePage() {
         </p>
       </div>
 
+
       {/* Main Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto">
         {/* Find Mentor Card */}

@@ -9,18 +9,35 @@ namespace backend.Configurations
     {
         public static IServiceCollection AddCorsConfig(this IServiceCollection services, IConfiguration configuration)
         {
-            // Cors configuration
+            var origins = configuration.GetSection("CorsOrigins").Get<string[]>() ?? [];
+            var wildcardPatterns = configuration.GetSection("CorsWildcardOrigins").Get<string[]>() ?? [];
+
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", policy =>
                 {
                     policy
-                        .WithOrigins("http://localhost:5173", "http://localhost:4173", "https://mentor-x-gamma.vercel.app", "https://mentor-x.quocdk.id.vn") // your frontend URL
+                        .WithOrigins(origins)
+                        .SetIsOriginAllowed(origin =>
+                        {
+                            // Allow exact origins
+                            if (origins.Contains(origin)) return true;
+
+                            // Allow wildcard patterns (e.g. "*.vercel.app")
+                            return wildcardPatterns.Any(pattern =>
+                            {
+                                if (!pattern.StartsWith("*.")) return false;
+                                var suffix = pattern[1..]; // e.g. ".vercel.app"
+                                var uri = new Uri(origin);
+                                return uri.Host.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
+                            });
+                        })
                         .AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowCredentials(); // allow cookies
+                        .AllowCredentials();
                 });
             });
+
             return services;
         }
     }
