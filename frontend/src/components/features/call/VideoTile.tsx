@@ -8,6 +8,7 @@ interface VideoTileProps {
   label: string;
   isMuted?: boolean;
   isVideoOff?: boolean;
+  objectFit?: "cover" | "contain";
   size: "primary" | "secondary";
 }
 
@@ -16,6 +17,7 @@ export function VideoTile({
   label,
   isMuted,
   isVideoOff,
+  objectFit = "cover",
   size,
 }: VideoTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -41,7 +43,11 @@ export function VideoTile({
         autoPlay
         playsInline
         muted={size === "secondary"}
-        className={cn("h-full w-full object-cover", showPlaceholder && "hidden")}
+        className={cn(
+          "h-full w-full",
+          objectFit === "contain" ? "object-contain" : "object-cover",
+          showPlaceholder && "hidden",
+        )}
       />
 
       {showPlaceholder && (

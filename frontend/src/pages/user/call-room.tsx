@@ -80,7 +80,12 @@ function CallRoom({
       {/* Video area */}
       <div className="relative flex-1 overflow-hidden">
         {/* Primary: remote video (fills the area) */}
-        <VideoTile stream={remoteStream} label="Đối tác" size="primary" />
+        <VideoTile
+          stream={remoteStream}
+          label="Đối tác"
+          size="primary"
+          objectFit="contain"
+        />
 
         {/* Secondary: local video (bottom-right corner) */}
         <div className="absolute bottom-4 right-4 overflow-hidden rounded-xl shadow-lg ring-2 ring-white/20">
@@ -89,6 +94,7 @@ function CallRoom({
             label={isScreenSharing ? "Màn hình" : localLabel}
             isMuted={isMuted}
             isVideoOff={isVideoOff && !isScreenSharing}
+            objectFit={isScreenSharing ? "contain" : "cover"}
             size="secondary"
           />
         </div>
