@@ -109,7 +109,7 @@ function CallRoom({
       </div>
 
       {/* Controls bar */}
-      <div className="flex items-center justify-center bg-zinc-950 py-6">
+      <div className="flex items-center justify-center bg-zinc-950">
         <ControlsBar
           isMuted={isMuted}
           isVideoOff={isVideoOff}
