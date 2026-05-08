@@ -37,6 +37,12 @@ public partial class MentorXContext : DbContext
 
     public virtual DbSet<GoogleAccount> GoogleAccounts { get; set; }
 
+    public virtual DbSet<Conversation> Conversations { get; set; }
+
+    public virtual DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+
+    public virtual DbSet<ChatMessage> Messages { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -509,6 +515,100 @@ public partial class MentorXContext : DbContext
                 .IsRequired(false)
                 .HasForeignKey<GoogleAccount>(d => d.UserId)
                 .HasConstraintName("fk_google_accounts_user");
+        });
+
+        modelBuilder.Entity<Conversation>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("conversations_pkey");
+
+            entity.ToTable("conversations");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+        });
+
+        modelBuilder.Entity<ConversationParticipant>(entity =>
+        {
+            entity.HasKey(e => new { e.ConversationId, e.UserId }).HasName("conversation_participants_pkey");
+
+            entity.ToTable("conversation_participants");
+
+            entity.HasIndex(e => e.UserId, "idx_conv_participants_user");
+
+            entity.Property(e => e.ConversationId).HasColumnName("conversation_id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.Property(e => e.JoinedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("joined_at");
+
+            entity.Property(e => e.LastReadAt)
+                .HasColumnName("last_read_at");
+
+            entity.HasOne(d => d.Conversation)
+                .WithMany(p => p.Participants)
+                .HasForeignKey(d => d.ConversationId)
+                .HasConstraintName("fk_conversation_participants_conversation")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_conversation_participants_user")
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("messages_pkey");
+
+            entity.ToTable("messages");
+
+            entity.HasIndex(e => e.ConversationId, "idx_messages_conversation_id");
+            entity.HasIndex(e => e.SenderId, "idx_messages_sender_id");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+
+            entity.Property(e => e.ConversationId).HasColumnName("conversation_id");
+            entity.Property(e => e.SenderId).HasColumnName("sender_id");
+
+            entity.Property(e => e.Content)
+                .HasColumnName("content");
+
+            entity.Property(e => e.IsDeleted)
+                .HasDefaultValue(false)
+                .HasColumnName("is_deleted");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+
+            entity.HasOne(d => d.Conversation)
+                .WithMany(p => p.Messages)
+                .HasForeignKey(d => d.ConversationId)
+                .HasConstraintName("fk_messages_conversation")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.Sender)
+                .WithMany()
+                .HasForeignKey(d => d.SenderId)
+                .HasConstraintName("fk_messages_sender")
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
 
