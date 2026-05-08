@@ -22,6 +22,7 @@ namespace backend.Configurations
             services.AddScoped<IStatisticService, StatisticService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<ICallService, CallService>();
+            services.AddScoped<IChatService, ChatService>();
             return services;
         }
     }
