@@ -94,6 +94,17 @@ const mentorProfileRoute = createRoute({
   }),
 }).lazy(() => import("@/pages/public/mentor-profile").then((d) => d.UserRoute));
 
+const chatRoute = createRoute({
+  getParentRoute: () => userLayoutRoute,
+  path: "/chat",
+  head: () => ({
+    meta: [
+      // title here becomes <title>Home — MyApp</title>
+      { title: "MentorX - Chat" },
+    ],
+  }),
+}).lazy(() => import("@/pages/user/chat").then((d) => d.Route));
+
 const userRouteTree = userLayoutRoute.addChildren([
   homeRoute,
   schedulesRoute,
@@ -102,6 +113,7 @@ const userRouteTree = userLayoutRoute.addChildren([
   topicDetailRoute,
   mentorsRoute,
   mentorProfileRoute,
+  chatRoute,
 ]);
 
 export { userRouteTree };
