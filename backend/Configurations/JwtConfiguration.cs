@@ -42,7 +42,8 @@ namespace backend.Configurations
                             return Task.CompletedTask;
                         }
 
-                        if (context.Request.Path.StartsWithSegments("/hubs/call"))
+                        if (context.Request.Path.StartsWithSegments("/hubs/call")
+                            || context.Request.Path.StartsWithSegments("/hubs/chat"))
                         {
                             var accessToken = context.Request.Query["access_token"].ToString();
                             if (!string.IsNullOrWhiteSpace(accessToken))

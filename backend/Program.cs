@@ -53,6 +53,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapHub<CallHub>("/hubs/call");
+app.MapHub<ChatHub>("/hubs/chat");
 app.MapControllers();
 
 app.Run();
